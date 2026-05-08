@@ -1,0 +1,205 @@
+<div class="page">
+  <!-- ── Page heading ─────────────────────────────────────── -->
+  <div class="page-heading">
+    <h2 class="page-title">
+      Welcome back, {{ userState.user()?.name ?? "there" }}
+    </h2>
+    <p class="page-subtitle">
+      Here's what's happening with your boutique today.
+    </p>
+  </div>
+
+  <!-- ── 6-card bento grid ────────────────────────────────── -->
+  <div class="stats-grid">
+    @for (s of stats; track s.label) {
+      <div class="stat-card" [class.stat-card--gradient]="s.gradient">
+        @if (!s.gradient) {
+          <div
+            class="stat-card__bg-circle stat-card__bg-circle--{{ s.color }}"
+          ></div>
+        }
+        <div class="stat-card__body">
+          <p class="stat-card__label">{{ s.label }}</p>
+          <h3 class="stat-card__value">{{ s.value }}</h3>
+          <div
+            class="stat-card__trend stat-card__trend--{{ s.color }}"
+            [class.stat-card__trend--primary-text]="s.gradient"
+          >
+            <span class="material-symbols-outlined stat-card__trend-icon">{{
+              s.trendIcon
+            }}</span>
+            <span>{{ s.trendText }}</span>
+          </div>
+        </div>
+        <div
+          class="stat-card__icon-wrap"
+          [class.stat-card__icon-wrap--{{ s.color }}]="!s.gradient"
+          [class.stat-card__icon-wrap--gradient]="s.gradient"
+        >
+          <span class="material-symbols-outlined stat-card__icon">{{
+            s.icon
+          }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Charts section ───────────────────────────────────── -->
+  <div class="charts-grid">
+    <!-- Monthly Revenue line chart -->
+    <div class="chart-card">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">Monthly Revenue</h3>
+        <button class="icon-btn-sm">
+          <span class="material-symbols-outlined">more_vert</span>
+        </button>
+      </div>
+
+      <!-- SVG Line Chart -->
+      <div class="revenue-chart">
+        <svg
+          class="revenue-svg"
+          viewBox="0 0 580 225"
+          preserveAspectRatio="xMidYMid meet"
+          aria-label="Monthly Revenue Chart"
+        >
+          <defs>
+            <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" class="rev-grad-start" />
+              <stop offset="100%" class="rev-grad-end" />
+            </linearGradient>
+          </defs>
+
+          <!-- Y-axis grid lines + labels -->
+          @for (tick of revenueYTicks; track tick) {
+            <line
+              [attr.x1]="52"
+              [attr.y1]="yTickY(tick)"
+              [attr.x2]="572"
+              [attr.y2]="yTickY(tick)"
+              class="rev-grid-line"
+            />
+            <text
+              [attr.x]="46"
+              [attr.y]="yTickY(tick) + 4"
+              class="rev-axis-label rev-axis-label--y"
+            >
+              {{ yTickLabel(tick) }}
+            </text>
+          }
+
+          <!-- Gradient area fill -->
+          <path [attr.d]="revenueAreaPath" class="rev-area" />
+
+          <!-- Solid line -->
+          <path [attr.d]="revenueLinePath" class="rev-line" />
+
+          <!-- Data point dots -->
+          @for (pt of revenuePoints; track pt.month) {
+            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3.5" class="rev-dot" />
+          }
+
+          <!-- X-axis labels -->
+          @for (pt of revenuePoints; track pt.month) {
+            <text
+              [attr.x]="pt.x"
+              y="216"
+              class="rev-axis-label rev-axis-label--x"
+            >
+              {{ pt.month }}
+            </text>
+          }
+        </svg>
+      </div>
+    </div>
+
+    <!-- Booking Statistics bar chart -->
+    <div class="chart-card">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">Booking Statistics</h3>
+        <div class="chart-legend">
+          <span class="chart-legend__item">
+            <span class="chart-legend__dot chart-legend__dot--primary"></span
+            >Rented
+          </span>
+          <span class="chart-legend__item chart-legend__item--secondary">
+            <span class="chart-legend__dot chart-legend__dot--secondary"></span
+            >Returned
+          </span>
+        </div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-chart__bars">
+          @for (g of barGroups; track g.label) {
+            <div class="bar-group">
+              <div class="bar bar--primary" [style.height.%]="g.primary"></div>
+              <div
+                class="bar bar--secondary"
+                [style.height.%]="g.secondary"
+              ></div>
+            </div>
+          }
+        </div>
+        <div class="bar-chart__x-axis">
+          @for (g of barGroups; track g.label) {
+            <span>{{ g.label }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Recent Bookings table ────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <h3 class="table-card__title">Recent Bookings</h3>
+      <button class="btn-view-all" (click)="goToBookings()">
+        View All
+        <span class="material-symbols-outlined btn-view-all__arrow"
+          >arrow_forward</span
+        >
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>SN</th>
+            <th>Cloth Name</th>
+            <th>Customer</th>
+            <th>Booking Date</th>
+            <th>Return Date</th>
+            <th>Remaining Payment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of recentBookings; track b.sn) {
+            <tr>
+              <td class="sn-cell">{{ b.sn }}</td>
+              <td>
+                <div class="cloth-cell">
+                  <div class="cloth-icon cloth-icon--{{ b.clothColor }}">
+                    <span class="material-symbols-outlined">{{
+                      b.clothIcon
+                    }}</span>
+                  </div>
+                  {{ b.clothName }}
+                </div>
+              </td>
+              <td>{{ b.customer }}</td>
+              <td class="muted">{{ b.bookingDate }}</td>
+              <td class="muted">{{ b.returnDate }}</td>
+              <td class="payment-cell">{{ b.remainingPayment }}</td>
+              <td>
+                <button class="action-btn">
+                  <span class="material-symbols-outlined">more_horiz</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

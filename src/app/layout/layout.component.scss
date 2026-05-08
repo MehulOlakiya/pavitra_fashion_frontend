@@ -1,0 +1,47 @@
+// ── Layout root: full viewport, no overflow ─────────────
+:host {
+  display: block;
+  height: 100%;
+}
+
+.layout-root {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;   // prevents the whole page from scrolling
+}
+
+// ── Right side: stacks header + content ─────────────────
+.layout-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;       // flex child shrink fix
+  overflow: hidden;
+}
+
+// ── Scrollable content area only ─────────────────────────
+.layout-content {
+  flex: 1;
+  overflow-y: auto;   // only this scrolls
+  background: var(--background);
+}
+
+// ── Mobile sidebar backdrop ───────────────────────────────
+.sidebar-backdrop {
+  display: none;
+
+  @media (max-width: 767px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 199;
+    animation: fade-in 0.2s ease-out;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

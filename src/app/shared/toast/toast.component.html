@@ -1,0 +1,22 @@
+<div class="toast-container">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast" [ngClass]="'toast--' + toast.type" role="alert">
+      <span class="material-symbols-outlined toast-icon">{{
+        iconFor(toast.type)
+      }}</span>
+      <div class="toast-body">
+        <p class="toast-title">{{ toast.title }}</p>
+        @if (toast.message) {
+          <p class="toast-message">{{ toast.message }}</p>
+        }
+      </div>
+      <button
+        class="toast-close"
+        (click)="dismiss(toast.id)"
+        aria-label="Dismiss"
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  }
+</div>

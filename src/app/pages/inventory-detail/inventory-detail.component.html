@@ -1,0 +1,150 @@
+<div class="page">
+  <!-- Ambient glows -->
+  <div class="glow glow--top-right"></div>
+  <div class="glow glow--bottom-left"></div>
+
+  <!-- Page Header breadcrumb -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <button class="btn-back" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <span class="material-symbols-outlined bc-icon">search</span>
+      <span class="bc-text">Search Results</span>
+      <span class="material-symbols-outlined bc-chevron">chevron_right</span>
+      <span class="bc-active">{{ searchQuery }}</span>
+    </div>
+    <h2 class="page-title">Inventory Detail</h2>
+  </div>
+
+  <!-- Loading state -->
+  @if (loading) {
+    <div class="state-card state-card--loading">
+      <span class="material-symbols-outlined spinning">progress_activity</span>
+      <p>
+        Loading details for <strong>{{ searchQuery }}</strong
+        >…
+      </p>
+    </div>
+  }
+
+  <!-- Error / not found state -->
+  @if (!loading && errorMessage) {
+    <div class="state-card state-card--error">
+      <span class="material-symbols-outlined">error_outline</span>
+      <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  <!-- Empty prompt (no serial searched yet) -->
+  @if (!loading && !errorMessage && !product && !searchQuery) {
+    <div class="state-card state-card--empty">
+      <span class="material-symbols-outlined">search</span>
+      <p>Enter a serial number in the search bar and press Enter.</p>
+    </div>
+  }
+
+  <!-- Item summary card -->
+  @if (!loading && product) {
+    <div class="item-card">
+      <div class="item-thumb">
+        <img [src]="product.imageUrl" [alt]="product.name" />
+      </div>
+      <div class="item-info">
+        <div class="item-meta">
+          <span class="item-serial">Serial {{ product.serialNumber }}</span>
+          <span class="item-dot">•</span>
+          <span class="item-collection">{{
+            product.category | titlecase
+          }}</span>
+        </div>
+        <h3 class="item-name">{{ product.name }}</h3>
+        <div class="item-rate-row">
+          <span class="material-symbols-outlined item-rate-icon">payments</span>
+          <span class="item-rate">
+            <strong>₹{{ product.rentPrice | number }}</strong> / day
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings table card -->
+    <div class="table-card">
+      <div class="table-wrapper">
+        @if (bookings.length === 0) {
+          <div class="empty-state">
+            <div class="empty-state__icon-wrap">
+              <span class="material-symbols-outlined">event_busy</span>
+            </div>
+            <p class="empty-state__title">No upcoming bookings</p>
+            <p class="empty-state__sub">
+              This item has no active or future reservations.
+            </p>
+          </div>
+        } @else {
+          <table class="bookings-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Booking Date</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th>Payment Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of bookings; track b.customerName) {
+                <tr>
+                  <td>
+                    <div class="customer-cell">
+                      <div class="avatar avatar--{{ b.color }}">
+                        {{ b.initials }}
+                      </div>
+                      {{ b.customerName }}
+                    </div>
+                  </td>
+                  <td class="muted">{{ b.bookingDate }}</td>
+                  <td class="muted">{{ b.returnDate }}</td>
+                  <td>
+                    <span
+                      class="status-chip status-chip--{{
+                        b.status.toLowerCase()
+                      }}"
+                    >
+                      <span class="status-dot"></span>
+                      {{ b.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="payment-status payment-status--{{
+                        b.paymentStatus.toLowerCase()
+                      }}"
+                    >
+                      <span class="material-symbols-outlined">
+                        {{
+                          b.paymentStatus === "Paid"
+                            ? "check_circle"
+                            : "pending"
+                        }}
+                      </span>
+                      {{ b.paymentStatus }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+
+      <!-- Add Booking action -->
+      <div class="table-footer">
+        <button class="btn-add" (click)="addBooking()">
+          <span class="material-symbols-outlined">add_circle</span>
+          Add Booking
+        </button>
+      </div>
+    </div>
+  }
+</div>

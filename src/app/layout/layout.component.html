@@ -1,0 +1,14 @@
+<div class="layout-root">
+  <div
+    class="sidebar-backdrop"
+    *ngIf="sidebarOpen"
+    (click)="sidebarOpen = false"
+  ></div>
+  <app-sidebar [mobileOpen]="sidebarOpen" (closed)="sidebarOpen = false" />
+  <div class="layout-main">
+    <app-header (menuClick)="sidebarOpen = true" />
+    <main class="layout-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

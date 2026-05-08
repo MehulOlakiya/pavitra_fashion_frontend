@@ -1,0 +1,131 @@
+<header class="topbar">
+  <!-- Hamburger menu (mobile only) -->
+  <button
+    class="hamburger-btn"
+    (click)="menuClick.emit()"
+    aria-label="Open menu"
+  >
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+
+  <!-- Mobile brand -->
+  <div class="mobile-brand">
+    <span class="mobile-brand-text">Pavitra Fashion</span>
+  </div>
+
+  <!-- Search bar -->
+  <div class="search-box" [class.search-box--active]="searchQuery">
+    <span class="material-symbols-outlined search-icon">search</span>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by ID, name, or category..."
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+    />
+    @if (searchQuery) {
+      <button class="search-clear" (click)="clearSearch()" aria-label="Clear">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    }
+  </div>
+
+  <!-- Right actions -->
+  <div class="topbar-actions">
+    <div class="action-group">
+      <!-- Mobile search icon -->
+      <button
+        class="mobile-search-btn"
+        (click)="mobileSearchOpen = true"
+        aria-label="Search"
+      >
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </div>
+    <div class="divider"></div>
+    <div class="profile-wrap">
+      <button
+        class="profile-btn"
+        (click)="toggleProfileMenu($event)"
+        [class.profile-btn--open]="profileMenuOpen"
+        aria-haspopup="true"
+        [attr.aria-expanded]="profileMenuOpen"
+      >
+        <div class="avatar">
+          @if (userState.user()?.profileImage) {
+            <img
+              [src]="userState.user()!.profileImage!"
+              [alt]="userState.user()!.name"
+            />
+          } @else {
+            <span class="avatar-initials">{{ userState.initials() }}</span>
+          }
+        </div>
+        <span class="profile-name">{{
+          userState.user()?.name ?? "Profile"
+        }}</span>
+        <span class="material-symbols-outlined profile-arrow">
+          {{ profileMenuOpen ? "arrow_drop_up" : "arrow_drop_down" }}
+        </span>
+      </button>
+
+      @if (profileMenuOpen) {
+        <div class="profile-menu" (click)="$event.stopPropagation()">
+          <div class="profile-menu__header">
+            <div class="profile-menu__avatar">
+              @if (userState.user()?.profileImage) {
+                <img
+                  [src]="userState.user()!.profileImage!"
+                  [alt]="userState.user()!.name"
+                />
+              } @else {
+                <span>{{ userState.initials() }}</span>
+              }
+            </div>
+            <div>
+              <p class="profile-menu__name">{{ userState.user()?.name }}</p>
+              <p class="profile-menu__email">{{ userState.user()?.email }}</p>
+            </div>
+          </div>
+          <div class="profile-menu__divider"></div>
+          <button class="profile-menu__item" (click)="manageProfile()">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            Manage Profile
+          </button>
+          <button
+            class="profile-menu__item profile-menu__item--danger"
+            (click)="logout()"
+          >
+            <span class="material-symbols-outlined">logout</span>
+            Logout
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Mobile search overlay -->
+  @if (mobileSearchOpen) {
+    <div class="mobile-search-overlay" (click)="closeMobileSearch()">
+      <div class="mobile-search-bar" (click)="$event.stopPropagation()">
+        <span class="material-symbols-outlined mobile-search-icon">search</span>
+        <input
+          #mobileSearchInput
+          type="text"
+          class="mobile-search-input"
+          placeholder="Search by ID, name, or category..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch(); mobileSearchOpen = false"
+          autofocus
+        />
+        <button
+          class="mobile-search-close"
+          (click)="closeMobileSearch()"
+          aria-label="Close"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+  }
+</header>

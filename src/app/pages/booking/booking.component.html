@@ -1,0 +1,229 @@
+<div class="page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <button type="button" class="btn-back" (click)="goBack()" title="Go back">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <h2 class="page-title">New Booking</h2>
+      <p class="page-subtitle">Create and manage a new rental agreement.</p>
+    </div>
+  </div>
+
+  <!-- Product Search (shown when no serial in query params) -->
+  <div class="product-search-section" *ngIf="!productSelected">
+    <div class="search-card">
+      <div class="search-card-header">
+        <span class="material-symbols-outlined search-header-icon">search</span>
+        <div>
+          <h3 class="search-card-title">Select a Product</h3>
+          <p class="search-card-subtitle">
+            Search by serial number to select the item for this booking.
+          </p>
+        </div>
+      </div>
+      <div class="search-input-wrap">
+        <span class="material-symbols-outlined search-icon">tag</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Type serial number, e.g. LQ-8492"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+          name="productSearch"
+          autocomplete="off"
+        />
+        <span
+          class="material-symbols-outlined search-spinner"
+          *ngIf="searchLoading"
+          >progress_activity</span
+        >
+      </div>
+      <!-- Dropdown Results -->
+      <div class="search-dropdown" *ngIf="dropdownVisible">
+        <div
+          class="search-result-item"
+          *ngFor="let p of filteredProducts"
+          (click)="selectProduct(p)"
+        >
+          <img [src]="p.imageUrl" [alt]="p.name" class="result-image" />
+          <div class="result-info">
+            <span class="result-serial">{{ p.serialNumber }}</span>
+            <span class="result-name">{{ p.name }}</span>
+          </div>
+          <span class="result-rate">₹{{ p.rentPrice | number }}</span>
+        </div>
+        <div class="search-no-results" *ngIf="filteredProducts.length === 0">
+          <span class="material-symbols-outlined">inventory_2</span>
+          No products found for "{{ searchQuery }}"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected Cloth Banner -->
+  <div class="cloth-banner" *ngIf="productSelected">
+    <div class="cloth-image-wrap">
+      <img [src]="item.image" alt="Selected Cloth" class="cloth-image" />
+      <div class="cloth-image-overlay"></div>
+    </div>
+    <div class="cloth-info">
+      <div class="cloth-meta">
+        <span class="cloth-code">{{ item.serial }}</span>
+        <span class="cloth-collection">{{ item.collection }}</span>
+      </div>
+      <h3 class="cloth-name">{{ item.name }}</h3>
+    </div>
+    <div class="cloth-rate">
+      <span class="cloth-rate-label">Daily Rental Rate</span>
+      <span class="cloth-rate-value">{{ item.rate }}</span>
+    </div>
+    <button
+      type="button"
+      class="btn-change-product"
+      (click)="clearProduct()"
+      title="Change product"
+    >
+      <span class="material-symbols-outlined">swap_horiz</span>
+      Change
+    </button>
+  </div>
+
+  <!-- Booking Form -->
+  <form (ngSubmit)="onSubmit()" class="booking-form" *ngIf="productSelected">
+    <!-- Customer Information -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span class="material-symbols-outlined section-icon">person</span>
+          Customer Information
+        </h3>
+      </div>
+      <div class="section-body">
+        <div class="field-float">
+          <input
+            id="customerName"
+            type="text"
+            [class.is-invalid]="submitted && !form.customerName"
+            class="float-input"
+            placeholder=" "
+            [(ngModel)]="form.customerName"
+            name="customerName"
+            required
+          />
+          <label class="float-label" for="customerName">Full Name</label>
+        </div>
+        <div class="grid-2">
+          <div class="field-float">
+            <input
+              id="mobileNumber"
+              type="tel"
+              [class.is-invalid]="submitted && !form.mobileNumber"
+              class="float-input"
+              placeholder=" "
+              [(ngModel)]="form.mobileNumber"
+              name="mobileNumber"
+              required
+            />
+            <label class="float-label" for="mobileNumber">Mobile Number</label>
+          </div>
+          <div class="field-float">
+            <input
+              id="villageCity"
+              type="text"
+              [class.is-invalid]="submitted && !form.villageCity"
+              class="float-input"
+              placeholder=" "
+              [(ngModel)]="form.villageCity"
+              name="villageCity"
+            />
+            <label class="float-label" for="villageCity">Village / City</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rental Schedule -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span class="material-symbols-outlined section-icon">event</span>
+          Rental Schedule
+        </h3>
+      </div>
+      <div class="section-body grid-2">
+        <div class="field-datepicker">
+          <app-datepicker
+            placeholder="Select booking date"
+            [invalid]="submitted && !form.bookingDate"
+            (valueChange)="onBookingDateChange($event)"
+          />
+        </div>
+        <div class="field-datepicker">
+          <app-datepicker
+            placeholder="Select return date"
+            [minDate]="bookingDateObj"
+            [invalid]="submitted && !form.returnDate"
+            (valueChange)="onReturnDateChange($event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Details -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span class="material-symbols-outlined section-icon">payments</span>
+          Payment Details
+        </h3>
+      </div>
+      <div class="section-body grid-2">
+        <div class="field-float field-float--currency">
+          <span class="currency-symbol">₹</span>
+          <input
+            id="advancePayment"
+            type="number"
+            [class.is-invalid]="submitted && form.advancePayment === null"
+            class="float-input float-input--currency"
+            placeholder=" "
+            [(ngModel)]="form.advancePayment"
+            name="advancePayment"
+          />
+          <label class="float-label float-label--currency" for="advancePayment"
+            >Advance Payment</label
+          >
+        </div>
+        <div class="field-float field-float--currency">
+          <span class="currency-symbol">₹</span>
+          <input
+            id="remainingPayment"
+            type="number"
+            [class.is-invalid]="submitted && form.remainingPayment === null"
+            class="float-input float-input--currency"
+            placeholder=" "
+            [(ngModel)]="form.remainingPayment"
+            name="remainingPayment"
+          />
+          <label
+            class="float-label float-label--currency"
+            for="remainingPayment"
+            >Remaining Payment</label
+          >
+        </div>
+      </div>
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="onCancel()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-confirm">
+          <span class="material-symbols-outlined" style="font-size: 18px"
+            >check</span
+          >
+          Confirm Booking
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,53 @@
+<aside class="sidebar">
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-header">
+      <div>
+        <h1 class="brand-title">Pavitra Fashion</h1>
+        <p class="brand-sub">Premium Management</p>
+      </div>
+      <button
+        class="sidebar-close-btn"
+        (click)="close()"
+        aria-label="Close menu"
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Nav Items -->
+  <nav class="sidebar-nav">
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="nav-item--active"
+        class="nav-item"
+      >
+        <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <!-- User Profile -->
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="user-avatar">
+        @if (userState.user()?.profileImage) {
+          <img
+            [src]="userState.user()!.profileImage!"
+            [alt]="userState.user()!.name"
+            class="user-avatar__img"
+          />
+        } @else {
+          <span class="user-avatar__initials">{{ userState.initials() }}</span>
+        }
+      </div>
+      <div class="user-info">
+        <p class="user-name">{{ userState.user()?.name ?? "User" }}</p>
+        <p class="user-role">{{ userState.user()?.role ?? "" | titlecase }}</p>
+      </div>
+    </div>
+  </div>
+</aside>

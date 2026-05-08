@@ -1,0 +1,98 @@
+// ── Design Tokens ──────────────────────────────────────────
+:root {
+  // Surface
+  --surface: #f8f9ff;
+  --surface-dim: #d7dae2;
+  --surface-bright: #f8f9ff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f0f3fc;
+  --surface-container: #ebeef6;
+  --surface-container-high: #e5e8f1;
+  --surface-container-highest: #dfe2eb;
+  --on-surface: #181c22;
+  --on-surface-variant: #404752;
+  --outline: #707884;
+  --outline-variant: #bfc7d4;
+
+  // Primary
+  --primary: #0061a6;
+  --on-primary: #ffffff;
+  --primary-container: #2198fa;
+  --on-primary-container: #002e54;
+  --inverse-primary: #a0caff;
+
+  // Secondary
+  --secondary: #712ae2;
+  --on-secondary: #ffffff;
+  --secondary-container: #8a4cfc;
+  --on-secondary-container: #fffbff;
+
+  // Tertiary
+  --tertiary: #855300;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #cf8400;
+
+  // Error
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+
+  // Background
+  --background: #f8f9ff;
+  --on-background: #181c22;
+
+  // Spacing
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-gutter: 20px;
+  --spacing-page: 40px;
+
+  // Radii
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+// ── Reset ──────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: var(--on-surface);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
