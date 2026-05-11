@@ -1,143 +1,278 @@
 // ── Page ──────────────────────────────────────────────────
 .page {
   padding: 40px;
-  padding-top: 20px;
+  padding-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
   min-height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     padding: 20px 16px;
+    gap: 16px;
   }
 }
 
+// ── Page Header ───────────────────────────────────────────
 .page-header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: flex-end;
-}
-
-.page-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--on-surface);
-}
-
-.page-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  color: var(--on-surface-variant);
-  margin-top: 4px;
-}
-
-// ── Product Search ────────────────────────────────────────
-.product-search-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.search-card {
-  background: var(--surface-container-lowest);
-  border-radius: 0.75rem;
-  border: 1px solid rgba(191, 199, 212, 0.2);
-  box-shadow: 0px 10px 30px rgba(15, 23, 42, 0.04);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.search-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.search-header-icon {
-  font-size: 28px;
-  color: var(--primary);
   flex-shrink: 0;
 }
 
-.search-card-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--on-surface);
-  line-height: 1.3;
+.page-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.search-card-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: var(--on-surface-variant);
-  margin-top: 2px;
-}
-
-.search-input-wrap {
-  position: relative;
+.breadcrumb {
   display: flex;
   align-items: center;
+  gap: 4px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--outline);
 }
+
+.breadcrumb__link {
+  color: var(--outline);
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover { color: var(--primary); }
+}
+
+.breadcrumb__sep { font-size: 16px; }
+
+.breadcrumb__current { color: var(--on-surface); }
+
+.page-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--primary);
+  margin: 0;
+}
+
+.btn-back {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(191, 199, 212, 0.5);
+  background: var(--surface-container-lowest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--on-surface-variant);
+  transition: background 0.15s;
+
+  &:hover { background: var(--surface-container); }
+  .material-symbols-outlined { font-size: 20px; }
+}
+
+// ── Scrollable form stack ─────────────────────────────────
+.form-stack {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 8px;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(191, 199, 212, 0.5);
+    border-radius: 99px;
+  }
+}
+
+// ── Section Card (matches add-product card) ───────────────
+.section-card {
+  position: relative;
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(191, 199, 212, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  border-bottom: 1px solid rgba(191, 199, 212, 0.3);
+  background: rgba(248, 249, 255, 0.5);
+}
+
+.section-icon { font-size: 20px; color: var(--primary); }
+
+.section-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--on-surface);
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.section-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Date Grid ─────────────────────────────────────────────
+.date-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.date-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 10px;
+  color: var(--outline);
+
+  .material-symbols-outlined { font-size: 22px; }
+
+  @media (max-width: 600px) { display: none; }
+}
+
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+}
+
+.date-label__icon { font-size: 14px; color: var(--primary); }
+
+.required { color: var(--error); }
+
+.date-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(191, 199, 212, 0.6);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: var(--on-surface);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(1, 97, 166, 0.12);
+  }
+
+  &.is-invalid {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.08);
+  }
+}
+
+.date-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(1, 97, 166, 0.06);
+  border: 1px solid rgba(1, 97, 166, 0.2);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--primary);
+
+  .material-symbols-outlined { font-size: 18px; color: #2e7d32; }
+}
+
+.date-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(186, 26, 26, 0.06);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--error);
+
+  .material-symbols-outlined { font-size: 18px; }
+}
+
+// ── Product Search ────────────────────────────────────────
+.product-search-wrap { position: relative; }
 
 .search-icon {
   position: absolute;
   left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 20px;
-  color: var(--on-surface-variant);
+  color: var(--outline);
   pointer-events: none;
-  user-select: none;
 }
 
-.search-input {
+.product-search-input {
   width: 100%;
-  padding: 12px 44px 12px 44px;
-  border-radius: 0.5rem;
-  border: 1.5px solid var(--outline-variant);
-  background: var(--surface-container-low, #f8f9ff);
-  font-family: 'Inter', sans-serif;
+  padding: 12px 16px 12px 44px;
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(191, 199, 212, 0.6);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
   font-size: 15px;
   color: var(--on-surface);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 
-  &::placeholder {
-    color: var(--on-surface-variant);
-    opacity: 0.7;
-  }
+  &::placeholder { color: var(--outline); }
 
   &:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(33, 152, 250, 0.1);
+    box-shadow: 0 0 0 3px rgba(1, 97, 166, 0.12);
   }
 }
 
-.search-spinner {
-  position: absolute;
-  right: 14px;
-  font-size: 20px;
-  color: var(--primary);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 .search-dropdown {
-  border: 1px solid var(--outline-variant);
-  border-radius: 0.5rem;
   background: var(--surface-container-lowest);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(191, 199, 212, 0.4);
+  border-radius: 8px;
   overflow: hidden;
-  max-height: 300px;
-  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
 }
 
 .search-result-item {
@@ -148,468 +283,373 @@
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover {
-    background: rgba(33, 152, 250, 0.06);
-  }
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--surface-variant);
-  }
+  &:hover { background: var(--surface-container-low); }
+  & + & { border-top: 1px solid rgba(191, 199, 212, 0.2); }
 }
 
-.result-image {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.375rem;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid var(--surface-variant);
-}
-
-.result-info {
-  flex: 1;
+.result-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-container);
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+  .material-symbols-outlined { font-size: 20px; color: var(--outline); }
 }
+
+.result-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 
 .result-serial {
-  font-family: 'Inter', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--primary);
-  letter-spacing: 0.05em;
-  background: rgba(33, 152, 250, 0.08);
-  padding: 1px 6px;
-  border-radius: 0.25rem;
-  width: fit-content;
 }
 
 .result-name {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
   color: var(--on-surface);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .result-rate {
-  font-family: 'Poppins', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-.search-no-results {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: var(--on-surface-variant);
-
-  .material-symbols-outlined {
-    font-size: 20px;
-  }
-}
-
-// ── Change Product Button ─────────────────────────────────
-.btn-change-product {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 12px 16px 12px auto;
-  padding: 6px 14px;
-  border-radius: 0.5rem;
-  border: 1px solid var(--outline-variant);
-  background: transparent;
-  font-family: 'Inter', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--on-surface-variant);
-  cursor: pointer;
-  align-self: flex-end;
-  transition: background 0.2s, color 0.2s;
-  white-space: nowrap;
-
-  .material-symbols-outlined {
-    font-size: 18px;
-  }
-
-  &:hover {
-    background: var(--surface-variant);
-    color: var(--on-surface);
-  }
 }
 
-// ── Cloth Banner ──────────────────────────────────────────
-.cloth-banner {
+.search-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--on-surface-variant);
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  .material-symbols-outlined { font-size: 28px; color: var(--outline); }
+}
+
+// ── Product Banner ────────────────────────────────────────
+.product-banner {
+  display: flex;
+  align-items: center;
+  background: var(--surface-container-low);
+  border: 1px solid rgba(191, 199, 212, 0.3);
+  border-radius: 10px;
   overflow: hidden;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(191, 199, 212, 0.2);
-  box-shadow: 0px 10px 30px rgba(15, 23, 42, 0.04);
-  background: var(--surface-container-lowest);
-  position: relative;
 
-  @media (min-width: 768px) {
-    flex-direction: row;
-    height: 128px;
-    align-items: center;
-  }
+  @media (max-width: 600px) { flex-direction: column; }
 }
 
-.cloth-image-wrap {
-  position: relative;
-  height: 128px;
+.product-banner__image {
+  width: 100px;
+  height: 80px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 
-  @media (min-width: 768px) {
-    width: 256px;
-    height: 100%;
-  }
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  @media (max-width: 600px) { width: 100%; height: 120px; }
 }
 
-.cloth-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.cloth-image-overlay {
+.product-banner__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent);
+  background: linear-gradient(to right, rgba(0,0,0,0.25), transparent);
 }
 
-.cloth-info {
-  flex: 1;
-  padding: 16px;
+.product-banner__placeholder {
+  width: 100px;
+  height: 80px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 4px;
+  background: var(--surface-container);
+
+  .material-symbols-outlined { font-size: 32px; color: var(--outline); }
 }
 
-.cloth-meta {
+.product-banner__body {
+  flex: 1;
+  padding: 12px 16px;
+}
+
+.product-banner__meta {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 3px;
 }
 
-.cloth-code {
-  background: rgba(33, 152, 250, 0.1);
+.product-serial {
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(1, 97, 166, 0.1);
   color: var(--primary);
   padding: 2px 8px;
-  border-radius: 0.25rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  border-radius: 4px;
 }
 
-.cloth-collection {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
+.product-category {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
   color: var(--on-surface-variant);
 }
 
-.cloth-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 24px;
+.product-name {
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.4;
   color: var(--on-surface);
+  margin: 0;
 }
 
-.cloth-rate {
+.product-banner__rate {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 16px;
+  align-items: flex-end;
+  padding: 12px 16px;
+  flex-shrink: 0;
 
-  @media (min-width: 768px) {
-    align-items: flex-end;
-    justify-content: center;
-  }
+  @media (max-width: 600px) { align-items: flex-start; }
 }
 
-.cloth-rate-label {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
+.rate-label {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
   color: var(--on-surface-variant);
 }
 
-.cloth-rate-value {
-  font-family: 'Poppins', sans-serif;
-  font-size: 24px;
+.rate-value {
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
   font-weight: 700;
   color: var(--primary);
 }
 
-// ── Form Sections ─────────────────────────────────────────
-.booking-form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.form-section {
-  background: var(--surface-container-lowest);
-  border-radius: 0.75rem;
-  border: 1px solid rgba(191, 199, 212, 0.2);
-  box-shadow: 0px 10px 30px rgba(15, 23, 42, 0.04);
-}
-
-.section-header {
-  padding: 24px;
-  padding-top: 10px;
-  padding-bottom:0px;
-  border-bottom: 1px solid var(--surface-variant);
-  background: rgba(248, 249, 255, 0.5);
-}
-
-.section-title {
+.btn-change {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 20px;
+  gap: 4px;
+  margin: 0 14px;
+  padding: 8px 14px;
+  border: 1px solid rgba(191, 199, 212, 0.6);
+  border-radius: 8px;
+  background: var(--surface-container-lowest);
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.5;
-  color: var(--on-surface);
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover { background: var(--surface-container); }
+  .material-symbols-outlined { font-size: 16px; }
 }
 
-.section-icon {
-  font-size: 24px;
-  color: var(--primary);
-}
-
-.section-body {
-  padding: 24px;
-  padding-bottom: 20px;
-  padding-top: 16px;
+// ── Status rows ───────────────────────────────────────────
+.status-row {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  .material-symbols-outlined { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
 
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
+  &--loading {
+    background: var(--surface-container-low);
+    color: var(--on-surface-variant);
+  }
+
+  &--conflict {
+    background: rgba(186, 26, 26, 0.06);
+    border: 1px solid rgba(186, 26, 26, 0.2);
+    color: var(--error);
+  }
+
+  &--ok {
+    background: rgba(46, 125, 50, 0.07);
+    border: 1px solid rgba(46, 125, 50, 0.2);
+    color: #2e7d32;
   }
 }
-// ── Datepicker fields ─────────────────────────────────────────
-.field-datepicker {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+
+.status-row__title { font-weight: 600; margin: 0 0 4px; }
+.status-row__detail { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
+
+// ── Grid + Floating Label Fields (same as add-product) ────
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
 }
-// ── Floating Label Fields ─────────────────────────────────
+
 .field-float {
   position: relative;
 }
 
 .float-input {
   width: 100%;
-  height: 48px;
+  height: 52px;
+  padding: 16px 14px 4px;
   background: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
-  border-radius: 0.5rem;
-  padding: 0px 18px;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  border: 1px solid rgba(191, 199, 212, 0.6);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
   color: var(--on-surface);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
-
-  &::placeholder {
-    color: transparent;
-  }
+  box-sizing: border-box;
 
   &:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 1px rgba(33, 152, 250, 0.2);
-  }
-
-  // Date inputs always show their native value so treat as filled
-  &:focus ~ .float-label,
-  &:not(:placeholder-shown) ~ .float-label {
-    top: -8px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    background: var(--surface-container-lowest);
-    padding: 0 4px;
-    color: var(--on-surface-variant);
-  }
-
-  &:focus ~ .float-label {
-    color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(1, 97, 166, 0.12);
   }
 
   &.is-invalid {
-    border-color: #e53935;
-    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.08);
+  }
+
+  &--currency { padding-left: 28px; }
+
+  &:focus + .float-label,
+  &:not(:placeholder-shown) + .float-label {
+    top: 8px;
+    font-size: 11px;
+    color: var(--primary);
   }
 }
 
 .float-label {
   position: absolute;
-  left: 16px;
-  top: 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
   color: var(--outline);
   pointer-events: none;
-  transition: top 0.15s, font-size 0.15s, color 0.15s, letter-spacing 0.15s;
-  line-height: 1;
-  background: transparent;
-}
-
-// Date inputs are always "filled" — keep label raised
-.float-label--raised {
-  top: -8px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  transition: top 0.2s, font-size 0.2s, color 0.2s;
   background: var(--surface-container-lowest);
-  padding: 0 4px;
+  padding: 0 2px;
+
+  &--currency { left: 28px; }
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
   color: var(--on-surface-variant);
+  pointer-events: none;
 }
 
-// Currency fields
-.field-float--currency {
-  .currency-symbol {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    color: var(--on-surface-variant);
-    pointer-events: none;
-    line-height: 1;
+// ── Form Footer ───────────────────────────────────────────
+.form-footer {
+  padding: 18px 28px;
+  border-top: 1px solid rgba(191, 199, 212, 0.3);
+  background: rgba(248, 249, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.confirm-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    margin-top: 2px;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+    cursor: pointer;
   }
 }
 
-.float-input--currency {
-  padding-left: 32px;
+.confirm-check__text {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  line-height: 1.5;
+  user-select: none;
 }
 
-.float-label--currency {
-  left: 32px;
-
-  &.float-label--raised,
-  .float-input--currency:focus ~ &,
-  .float-input--currency:not(:placeholder-shown) ~ & {
-    left: 16px;
-  }
-}
-
-.float-input--currency {
-  &:focus ~ .float-label--currency,
-  &:not(:placeholder-shown) ~ .float-label--currency {
-    left: 16px;
-    top: -8px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    background: var(--surface-container-lowest);
-    padding: 0 4px;
-    color: var(--primary);
-  }
-}
-
-// ── Form Actions ──────────────────────────────────────────
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  padding: 24px;
-  padding-bottom: 20px;
-  padding-top: 0px;
-  background: rgba(248, 249, 255, 0.3);
-  border-top: 1px solid var(--surface-variant);
+  gap: 12px;
 }
 
 .btn-cancel {
-  padding: 8px 24px;
-  border-radius: 0.5rem;
-  font-family: 'Poppins', sans-serif;
-  font-size: 15px;
+  padding: 10px 24px;
+  border: 1px solid rgba(191, 199, 212, 0.7);
+  border-radius: 8px;
+  background: var(--surface-container-lowest);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.01em;
   color: var(--on-surface-variant);
-  border: 1px solid var(--outline-variant);
-  background: transparent;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
 
-  &:hover {
-    background: var(--surface-variant);
-  }
+  &:hover { background: var(--surface-container); }
 }
 
 .btn-confirm {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 24px;
-  border-radius: 0.5rem;
-  font-family: 'Poppins', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--on-primary);
-  background: linear-gradient(to right, var(--primary-container), var(--secondary));
+  gap: 6px;
+  padding: 10px 24px;
   border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(1, 97, 166, 0.25);
+  transition: box-shadow 0.2s, opacity 0.2s;
 
-  &:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  .material-symbols-outlined { font-size: 17px; }
+
+  &:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(1, 97, 166, 0.35); }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 }
 
-::ng-deep .ngxsmk-datepicker-popup {
-  bottom: 100%;
-  top: auto !important;
-}
+// ── Spinner ───────────────────────────────────────────────
+.spinning { animation: spin 0.9s linear infinite; }
 
-.btn-back {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(191, 199, 212, 0.4);
-  background: transparent;
-  cursor: pointer;
-  color: var(--on-surface-variant);
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-  flex-shrink: 0;
-  margin-right: 4px;
-
-  .material-symbols-outlined { font-size: 18px; }
-
-  &:hover {
-    background: rgba(33, 152, 250, 0.08);
-    color: var(--primary);
-    border-color: var(--primary);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }

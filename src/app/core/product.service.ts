@@ -43,9 +43,33 @@ export class ProductService {
     return this.http.get<Product[]>(this.base, { params });
   }
 
+  getById(id: string): Observable<Product> {
+    return this.http.get<Product>(`${this.base}/${encodeURIComponent(id)}`);
+  }
+
   getInventoryDetail(serialNumber: string): Observable<InventoryDetail> {
     return this.http.get<InventoryDetail>(
       `${this.base}/serial/${encodeURIComponent(serialNumber)}/inventory`,
     );
+  }
+
+  create(
+    payload: Omit<Product, '_id' | 'imageUrl'> & { imageBase64?: string },
+  ): Observable<Product> {
+    return this.http.post<Product>(this.base, payload);
+  }
+
+  update(
+    id: string,
+    payload: Partial<Omit<Product, '_id'>>,
+  ): Observable<Product> {
+    return this.http.patch<Product>(
+      `${this.base}/${encodeURIComponent(id)}`,
+      payload,
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${encodeURIComponent(id)}`);
   }
 }

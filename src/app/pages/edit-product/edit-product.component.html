@@ -1,0 +1,256 @@
+<div class="page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="breadcrumb">
+        <a routerLink="/inventory" class="breadcrumb__link">Inventory</a>
+        <span class="material-symbols-outlined breadcrumb__sep"
+          >chevron_right</span
+        >
+        <span class="breadcrumb__current">Edit Product</span>
+      </div>
+      <h2 class="page-title">Edit Product</h2>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="material-symbols-outlined spinning">progress_activity</span>
+      <p>Loading product details…</p>
+    </div>
+  } @else {
+    <!-- Form Grid -->
+    <div class="form-grid">
+      <!-- ── Left Column ──────────────────────────────── -->
+      <div class="col-main">
+        <!-- Basic Information -->
+        <div class="card">
+          <div class="card__accent"></div>
+          <h3 class="card__title">Basic Information</h3>
+          <div class="card__body">
+            <div class="field">
+              <label class="field__label"
+                >PRODUCT NAME <span class="required">*</span></label
+              >
+              <input
+                class="field__input"
+                type="text"
+                placeholder="e.g. Royal Blue Silk Sherwani"
+                [(ngModel)]="form.name"
+                name="productName"
+              />
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="field__label"
+                  >PRODUCT CATEGORY <span class="required">*</span></label
+                >
+                <div class="select-wrap">
+                  <select
+                    class="field__input field__input--select"
+                    [(ngModel)]="form.category"
+                    name="category"
+                  >
+                    <option value="" disabled>Select Category</option>
+                    @for (cat of categories; track cat) {
+                      <option [value]="cat">{{ cat }}</option>
+                    }
+                  </select>
+                  <span class="material-symbols-outlined select-chevron"
+                    >expand_more</span
+                  >
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field__label"
+                  >SERIAL NUMBER / SKU <span class="required">*</span></label
+                >
+                <input
+                  class="field__input"
+                  type="text"
+                  placeholder="e.g. SH-BLU-001"
+                  [(ngModel)]="form.serialNumber"
+                  name="serialNumber"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Details -->
+        <div class="card">
+          <div class="card__accent"></div>
+          <h3 class="card__title">Pricing Details</h3>
+          <div class="card__body">
+            <div class="field-row field-row--3">
+              <div class="field">
+                <label class="field__label">RENT PRICE (/DAY)</label>
+                <div class="price-wrap">
+                  <span class="price-symbol">₹</span>
+                  <input
+                    class="field__input field__input--price"
+                    type="number"
+                    min="0"
+                    placeholder="0.00"
+                    [(ngModel)]="form.rentPrice"
+                    name="rentPrice"
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <label class="field__label">PURCHASE PRICE</label>
+                <div class="price-wrap">
+                  <span class="price-symbol">₹</span>
+                  <input
+                    class="field__input field__input--price"
+                    type="number"
+                    min="0"
+                    placeholder="0.00"
+                    [(ngModel)]="form.purchasePrice"
+                    name="purchasePrice"
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <label class="field__label">SELLING PRICE</label>
+                <div class="price-wrap">
+                  <span class="price-symbol">₹</span>
+                  <input
+                    class="field__input field__input--price"
+                    type="number"
+                    min="0"
+                    placeholder="0.00"
+                    [(ngModel)]="form.sellingPrice"
+                    name="sellingPrice"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Right Column ─────────────────────────────── -->
+      <div class="col-side">
+        <!-- Product Media -->
+        <div class="card">
+          <h3 class="card__title">Product Media</h3>
+
+          <input
+            #fileInput
+            type="file"
+            accept="image/jpeg,image/png"
+            class="upload-file-input"
+            (change)="onFilesSelected($event)"
+          />
+
+          <div
+            class="upload-zone"
+            [class.upload-zone--locked]="hasImage"
+            (click)="!hasImage && fileInput.click()"
+            (dragover)="!hasImage && $event.preventDefault()"
+            (drop)="!hasImage && onDrop($event)"
+          >
+            @if (!hasImage) {
+              <div class="upload-zone__icon">
+                <span class="material-symbols-outlined"
+                  >add_photo_alternate</span
+                >
+              </div>
+              <p class="upload-zone__primary">Click to upload an image</p>
+              <p class="upload-zone__secondary">or drag and drop here</p>
+              <p class="upload-zone__hint">JPG, PNG up to 10MB</p>
+            } @else if (previewUrls.length) {
+              <div class="upload-previews">
+                <div class="preview-thumb">
+                  <img
+                    [src]="previewUrls[0]"
+                    alt="Preview"
+                    class="preview-img"
+                  />
+                  <button
+                    type="button"
+                    class="preview-remove"
+                    (click)="removeNewImage($event)"
+                    title="Remove"
+                  >
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="upload-previews">
+                <div class="preview-thumb">
+                  <img
+                    [src]="existingImageUrl"
+                    alt="Product Image"
+                    class="preview-img"
+                  />
+                  <button
+                    type="button"
+                    class="preview-remove"
+                    (click)="removeExistingImage($event)"
+                    title="Remove"
+                  >
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="card">
+          <h3 class="card__title">Status</h3>
+          <div class="status-row">
+            <div class="status-row__text">
+              <p class="status-row__label">Active Product</p>
+              <p class="status-row__desc">
+                Visible in inventory and available for booking.
+              </p>
+            </div>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                class="toggle__input"
+                [(ngModel)]="form.isActive"
+                name="isActive"
+              />
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="form-footer">
+      <button
+        type="button"
+        class="btn-outline"
+        (click)="goBack()"
+        [disabled]="submitting"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="onSubmit()"
+        [disabled]="submitting"
+      >
+        @if (submitting) {
+          <span class="material-symbols-outlined spinning"
+            >progress_activity</span
+          >
+          Saving…
+        } @else {
+          Save Changes
+        }
+      </button>
+    </div>
+  }
+</div>

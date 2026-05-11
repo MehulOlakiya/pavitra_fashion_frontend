@@ -40,6 +40,11 @@ export class SidebarComponent {
   navItems = [
     { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
     { icon: 'event_available', label: 'Bookings', route: '/bookings' },
+    {
+      icon: 'inventory_2',
+      label: 'Inventory',
+      route: '/inventory',
+    },
     { icon: 'calendar_month', label: 'Calendar', route: '/calendar' },
     { icon: 'group', label: 'Customers', route: '/customers' },
     { icon: 'payments', label: 'Payments', route: '/payments' },

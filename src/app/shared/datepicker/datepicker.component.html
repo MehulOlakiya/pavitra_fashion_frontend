@@ -1,85 +1,89 @@
 <div class="dp-wrap">
-  <!-- Trigger -->
+
+  <!-- Trigger — clicking anywhere here opens the calendar -->
   <div
-    class="dp-input-group"
-    [class.dp-input-group--invalid]="invalid"
+    #triggerEl
+    class="dp-trigger"
+    [class.dp-trigger--active]="isOpen"
+    [class.dp-trigger--invalid]="invalid"
     (click)="toggle()"
   >
-    <span class="material-symbols-outlined dp-icon">calendar_month</span>
-    <span class="dp-value" [class.dp-value--placeholder]="!value">
+    <span class="material-symbols-outlined dp-cal-icon">calendar_month</span>
+    <span class="dp-display" [class.dp-display--placeholder]="!value">
       {{ value ? displayValue : placeholder }}
     </span>
-    <span
-      class="material-symbols-outlined dp-clear"
-      *ngIf="value"
-      (click)="clear($event)"
-      >close</span
-    >
+    @if (value) {
+      <span
+        class="material-symbols-outlined dp-clear-icon"
+        (click)="clear($event)"
+      >close</span>
+    }
     <span
       class="material-symbols-outlined dp-chevron"
       [class.dp-chevron--open]="isOpen"
+    >expand_more</span>
+  </div>
+
+  <!-- Calendar Popup — fixed-positioned to escape any overflow container -->
+  @if (isOpen) {
+    <div
+      class="dp-popup"
+      [style.top]="popupTop"
+      [style.left]="popupLeft"
+      [style.width]="popupWidth"
+      (click)="$event.stopPropagation()"
     >
-      expand_more
-    </span>
-  </div>
 
-  <!-- Calendar Popover -->
-  <div class="dp-popover" *ngIf="isOpen" (click)="$event.stopPropagation()">
-    <!-- Header -->
-    <div class="dp-header">
-      <select
-        class="dp-select"
-        [value]="viewMonth"
-        (change)="onMonthChange($any($event.target).value)"
-      >
-        <option *ngFor="let m of monthNames; let i = index" [value]="i">
-          {{ m }}
-        </option>
-      </select>
-      <select
-        class="dp-select dp-select--year"
-        [value]="viewYear"
-        (change)="onYearChange($any($event.target).value)"
-      >
-        <option *ngFor="let y of years" [value]="y">{{ y }}</option>
-      </select>
-      <button class="dp-nav" type="button" (click)="prevMonth()">
-        &#8249;
-      </button>
-      <button class="dp-nav" type="button" (click)="nextMonth()">
-        &#8250;
-      </button>
-    </div>
+      <!-- Year selector + nav -->
+      <div class="dp-top-row">
+        <div class="dp-year-wrap">
+          <select
+            class="dp-year-select"
+            [value]="viewYear"
+            (change)="onYearChange($any($event.target).value)"
+          >
+            @for (y of years; track y) {
+              <option [value]="y">{{ y }}</option>
+            }
+          </select>
+          <span class="material-symbols-outlined dp-year-arrow">keyboard_arrow_down</span>
+        </div>
+        <div class="dp-nav-wrap">
+          <button type="button" class="dp-nav-btn" (click)="prevMonth()">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button type="button" class="dp-nav-btn" (click)="nextMonth()">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
 
-    <!-- Day headers -->
-    <div class="dp-day-headers">
-      <span *ngFor="let d of dayHeaders">{{ d }}</span>
-    </div>
+      <!-- Month label -->
+      <div class="dp-month-label">{{ monthNames[viewMonth].toUpperCase() }}</div>
 
-    <!-- Calendar grid -->
-    <div class="dp-grid">
-      <button
-        *ngFor="let day of calendarDays"
-        class="dp-day"
-        type="button"
-        [class.dp-day--other]="!isCurrentMonth(day)"
-        [class.dp-day--today]="isToday(day)"
-        [class.dp-day--selected]="isSelected(day)"
-        [class.dp-day--disabled]="isDisabled(day)"
-        (click)="selectDate(day)"
-      >
-        {{ day.getDate() }}
-      </button>
-    </div>
+      <!-- Day-of-week headers -->
+      <div class="dp-day-headers">
+        @for (h of dayHeaders; track h) {
+          <span class="dp-day-header">{{ h }}</span>
+        }
+      </div>
 
-    <!-- Footer -->
-    <div class="dp-footer">
-      <button class="dp-btn dp-btn--clear" type="button" (click)="clear()">
-        Clear
-      </button>
-      <button class="dp-btn dp-btn--close" type="button" (click)="close()">
-        Close
-      </button>
+      <!-- Calendar grid -->
+      <div class="dp-grid">
+        @for (day of calendarDays; track $index) {
+          <button
+            type="button"
+            class="dp-day-btn"
+            [class.dp-day--other]="!isCurrentMonth(day)"
+            [class.dp-day--today]="isToday(day)"
+            [class.dp-day--selected]="isSelected(day)"
+            [class.dp-day--disabled]="isDisabled(day)"
+            (click)="selectDate(day)"
+          >{{ day.getDate() }}</button>
+        }
+      </div>
+
     </div>
-  </div>
+  }
+
 </div>

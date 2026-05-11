@@ -1,229 +1,361 @@
 <div class="page">
   <!-- Page Header -->
   <div class="page-header">
-    <div>
-      <button type="button" class="btn-back" (click)="goBack()" title="Go back">
-        <span class="material-symbols-outlined">arrow_back</span>
-      </button>
+    <div class="page-header__left">
+      <div class="breadcrumb">
+        <a routerLink="/bookings" class="breadcrumb__link">Bookings</a>
+        <span class="material-symbols-outlined breadcrumb__sep"
+          >chevron_right</span
+        >
+        <span class="breadcrumb__current">New Booking</span>
+      </div>
       <h2 class="page-title">New Booking</h2>
-      <p class="page-subtitle">Create and manage a new rental agreement.</p>
     </div>
   </div>
 
-  <!-- Product Search (shown when no serial in query params) -->
-  <div class="product-search-section" *ngIf="!productSelected">
-    <div class="search-card">
-      <div class="search-card-header">
-        <span class="material-symbols-outlined search-header-icon">search</span>
-        <div>
-          <h3 class="search-card-title">Select a Product</h3>
-          <p class="search-card-subtitle">
-            Search by serial number to select the item for this booking.
-          </p>
-        </div>
-      </div>
-      <div class="search-input-wrap">
-        <span class="material-symbols-outlined search-icon">tag</span>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Type serial number, e.g. LQ-8492"
-          [(ngModel)]="searchQuery"
-          (input)="onSearchInput()"
-          name="productSearch"
-          autocomplete="off"
-        />
-        <span
-          class="material-symbols-outlined search-spinner"
-          *ngIf="searchLoading"
-          >progress_activity</span
-        >
-      </div>
-      <!-- Dropdown Results -->
-      <div class="search-dropdown" *ngIf="dropdownVisible">
-        <div
-          class="search-result-item"
-          *ngFor="let p of filteredProducts"
-          (click)="selectProduct(p)"
-        >
-          <img [src]="p.imageUrl" [alt]="p.name" class="result-image" />
-          <div class="result-info">
-            <span class="result-serial">{{ p.serialNumber }}</span>
-            <span class="result-name">{{ p.name }}</span>
-          </div>
-          <span class="result-rate">₹{{ p.rentPrice | number }}</span>
-        </div>
-        <div class="search-no-results" *ngIf="filteredProducts.length === 0">
-          <span class="material-symbols-outlined">inventory_2</span>
-          No products found for "{{ searchQuery }}"
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Selected Cloth Banner -->
-  <div class="cloth-banner" *ngIf="productSelected">
-    <div class="cloth-image-wrap">
-      <img [src]="item.image" alt="Selected Cloth" class="cloth-image" />
-      <div class="cloth-image-overlay"></div>
-    </div>
-    <div class="cloth-info">
-      <div class="cloth-meta">
-        <span class="cloth-code">{{ item.serial }}</span>
-        <span class="cloth-collection">{{ item.collection }}</span>
-      </div>
-      <h3 class="cloth-name">{{ item.name }}</h3>
-    </div>
-    <div class="cloth-rate">
-      <span class="cloth-rate-label">Daily Rental Rate</span>
-      <span class="cloth-rate-value">{{ item.rate }}</span>
-    </div>
-    <button
-      type="button"
-      class="btn-change-product"
-      (click)="clearProduct()"
-      title="Change product"
-    >
-      <span class="material-symbols-outlined">swap_horiz</span>
-      Change
-    </button>
-  </div>
-
-  <!-- Booking Form -->
-  <form (ngSubmit)="onSubmit()" class="booking-form" *ngIf="productSelected">
-    <!-- Customer Information -->
-    <div class="form-section">
+  <div class="form-stack">
+    <!-- ── Step 1: Rental Schedule ─────────────────────── -->
+    <div class="section-card">
       <div class="section-header">
-        <h3 class="section-title">
-          <span class="material-symbols-outlined section-icon">person</span>
-          Customer Information
-        </h3>
+        <span class="material-symbols-outlined section-icon">event</span>
+        <h3 class="section-title">Rental Schedule</h3>
       </div>
       <div class="section-body">
-        <div class="field-float">
-          <input
-            id="customerName"
-            type="text"
-            [class.is-invalid]="submitted && !form.customerName"
-            class="float-input"
-            placeholder=" "
-            [(ngModel)]="form.customerName"
-            name="customerName"
-            required
-          />
-          <label class="float-label" for="customerName">Full Name</label>
-        </div>
-        <div class="grid-2">
-          <div class="field-float">
-            <input
-              id="mobileNumber"
-              type="tel"
-              [class.is-invalid]="submitted && !form.mobileNumber"
-              class="float-input"
-              placeholder=" "
-              [(ngModel)]="form.mobileNumber"
-              name="mobileNumber"
-              required
+        <div class="date-grid">
+          <!-- Booking Date -->
+          <div class="date-field">
+            <label class="date-label">
+              <span class="material-symbols-outlined date-label__icon"
+                >calendar_today</span
+              >
+              Booking Date <span class="required">*</span>
+            </label>
+            <app-datepicker
+              placeholder="DD / MM / YYYY"
+              [value]="bookingDate"
+              [invalid]="submitted && !bookingDate"
+              [minDate]="today"
+              (valueChange)="bookingDate = $event; onDateChange()"
             />
-            <label class="float-label" for="mobileNumber">Mobile Number</label>
           </div>
+
+          <!-- Arrow connector -->
+          <div class="date-arrow">
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </div>
+
+          <!-- Return Date -->
+          <div class="date-field">
+            <label class="date-label">
+              <span class="material-symbols-outlined date-label__icon"
+                >event_available</span
+              >
+              Return Date <span class="required">*</span>
+            </label>
+            <app-datepicker
+              placeholder="DD / MM / YYYY"
+              [value]="returnDate"
+              [invalid]="submitted && !returnDate"
+              [minDate]="bookingDate ?? today"
+              (valueChange)="returnDate = $event; onDateChange()"
+            />
+          </div>
+        </div>
+
+        @if (datesSelected) {
+          <div class="date-summary">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>
+              <strong>{{ formatDate(bookingDate) }}</strong>
+              &nbsp;→&nbsp;
+              <strong>{{ formatDate(returnDate) }}</strong>
+              &nbsp;·&nbsp;Now select a product below.
+            </span>
+          </div>
+        }
+        @if (
+          bookingDate &&
+          returnDate &&
+          returnDate.getTime() < bookingDate.getTime()
+        ) {
+          <div class="date-error">
+            <span class="material-symbols-outlined">error</span>
+            Return date must be on or after the booking date.
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Step 2: Product Selection ── -->
+    @if (datesSelected) {
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-symbols-outlined section-icon">checkroom</span>
+          <h3 class="section-title">Select Product</h3>
+        </div>
+        <div class="section-body">
+          @if (!productSelected) {
+            <div class="product-search-wrap">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input
+                type="text"
+                class="product-search-input"
+                placeholder="Search by serial number or product name…"
+                [(ngModel)]="searchQuery"
+                (input)="onSearchInput()"
+                name="productSearch"
+                autocomplete="off"
+              />
+            </div>
+
+            @if (dropdownVisible) {
+              <div class="search-dropdown">
+                @for (p of filteredProducts; track p._id) {
+                  <div class="search-result-item" (click)="selectProduct(p)">
+                    <div class="result-thumb">
+                      @if (p.imageUrl) {
+                        <img [src]="p.imageUrl" [alt]="p.name" />
+                      } @else {
+                        <span class="material-symbols-outlined">checkroom</span>
+                      }
+                    </div>
+                    <div class="result-info">
+                      <span class="result-serial">{{ p.serialNumber }}</span>
+                      <span class="result-name">{{ p.name }}</span>
+                    </div>
+                    <span class="result-rate">₹{{ p.rentPrice | number }}</span>
+                  </div>
+                }
+                @if (filteredProducts.length === 0) {
+                  <div class="search-empty">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    No products found for "{{ searchQuery }}"
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            <!-- Product Banner -->
+            <div class="product-banner">
+              <div class="product-banner__image">
+                @if (selectedProduct?.imageUrl) {
+                  <img
+                    [src]="selectedProduct!.imageUrl"
+                    [alt]="selectedProduct!.name"
+                  />
+                  <div class="product-banner__overlay"></div>
+                } @else {
+                  <div class="product-banner__placeholder">
+                    <span class="material-symbols-outlined">checkroom</span>
+                  </div>
+                }
+              </div>
+              <div class="product-banner__body">
+                <div class="product-banner__meta">
+                  <span class="product-serial"
+                    >#{{ selectedProduct!.serialNumber }}</span
+                  >
+                  <span class="product-category">{{
+                    selectedProduct!.category
+                  }}</span>
+                </div>
+                <h3 class="product-name">{{ selectedProduct!.name }}</h3>
+              </div>
+              <div class="product-banner__rate">
+                <span class="rate-label">Daily Rental Rate</span>
+                <span class="rate-value"
+                  >₹{{ selectedProduct!.rentPrice | number }}</span
+                >
+              </div>
+              <button type="button" class="btn-change" (click)="clearProduct()">
+                <span class="material-symbols-outlined">swap_horiz</span>
+                Change
+              </button>
+            </div>
+
+            <!-- Conflict check -->
+            @if (conflictLoading) {
+              <div class="status-row status-row--loading">
+                <span class="material-symbols-outlined spinning"
+                  >progress_activity</span
+                >
+                Checking availability…
+              </div>
+            }
+
+            @if (!conflictLoading && hasConflict) {
+              <div class="status-row status-row--conflict">
+                <span class="material-symbols-outlined">warning</span>
+                <div>
+                  <p class="status-row__title">
+                    This product is already booked for the selected dates.
+                  </p>
+                  @for (b of conflictBookings; track b._id) {
+                    <p class="status-row__detail">
+                      Booked <strong>{{ formatDate(b.bookingDate) }}</strong> →
+                      <strong>{{ formatDate(b.returnDate) }}</strong> by
+                      <strong>{{ b.customerName }}</strong>
+                      @if (b.customerPhone) {
+                        · {{ b.customerPhone }}
+                      }
+                    </p>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (!conflictLoading && !hasConflict) {
+              <div class="status-row status-row--ok">
+                <span class="material-symbols-outlined">check_circle</span>
+                Product is available for the selected dates.
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── Customer Information ── -->
+    @if (productSelected) {
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-symbols-outlined section-icon">person</span>
+          <h3 class="section-title">Customer Information</h3>
+        </div>
+        <div class="section-body">
           <div class="field-float">
             <input
-              id="villageCity"
+              id="customerName"
               type="text"
-              [class.is-invalid]="submitted && !form.villageCity"
               class="float-input"
+              [class.is-invalid]="submitted && !form.customerName"
               placeholder=" "
-              [(ngModel)]="form.villageCity"
-              name="villageCity"
+              [(ngModel)]="form.customerName"
+              name="customerName"
             />
-            <label class="float-label" for="villageCity">Village / City</label>
+            <label class="float-label" for="customerName">Full Name *</label>
+          </div>
+          <div class="grid-2">
+            <div class="field-float">
+              <input
+                id="mobileNumber"
+                type="tel"
+                class="float-input"
+                [class.is-invalid]="submitted && !form.mobileNumber"
+                placeholder=" "
+                [(ngModel)]="form.mobileNumber"
+                name="mobileNumber"
+              />
+              <label class="float-label" for="mobileNumber"
+                >Mobile Number *</label
+              >
+            </div>
+            <div class="field-float">
+              <input
+                id="villageCity"
+                type="text"
+                class="float-input"
+                [class.is-invalid]="submitted && !form.villageCity"
+                placeholder=" "
+                [(ngModel)]="form.villageCity"
+                name="villageCity"
+              />
+              <label class="float-label" for="villageCity"
+                >Village / City *</label
+              >
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Rental Schedule -->
-    <div class="form-section">
-      <div class="section-header">
-        <h3 class="section-title">
-          <span class="material-symbols-outlined section-icon">event</span>
-          Rental Schedule
-        </h3>
-      </div>
-      <div class="section-body grid-2">
-        <div class="field-datepicker">
-          <app-datepicker
-            placeholder="Select booking date"
-            [invalid]="submitted && !form.bookingDate"
-            (valueChange)="onBookingDateChange($event)"
-          />
-        </div>
-        <div class="field-datepicker">
-          <app-datepicker
-            placeholder="Select return date"
-            [minDate]="bookingDateObj"
-            [invalid]="submitted && !form.returnDate"
-            (valueChange)="onReturnDateChange($event)"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Payment Details -->
-    <div class="form-section">
-      <div class="section-header">
-        <h3 class="section-title">
+      <!-- ── Payment Details ── -->
+      <div class="section-card">
+        <div class="section-header">
           <span class="material-symbols-outlined section-icon">payments</span>
-          Payment Details
-        </h3>
-      </div>
-      <div class="section-body grid-2">
-        <div class="field-float field-float--currency">
-          <span class="currency-symbol">₹</span>
-          <input
-            id="advancePayment"
-            type="number"
-            [class.is-invalid]="submitted && form.advancePayment === null"
-            class="float-input float-input--currency"
-            placeholder=" "
-            [(ngModel)]="form.advancePayment"
-            name="advancePayment"
-          />
-          <label class="float-label float-label--currency" for="advancePayment"
-            >Advance Payment</label
-          >
+          <h3 class="section-title">Payment Details</h3>
         </div>
-        <div class="field-float field-float--currency">
-          <span class="currency-symbol">₹</span>
-          <input
-            id="remainingPayment"
-            type="number"
-            [class.is-invalid]="submitted && form.remainingPayment === null"
-            class="float-input float-input--currency"
-            placeholder=" "
-            [(ngModel)]="form.remainingPayment"
-            name="remainingPayment"
-          />
-          <label
-            class="float-label float-label--currency"
-            for="remainingPayment"
-            >Remaining Payment</label
-          >
+        <div class="section-body">
+          <div class="grid-2">
+            <div class="field-float field-float--currency">
+              <span class="currency-symbol">₹</span>
+              <input
+                id="advancePayment"
+                type="number"
+                class="float-input float-input--currency"
+                [class.is-invalid]="submitted && form.advancePayment === null"
+                placeholder=" "
+                [(ngModel)]="form.advancePayment"
+                name="advancePayment"
+                min="0"
+              />
+              <label
+                class="float-label float-label--currency"
+                for="advancePayment"
+              >
+                Advance Payment *
+              </label>
+            </div>
+            <div class="field-float field-float--currency">
+              <span class="currency-symbol">₹</span>
+              <input
+                id="remainingPayment"
+                type="number"
+                class="float-input float-input--currency"
+                [class.is-invalid]="submitted && form.remainingPayment === null"
+                placeholder=" "
+                [(ngModel)]="form.remainingPayment"
+                name="remainingPayment"
+                min="0"
+              />
+              <label
+                class="float-label float-label--currency"
+                for="remainingPayment"
+              >
+                Remaining Payment *
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm checkbox + actions -->
+        <div class="form-footer">
+          @if (hasConflict) {
+            <label class="confirm-check">
+              <input
+                type="checkbox"
+                [(ngModel)]="confirmed"
+                name="confirmCheckbox"
+              />
+              <span class="confirm-check__text">
+                I am aware of the booking overlap and confirm that I want to
+                proceed with this booking.
+              </span>
+            </label>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="goBack()">
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn-confirm"
+              [disabled]="!canConfirm || loading"
+              (click)="onSubmit()"
+            >
+              @if (loading) {
+                <span class="material-symbols-outlined spinning"
+                  >progress_activity</span
+                >
+                Saving…
+              } @else {
+                <span class="material-symbols-outlined">check</span>
+                Confirm Booking
+              }
+            </button>
+          </div>
         </div>
       </div>
-      <!-- Form Actions -->
-      <div class="form-actions">
-        <button type="button" class="btn-cancel" (click)="onCancel()">
-          Cancel
-        </button>
-        <button type="submit" class="btn-confirm">
-          <span class="material-symbols-outlined" style="font-size: 18px"
-            >check</span
-          >
-          Confirm Booking
-        </button>
-      </div>
-    </div>
-  </form>
+    }
+  </div>
 </div>

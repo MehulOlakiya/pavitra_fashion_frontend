@@ -51,8 +51,15 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
-            "scripts": []
+            "styles": [
+              "src/styles.scss",
+              "node_modules/daterangepicker/daterangepicker.css"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/moment/min/moment.min.js",
+              "node_modules/daterangepicker/daterangepicker.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -114,8 +121,15 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
-            "scripts": []
+            "styles": [
+              "src/styles.scss",
+              "node_modules/daterangepicker/daterangepicker.css"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/moment/min/moment.min.js",
+              "node_modules/daterangepicker/daterangepicker.js"
+            ]
           }
         }
       }

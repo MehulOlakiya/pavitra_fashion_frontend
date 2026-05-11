@@ -1,15 +1,15 @@
 <div class="page">
   <!-- Page Header + Summary Cards (side by side) -->
   <div class="header-analytics-row">
-    <div class="page-header">
+    <!-- <div class="page-header">
       <h2 class="page-title">Bookings</h2>
       <p class="page-subtitle">
         Manage and track all your rental reservations.
       </p>
-    </div>
+    </div> -->
 
     <!-- Summary Cards -->
-    <!-- <div class="summary-row">
+    <div class="summary-row">
       <div class="summary-card">
         <div class="summary-card__icon summary-card__icon--primary">
           <span class="material-symbols-outlined">receipt_long</span>
@@ -37,7 +37,25 @@
           <p class="summary-card__value">{{ summary.pendingReturn }}</p>
         </div>
       </div>
-    </div> -->
+      <div class="summary-card">
+        <div class="summary-card__icon summary-card__icon--returned">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <div>
+          <p class="summary-card__label">RETURNED</p>
+          <p class="summary-card__value">{{ summary.returned }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__icon summary-card__icon--cancelled">
+          <span class="material-symbols-outlined">cancel</span>
+        </div>
+        <div>
+          <p class="summary-card__label">CANCELLED</p>
+          <p class="summary-card__value">{{ summary.cancelled }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Filters -->
@@ -87,6 +105,7 @@
             <th>Village</th>
             <th>Booking Date</th>
             <th>Return Date</th>
+            <th>Remaining (₹)</th>
             <th>Status</th>
             <th class="col-actions">Actions</th>
           </tr>
@@ -94,7 +113,7 @@
         <tbody>
           @if (loading) {
             <tr>
-              <td colspan="8" class="cell-state">
+              <td colspan="9" class="cell-state">
                 <div class="empty-state">
                   <span class="material-symbols-outlined spinning"
                     >progress_activity</span
@@ -105,7 +124,7 @@
             </tr>
           } @else if (bookings.length === 0) {
             <tr>
-              <td colspan="8" class="cell-state">
+              <td colspan="9" class="cell-state">
                 <div class="empty-state">
                   <div class="empty-state__icon-wrap">
                     <span class="material-symbols-outlined">receipt_long</span>
@@ -124,9 +143,15 @@
               <td>
                 <div class="item-cell">
                   <div class="item-thumb">
-                    <span class="material-symbols-outlined">checkroom</span>
+                    @if (getProductImage(b.productSerialNumber)) {
+                      <img
+                        [src]="getProductImage(b.productSerialNumber)"
+                        [alt]="b.productSerialNumber"
+                      />
+                    } @else {
+                      <span class="material-symbols-outlined">checkroom</span>
+                    }
                   </div>
-                  <p class="item-name">{{ b.productSerialNumber }}</p>
                 </div>
               </td>
               <td>
@@ -145,15 +170,48 @@
               >
                 {{ formatDate(b.returnDate) }}
               </td>
+              <td class="cell-remaining">
+                @if (b.remainingPayment > 0) {
+                  <span class="remaining-amount">{{
+                    b.remainingPayment | number
+                  }}</span>
+                } @else {
+                  <span class="remaining-paid">Paid</span>
+                }
+              </td>
               <td>
                 <span class="badge" [ngClass]="statusClass(b.status)">{{
                   statusLabel(b.status)
                 }}</span>
               </td>
               <td class="col-actions">
-                <button class="action-btn" title="More Options">
-                  <span class="material-symbols-outlined">more_vert</span>
-                </button>
+                <div class="action-menu-wrap">
+                  <button
+                    class="action-btn"
+                    title="Actions"
+                    (click)="toggleMenu(b._id, $event)"
+                  >
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </button>
+                  @if (openMenuId === b._id) {
+                    <div class="action-menu" (click)="$event.stopPropagation()">
+                      <button
+                        class="action-menu__item"
+                        (click)="openEdit(b, $event)"
+                      >
+                        <span class="material-symbols-outlined">edit</span>
+                        Edit
+                      </button>
+                      <button
+                        class="action-menu__item action-menu__item--danger"
+                        (click)="cancelBooking(b, $event)"
+                      >
+                        <span class="material-symbols-outlined">cancel</span>
+                        Cancel Booking
+                      </button>
+                    </div>
+                  }
+                </div>
               </td>
             </tr>
           }
@@ -163,44 +221,114 @@
 
     <!-- Pagination -->
     @if (totalPages > 1 || total > 0) {
-      <div class="pagination-bar">
-        <p class="pagination-info">
-          Showing {{ rangeStart }} to {{ rangeEnd }} of {{ total }} entries
-        </p>
-        <div class="pagination-controls">
-          <button
-            class="page-btn"
-            [disabled]="currentPage === 1"
-            (click)="goToPage(currentPage - 1)"
-            aria-label="Previous page"
-          >
-            <span class="material-symbols-outlined">chevron_left</span>
-          </button>
-
-          @for (p of pageNumbers; track $index) {
-            @if (p === "...") {
-              <span class="page-ellipsis">…</span>
-            } @else {
-              <button
-                class="page-btn"
-                [class.page-btn--active]="p === currentPage"
-                (click)="goToPage(p)"
-              >
-                {{ p }}
-              </button>
-            }
-          }
-
-          <button
-            class="page-btn"
-            [disabled]="currentPage === totalPages"
-            (click)="goToPage(currentPage + 1)"
-            aria-label="Next page"
-          >
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [total]="total"
+        [limit]="limit"
+        (pageChange)="goToPage($event)"
+      />
     }
   </div>
 </div>
+
+<!-- Quick-Edit Modal -->
+@if (editingBooking) {
+  <div class="modal-backdrop" (click)="closeEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Edit Booking</h3>
+        <button class="modal__close" (click)="closeEdit()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <!-- Status -->
+        <div class="modal-field">
+          <label class="modal-field__label">STATUS</label>
+          <div class="select-wrap">
+            <select
+              class="modal-field__select"
+              [(ngModel)]="editForm.status"
+              name="editStatus"
+            >
+              <option value="active">Active</option>
+              <option value="pending_return">Pending Return</option>
+              <option value="returned">Returned</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <span class="material-symbols-outlined select-chevron"
+              >expand_more</span
+            >
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="modal-field">
+          <label class="modal-field__label">REMAINING PAYMENT</label>
+          <div class="modal-remaining-info">
+            <span class="modal-remaining-info__label">Current Remaining:</span>
+            <span
+              class="modal-remaining-info__value"
+              [class.modal-remaining-info__value--zero]="
+                editingBooking!.remainingPayment === 0
+              "
+            >
+              ₹{{ editingBooking!.remainingPayment | number }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Full payment toggle -->
+        @if (editingBooking!.remainingPayment > 0) {
+          <div class="modal-field">
+            <label class="toggle-row">
+              <input
+                type="checkbox"
+                class="toggle-row__checkbox"
+                [(ngModel)]="editForm.fullPayment"
+                name="editFullPayment"
+              />
+              <span class="toggle-row__track"></span>
+              <span class="toggle-row__label">Full Payment Received</span>
+            </label>
+          </div>
+        }
+
+        <!-- Amount received (only when not full payment) -->
+        @if (!editForm.fullPayment && editingBooking!.remainingPayment > 0) {
+          <div class="modal-field">
+            <label class="modal-field__label">AMOUNT RECEIVED NOW</label>
+            <div class="modal-amount-wrap">
+              <span class="modal-amount-symbol">₹</span>
+              <input
+                type="number"
+                min="0"
+                [max]="editingBooking!.remainingPayment"
+                class="modal-field__input"
+                placeholder="0"
+                [(ngModel)]="editForm.amountReceived"
+                name="editAmountReceived"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn-cancel" (click)="closeEdit()" [disabled]="saving">
+          Discard
+        </button>
+        <button class="btn-save" (click)="saveEdit()" [disabled]="saving">
+          @if (saving) {
+            <span class="material-symbols-outlined spinning"
+              >progress_activity</span
+            >
+          }
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+}

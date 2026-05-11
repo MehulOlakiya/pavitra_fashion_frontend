@@ -1,0 +1,40 @@
+<div class="pagination-bar">
+  <p class="pagination-info">
+    Showing <strong>{{ rangeStart }}</strong> to
+    <strong>{{ rangeEnd }}</strong> of <strong>{{ total }}</strong> entries
+  </p>
+
+  <div class="pagination-controls">
+    <button
+      class="page-btn"
+      [disabled]="currentPage === 1"
+      (click)="goToPage(currentPage - 1)"
+      aria-label="Previous page"
+    >
+      <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+
+    @for (p of pageNumbers; track $index) {
+      @if (p === "...") {
+        <span class="page-ellipsis">…</span>
+      } @else {
+        <button
+          class="page-btn"
+          [class.page-btn--active]="p === currentPage"
+          (click)="goToPage(p)"
+        >
+          {{ p }}
+        </button>
+      }
+    }
+
+    <button
+      class="page-btn"
+      [disabled]="currentPage === totalPages"
+      (click)="goToPage(currentPage + 1)"
+      aria-label="Next page"
+    >
+      <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+  </div>
+</div>

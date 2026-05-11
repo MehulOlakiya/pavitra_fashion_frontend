@@ -86,4 +86,15 @@ export class BookingService {
   updateStatus(id: string, status: BookingStatus): Observable<Booking> {
     return this.http.patch<Booking>(`${this.base}/${id}`, { status });
   }
+
+  update(
+    id: string,
+    payload: Partial<CreateBookingPayload>,
+  ): Observable<Booking> {
+    return this.http.patch<Booking>(`${this.base}/${id}`, payload);
+  }
+
+  findById(id: string): Observable<Booking> {
+    return this.http.get<Booking>(`${this.base}/${id}`);
+  }
 }

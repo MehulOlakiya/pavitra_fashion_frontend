@@ -1,0 +1,316 @@
+<div class="page">
+  <!-- Analytics Quick View -->
+  <div class="analytics-grid">
+    <div class="analytics-card">
+      <div class="analytics-card__icon analytics-card__icon--primary">
+        <span class="material-symbols-outlined">inventory_2</span>
+      </div>
+      <div>
+        <p class="analytics-card__label">Total Items</p>
+        <p class="analytics-card__value">{{ total }}</p>
+      </div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card__icon analytics-card__icon--secondary">
+        <span class="material-symbols-outlined">calendar_today</span>
+      </div>
+      <div>
+        <p class="analytics-card__label">Active Items</p>
+        <p class="analytics-card__value">{{ activeCount }}</p>
+      </div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card__icon analytics-card__icon--tertiary">
+        <span class="material-symbols-outlined">engineering</span>
+      </div>
+      <div>
+        <p class="analytics-card__label">Inactive</p>
+        <p class="analytics-card__value">{{ inactiveCount }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Search by name, category or serial number..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+      />
+    </div>
+    <div class="filters-actions">
+      <select
+        class="select-input"
+        [(ngModel)]="categoryFilter"
+        (ngModelChange)="onCategoryChange()"
+      >
+        <option value="">Category: All</option>
+        @for (cat of categories; track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+      <button class="btn-outline">
+        <span class="material-symbols-outlined btn-icon">download</span>
+        Export
+      </button>
+      <button class="btn-outline">
+        <span class="material-symbols-outlined btn-icon">upload</span>
+        Import
+      </button>
+      <button class="btn-primary" (click)="addProduct()">
+        <span class="material-symbols-outlined btn-icon">add</span>
+        Add Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Inventory Table Card -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Category</th>
+            <th>Serial Number</th>
+            <th>Rental Price</th>
+            <th>Status</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr>
+              <td colspan="6" class="cell-state">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined spinning"
+                    >progress_activity</span
+                  >
+                  <p class="empty-state__title">Loading inventory…</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (errorMessage) {
+            <tr>
+              <td colspan="6" class="cell-state">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined">error_outline</span>
+                  <p class="empty-state__title">{{ errorMessage }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (pagedProducts.length === 0) {
+            <tr>
+              <td colspan="6" class="cell-state">
+                <div class="empty-state">
+                  <div class="empty-state__icon-wrap">
+                    <span class="material-symbols-outlined">checkroom</span>
+                  </div>
+                  <p class="empty-state__title">No items found</p>
+                  <p class="empty-state__sub">
+                    Add your first cloth item to get started.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          }
+
+          @for (product of pagedProducts; track product._id) {
+            <tr class="table-row">
+              <!-- Item -->
+              <td class="px-item">
+                <div class="item-cell">
+                  <div class="item-thumb">
+                    @if (product.imageUrl) {
+                      <img [src]="product.imageUrl" [alt]="product.name" />
+                    } @else {
+                      <span class="material-symbols-outlined">checkroom</span>
+                    }
+                  </div>
+                  <div>
+                    <p class="item-name">{{ product.name }}</p>
+                    <p class="item-sub">{{ product.category | titlecase }}</p>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Category -->
+              <td>
+                <span class="cell-text">{{
+                  product.category | titlecase
+                }}</span>
+              </td>
+
+              <!-- Serial Number -->
+              <td>
+                <code class="serial-code">{{ product.serialNumber }}</code>
+              </td>
+
+              <!-- Rental Price -->
+              <td>
+                <span class="price-text">
+                  ₹{{ product.rentPrice | number
+                  }}<span class="price-unit"> / day</span>
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span
+                  class="status-chip"
+                  [class]="'status-chip ' + statusClass(product.isActive)"
+                >
+                  {{ statusLabel(product.isActive) }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="col-actions">
+                <div class="action-menu-wrap">
+                  <button
+                    class="action-btn"
+                    title="More Options"
+                    (click)="toggleMenu(product._id, $event)"
+                  >
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </button>
+
+                  @if (openMenuId === product._id) {
+                    <div class="action-dropdown">
+                      <button
+                        class="action-dropdown__item"
+                        (click)="onEdit(product); closeMenu()"
+                      >
+                        <span class="material-symbols-outlined">edit</span>
+                        Edit
+                      </button>
+                      <button
+                        class="action-dropdown__item"
+                        (click)="onToggleActive(product); closeMenu()"
+                      >
+                        <span class="material-symbols-outlined">{{
+                          product.isActive ? "block" : "check_circle"
+                        }}</span>
+                        {{ product.isActive ? "Deactivate" : "Activate" }}
+                      </button>
+                      <div class="action-dropdown__divider"></div>
+                      <button
+                        class="action-dropdown__item action-dropdown__item--danger"
+                        (click)="onDelete(product); closeMenu()"
+                      >
+                        <span class="material-symbols-outlined">delete</span>
+                        Delete
+                      </button>
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (total > 0) {
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [total]="total"
+        [limit]="limit"
+        (pageChange)="onPageChange($event)"
+      />
+    }
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+@if (deletingProduct) {
+  <div class="modal-backdrop" (click)="closeDeleteModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      @if (deleteChecking) {
+        <div class="modal__body modal__body--center">
+          <span class="material-symbols-outlined spinning modal-spinner"
+            >progress_activity</span
+          >
+          <p class="modal-checking-text">Checking bookings…</p>
+        </div>
+      } @else if (deleteHasActiveBookings) {
+        <!-- Warning: active bookings exist -->
+        <div class="modal__header modal__header--warn">
+          <div class="modal-icon modal-icon--warn">
+            <span class="material-symbols-outlined">warning</span>
+          </div>
+          <h3 class="modal__title">Cannot Delete</h3>
+        </div>
+        <div class="modal__body">
+          <p class="modal-message">
+            <strong>{{ deletingProduct.name }}</strong> has active bookings.
+            Please complete or cancel all bookings before deleting this product.
+          </p>
+        </div>
+        <div class="modal__footer">
+          <button
+            class="btn-modal-cancel"
+            (click)="closeDeleteModal()"
+            [disabled]="deleteConfirming"
+          >
+            Got it
+          </button>
+          <button
+            class="btn-modal-danger"
+            (click)="confirmDelete()"
+            [disabled]="deleteConfirming"
+          >
+            @if (deleteConfirming) {
+              <span class="material-symbols-outlined spinning"
+                >progress_activity</span
+              >
+            }
+            Delete Anyway
+          </button>
+        </div>
+      } @else {
+        <!-- Confirm delete -->
+        <div class="modal__header modal__header--danger">
+          <div class="modal-icon modal-icon--danger">
+            <span class="material-symbols-outlined">delete_forever</span>
+          </div>
+          <h3 class="modal__title">Delete Product</h3>
+        </div>
+        <div class="modal__body">
+          <p class="modal-message">
+            Are you sure you want to delete
+            <strong>{{ deletingProduct.name }}</strong
+            >? This action cannot be undone.
+          </p>
+        </div>
+        <div class="modal__footer">
+          <button
+            class="btn-modal-cancel"
+            (click)="closeDeleteModal()"
+            [disabled]="deleteConfirming"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn-modal-danger"
+            (click)="confirmDelete()"
+            [disabled]="deleteConfirming"
+          >
+            @if (deleteConfirming) {
+              <span class="material-symbols-outlined spinning"
+                >progress_activity</span
+              >
+            }
+            Delete
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

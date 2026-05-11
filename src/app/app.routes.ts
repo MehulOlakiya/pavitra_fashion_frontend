@@ -27,6 +27,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'bookings/edit/:id',
+        loadComponent: () =>
+          import('./pages/edit-booking/edit-booking.component').then(
+            (m) => m.EditBookingComponent,
+          ),
+      },
+      {
         path: 'inventory-detail',
         loadComponent: () =>
           import('./pages/inventory-detail/inventory-detail.component').then(
@@ -38,6 +45,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent,
+          ),
+      },
+      {
+        path: 'inventory',
+        loadComponent: () =>
+          import('./pages/cloth-management/cloth-management.component').then(
+            (m) => m.ClothManagementComponent,
+          ),
+      },
+      {
+        path: 'inventory/add',
+        loadComponent: () =>
+          import('./pages/add-product/add-product.component').then(
+            (m) => m.AddProductComponent,
+          ),
+      },
+      {
+        path: 'inventory/edit/:id',
+        loadComponent: () =>
+          import('./pages/edit-product/edit-product.component').then(
+            (m) => m.EditProductComponent,
           ),
       },
       { path: 'inventory', redirectTo: '/inventory-detail', pathMatch: 'full' },

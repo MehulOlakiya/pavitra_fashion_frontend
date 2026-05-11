@@ -7,6 +7,7 @@ import {
   SimpleChanges,
   ElementRef,
   HostListener,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -24,7 +25,13 @@ export class DatepickerComponent implements OnChanges {
   @Input() invalid = false;
   @Output() valueChange = new EventEmitter<Date | null>();
 
+  @ViewChild('triggerEl') triggerEl!: ElementRef<HTMLElement>;
+
   isOpen = false;
+  popupTop = '0px';
+  popupLeft = '0px';
+  popupWidth = '280px';
+
   viewYear = new Date().getFullYear();
   viewMonth = new Date().getMonth();
 
@@ -43,7 +50,7 @@ export class DatepickerComponent implements OnChanges {
     'November',
     'December',
   ];
-  readonly dayHeaders = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  readonly dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   years: number[] = [];
   calendarDays: Date[] = [];
@@ -83,19 +90,26 @@ export class DatepickerComponent implements OnChanges {
     const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
 
     const days: Date[] = [];
-
     for (let i = firstDay - 1; i >= 0; i--) {
       days.push(new Date(prevYear, prevMonth, daysInPrevMonth - i));
     }
     for (let d = 1; d <= daysInMonth; d++) {
       days.push(new Date(this.viewYear, this.viewMonth, d));
     }
-
     this.calendarDays = days;
   }
 
   toggle(): void {
-    this.isOpen = !this.isOpen;
+    if (this.isOpen) {
+      this.isOpen = false;
+      return;
+    }
+    // Calculate position from trigger element
+    const rect = this.triggerEl.nativeElement.getBoundingClientRect();
+    this.popupTop = `${rect.bottom + 6}px`;
+    this.popupLeft = `${rect.left}px`;
+    this.popupWidth = `260px`;
+    this.isOpen = true;
   }
 
   prevMonth(): void {
