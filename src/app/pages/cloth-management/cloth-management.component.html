@@ -43,16 +43,11 @@
       />
     </div>
     <div class="filters-actions">
-      <select
-        class="select-input"
+      <app-custom-select
         [(ngModel)]="categoryFilter"
         (ngModelChange)="onCategoryChange()"
-      >
-        <option value="">Category: All</option>
-        @for (cat of categories; track cat) {
-          <option [value]="cat">{{ cat }}</option>
-        }
-      </select>
+        [options]="categoryOptions"
+      />
       <button class="btn-outline">
         <span class="material-symbols-outlined btn-icon">download</span>
         Export

@@ -179,20 +179,11 @@
           <div class="card__body">
             <div class="field">
               <label class="field__label">STATUS</label>
-              <div class="select-wrap">
-                <select
-                  class="field__input field__input--select"
-                  [(ngModel)]="form.status"
-                  name="status"
-                >
-                  @for (opt of statusOptions; track opt.value) {
-                    <option [value]="opt.value">{{ opt.label }}</option>
-                  }
-                </select>
-                <span class="material-symbols-outlined select-chevron"
-                  >expand_more</span
-                >
-              </div>
+              <app-custom-select
+                [(ngModel)]="form.status"
+                name="status"
+                [options]="statusOptions"
+              />
             </div>
           </div>
         </div>

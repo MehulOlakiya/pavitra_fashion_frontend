@@ -5,10 +5,17 @@ import { CommonModule } from '@angular/common';
 import { BookingService, BookingStatus } from '../../core/booking.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { DatepickerComponent } from '../../shared/datepicker/datepicker.component';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-edit-booking',
-  imports: [FormsModule, CommonModule, RouterLink, DatepickerComponent],
+  imports: [
+    FormsModule,
+    CommonModule,
+    RouterLink,
+    DatepickerComponent,
+    CustomSelectComponent,
+  ],
   templateUrl: './edit-booking.component.html',
   styleUrl: './edit-booking.component.scss',
 })

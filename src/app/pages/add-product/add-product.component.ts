@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../core/product.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-add-product',
   standalone: true,
-  imports: [FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule, CustomSelectComponent],
   templateUrl: './add-product.component.html',
   styleUrl: './add-product.component.scss',
 })
@@ -23,6 +24,10 @@ export class AddProductComponent {
   };
 
   categories = ['Sherwani', 'Lehenga', 'Saree', 'Kurta Set', 'Accessories'];
+
+  get categoryOptions(): { value: string; label: string }[] {
+    return this.categories.map((c) => ({ value: c, label: c }));
+  }
 
   previewUrls: string[] = [];
   selectedFiles: File[] = [];

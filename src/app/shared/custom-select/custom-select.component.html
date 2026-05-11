@@ -1,0 +1,45 @@
+<div
+  class="cs-wrap"
+  [class.cs-wrap--open]="isOpen"
+  [class.cs-wrap--disabled]="isDisabled"
+>
+  <button
+    type="button"
+    class="cs-trigger"
+    (click)="toggle()"
+    [disabled]="isDisabled"
+  >
+    <span
+      class="cs-trigger__label"
+      [class.cs-trigger__label--placeholder]="!hasValue"
+    >
+      {{ selectedLabel }}
+    </span>
+    <span
+      class="material-symbols-outlined cs-trigger__chevron"
+      [class.cs-trigger__chevron--open]="isOpen"
+    >
+      expand_more
+    </span>
+  </button>
+
+  @if (isOpen) {
+    <div class="cs-dropdown">
+      @for (opt of options; track opt.value) {
+        <button
+          type="button"
+          class="cs-option"
+          [class.cs-option--selected]="opt.value === selectedValue"
+          (click)="select(opt.value)"
+        >
+          <span class="cs-option__check material-symbols-outlined">
+            @if (opt.value === selectedValue) {
+              check
+            }
+          </span>
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  }
+</div>

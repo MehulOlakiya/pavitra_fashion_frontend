@@ -71,17 +71,11 @@
       />
     </div>
     <div class="filters-actions">
-      <select
-        class="select-input"
+      <app-custom-select
         [(ngModel)]="statusFilter"
         (ngModelChange)="onStatusChange()"
-      >
-        <option value="">Status: All</option>
-        <option value="active">Active</option>
-        <option value="pending_return">Pending Return</option>
-        <option value="returned">Returned</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
+        [options]="statusFilterOptions"
+      />
       <button class="btn-outline">
         <span class="material-symbols-outlined btn-icon">calendar_today</span>
         Date Range
@@ -247,21 +241,11 @@
         <!-- Status -->
         <div class="modal-field">
           <label class="modal-field__label">STATUS</label>
-          <div class="select-wrap">
-            <select
-              class="modal-field__select"
-              [(ngModel)]="editForm.status"
-              name="editStatus"
-            >
-              <option value="active">Active</option>
-              <option value="pending_return">Pending Return</option>
-              <option value="returned">Returned</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            <span class="material-symbols-outlined select-chevron"
-              >expand_more</span
-            >
-          </div>
+          <app-custom-select
+            [(ngModel)]="editForm.status"
+            name="editStatus"
+            [options]="statusEditOptions"
+          />
         </div>
 
         <!-- Payment -->

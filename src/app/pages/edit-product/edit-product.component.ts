@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Product, ProductService } from '../../core/product.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-edit-product',
   standalone: true,
-  imports: [FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule, CustomSelectComponent],
   templateUrl: './edit-product.component.html',
   styleUrl: './edit-product.component.scss',
 })
@@ -27,6 +28,10 @@ export class EditProductComponent implements OnInit {
   };
 
   categories = ['Sherwani', 'Lehenga', 'Saree', 'Kurta Set', 'Accessories'];
+
+  get categoryOptions(): { value: string; label: string }[] {
+    return this.categories.map((c) => ({ value: c, label: c }));
+  }
 
   // Image state
   existingImageUrl = ''; // loaded from API

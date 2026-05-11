@@ -46,21 +46,12 @@
                 <label class="field__label"
                   >PRODUCT CATEGORY <span class="required">*</span></label
                 >
-                <div class="select-wrap">
-                  <select
-                    class="field__input field__input--select"
-                    [(ngModel)]="form.category"
-                    name="category"
-                  >
-                    <option value="" disabled>Select Category</option>
-                    @for (cat of categories; track cat) {
-                      <option [value]="cat">{{ cat }}</option>
-                    }
-                  </select>
-                  <span class="material-symbols-outlined select-chevron"
-                    >expand_more</span
-                  >
-                </div>
+                <app-custom-select
+                  [(ngModel)]="form.category"
+                  name="category"
+                  placeholder="Select Category"
+                  [options]="categoryOptions"
+                />
               </div>
 
               <div class="field">

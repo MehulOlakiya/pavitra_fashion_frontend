@@ -1,0 +1,127 @@
+:host {
+  display: block;
+  position: relative;
+  min-width: 140px;
+}
+
+.cs-wrap {
+  position: relative;
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.cs-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px 8px 16px;
+  background: var(--surface, #fff);
+  border: 1px solid rgba(191, 199, 212, 0.6);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--on-surface);
+  cursor: pointer;
+  outline: none;
+  text-align: left;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(0, 97, 166, 0.4);
+  }
+
+  .cs-wrap--open & {
+    border-color: var(--primary, #0061a6);
+    box-shadow: 0 0 0 3px rgba(0, 97, 166, 0.12);
+  }
+
+  &__label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--placeholder {
+      color: var(--on-surface-variant, #6c757d);
+    }
+  }
+
+  &__chevron {
+    font-size: 20px;
+    color: var(--on-surface-variant, #6c757d);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.cs-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  background: #ffffff;
+  border: 1px solid rgba(191, 199, 212, 0.5);
+  border-radius: 10px;
+  box-shadow:
+    0 4px 6px -2px rgba(15, 23, 42, 0.06),
+    0 12px 32px -4px rgba(15, 23, 42, 0.14);
+  z-index: 9999;
+  overflow: hidden;
+  animation: cs-appear 0.14s ease;
+
+  @keyframes cs-appear {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.cs-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 10px;
+  background: transparent;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: var(--on-surface);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+
+  &:hover {
+    background: rgba(0, 97, 166, 0.07);
+  }
+
+  &--selected {
+    color: var(--primary, #0061a6);
+    font-weight: 600;
+    background: rgba(0, 97, 166, 0.06);
+  }
+
+  &__check {
+    font-size: 18px;
+    width: 18px;
+    flex-shrink: 0;
+    color: var(--primary, #0061a6);
+  }
+}

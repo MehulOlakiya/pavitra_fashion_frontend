@@ -6,11 +6,18 @@ import { Product, ProductService } from '../../core/product.service';
 import { BookingService } from '../../core/booking.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-cloth-management',
   standalone: true,
-  imports: [TitleCasePipe, DecimalPipe, FormsModule, PaginationComponent],
+  imports: [
+    TitleCasePipe,
+    DecimalPipe,
+    FormsModule,
+    PaginationComponent,
+    CustomSelectComponent,
+  ],
   templateUrl: './cloth-management.component.html',
   styleUrl: './cloth-management.component.scss',
 })
@@ -23,6 +30,18 @@ export class ClothManagementComponent implements OnInit {
   errorMessage = '';
   searchQuery = '';
   categoryFilter = '';
+
+  get categoryOptions(): { value: string; label: string }[] {
+    const fmt = (s: string) =>
+      s
+        .split('_')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    return [
+      { value: '', label: 'Category: All' },
+      ...this.categories.map((cat) => ({ value: cat, label: fmt(cat) })),
+    ];
+  }
 
   // Action menu
   openMenuId: string | null = null;

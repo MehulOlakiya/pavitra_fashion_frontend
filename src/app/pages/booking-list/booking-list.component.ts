@@ -12,10 +12,17 @@ import {
 import { Product, ProductService } from '../../core/product.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-booking-list',
-  imports: [FormsModule, NgClass, DecimalPipe, PaginationComponent],
+  imports: [
+    FormsModule,
+    NgClass,
+    DecimalPipe,
+    PaginationComponent,
+    CustomSelectComponent,
+  ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss',
 })
@@ -41,6 +48,21 @@ export class BookingListComponent implements OnInit, OnDestroy {
     amountReceived: null as number | null,
   };
   saving = false;
+
+  readonly statusFilterOptions = [
+    { value: '', label: 'Status: All' },
+    { value: 'active', label: 'Active' },
+    { value: 'pending_return', label: 'Pending Return' },
+    { value: 'returned', label: 'Returned' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ];
+
+  readonly statusEditOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'pending_return', label: 'Pending Return' },
+    { value: 'returned', label: 'Returned' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ];
 
   bookings: Booking[] = [];
   private productImageMap = new Map<string, string>();
