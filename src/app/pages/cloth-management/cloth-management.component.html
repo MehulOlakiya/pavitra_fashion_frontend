@@ -112,106 +112,106 @@
                 </div>
               </td>
             </tr>
-          }
+          } @else {
+            @for (product of products; track product._id) {
+              <tr
+                class="table-row table-row--clickable"
+                (click)="onViewInsights(product)"
+              >
+                <!-- Item -->
+                <td class="px-item">
+                  <div class="item-cell">
+                    <div class="item-thumb">
+                      @if (product.imageUrl) {
+                        <img [src]="product.imageUrl" [alt]="product.name" />
+                      } @else {
+                        <span class="material-symbols-outlined">checkroom</span>
+                      }
+                    </div>
+                    <div>
+                      <p class="item-name">{{ product.name }}</p>
+                      <!-- <p class="item-sub">{{ product.category | titlecase }}</p> -->
+                    </div>
+                  </div>
+                </td>
 
-          @for (product of products; track product._id) {
-            <tr
-              class="table-row table-row--clickable"
-              (click)="onViewInsights(product)"
-            >
-              <!-- Item -->
-              <td class="px-item">
-                <div class="item-cell">
-                  <div class="item-thumb">
-                    @if (product.imageUrl) {
-                      <img [src]="product.imageUrl" [alt]="product.name" />
+                <!-- Category -->
+                <td>
+                  <span class="cell-text">
+                    @if (product?.category !== "") {
+                      {{ product?.category | titlecase }}
                     } @else {
-                      <span class="material-symbols-outlined">checkroom</span>
+                      —
+                    }
+                  </span>
+                </td>
+
+                <!-- Serial Number -->
+                <td>
+                  <code class="serial-code">{{ product.serialNumber }}</code>
+                </td>
+
+                <!-- Rental Price -->
+                <td>
+                  <span class="price-text">
+                    ₹{{ product.rentPrice | number
+                    }}<span class="price-unit"> / day</span>
+                  </span>
+                </td>
+
+                <!-- Status -->
+                <td>
+                  <span
+                    class="status-chip"
+                    [class]="'status-chip ' + statusClass(product.isActive)"
+                  >
+                    {{ statusLabel(product.isActive) }}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="col-actions" (click)="$event.stopPropagation()">
+                  <div class="action-menu-wrap">
+                    <button
+                      class="action-btn"
+                      title="More Options"
+                      (click)="toggleMenu(product._id, $event)"
+                    >
+                      <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+
+                    @if (openMenuId === product._id) {
+                      <div class="action-dropdown">
+                        <button
+                          class="action-dropdown__item"
+                          (click)="onEdit(product); closeMenu()"
+                        >
+                          <span class="material-symbols-outlined">edit</span>
+                          Edit
+                        </button>
+                        <button
+                          class="action-dropdown__item"
+                          (click)="onToggleActive(product); closeMenu()"
+                        >
+                          <span class="material-symbols-outlined">{{
+                            product.isActive ? "block" : "check_circle"
+                          }}</span>
+                          {{ product.isActive ? "Deactivate" : "Activate" }}
+                        </button>
+                        <div class="action-dropdown__divider"></div>
+                        <button
+                          class="action-dropdown__item action-dropdown__item--danger"
+                          (click)="onDelete(product); closeMenu()"
+                        >
+                          <span class="material-symbols-outlined">delete</span>
+                          Delete
+                        </button>
+                      </div>
                     }
                   </div>
-                  <div>
-                    <p class="item-name">{{ product.name }}</p>
-                    <!-- <p class="item-sub">{{ product.category | titlecase }}</p> -->
-                  </div>
-                </div>
-              </td>
-
-              <!-- Category -->
-              <td>
-                <span class="cell-text">
-                  @if (product?.category !== "") {
-                    {{ product?.category | titlecase }}
-                  } @else {
-                    —
-                  }
-                </span>
-              </td>
-
-              <!-- Serial Number -->
-              <td>
-                <code class="serial-code">{{ product.serialNumber }}</code>
-              </td>
-
-              <!-- Rental Price -->
-              <td>
-                <span class="price-text">
-                  ₹{{ product.rentPrice | number
-                  }}<span class="price-unit"> / day</span>
-                </span>
-              </td>
-
-              <!-- Status -->
-              <td>
-                <span
-                  class="status-chip"
-                  [class]="'status-chip ' + statusClass(product.isActive)"
-                >
-                  {{ statusLabel(product.isActive) }}
-                </span>
-              </td>
-
-              <!-- Actions -->
-              <td class="col-actions" (click)="$event.stopPropagation()">
-                <div class="action-menu-wrap">
-                  <button
-                    class="action-btn"
-                    title="More Options"
-                    (click)="toggleMenu(product._id, $event)"
-                  >
-                    <span class="material-symbols-outlined">more_vert</span>
-                  </button>
-
-                  @if (openMenuId === product._id) {
-                    <div class="action-dropdown">
-                      <button
-                        class="action-dropdown__item"
-                        (click)="onEdit(product); closeMenu()"
-                      >
-                        <span class="material-symbols-outlined">edit</span>
-                        Edit
-                      </button>
-                      <button
-                        class="action-dropdown__item"
-                        (click)="onToggleActive(product); closeMenu()"
-                      >
-                        <span class="material-symbols-outlined">{{
-                          product.isActive ? "block" : "check_circle"
-                        }}</span>
-                        {{ product.isActive ? "Deactivate" : "Activate" }}
-                      </button>
-                      <div class="action-dropdown__divider"></div>
-                      <button
-                        class="action-dropdown__item action-dropdown__item--danger"
-                        (click)="onDelete(product); closeMenu()"
-                      >
-                        <span class="material-symbols-outlined">delete</span>
-                        Delete
-                      </button>
-                    </div>
-                  }
-                </div>
-              </td>
-            </tr>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
