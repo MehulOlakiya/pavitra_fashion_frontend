@@ -38,18 +38,59 @@ export class SidebarComponent {
   }
 
   navItems = [
-    { icon: 'dashboard', label: 'Dashboard', route: '/dashboard' },
-    { icon: 'event_available', label: 'Bookings', route: '/bookings' },
+    {
+      icon: 'dashboard',
+      label: 'Dashboard',
+      route: '/dashboard',
+      comingSoon: false,
+    },
+    {
+      icon: 'event_available',
+      label: 'Bookings',
+      route: '/bookings',
+      comingSoon: false,
+    },
     {
       icon: 'inventory_2',
       label: 'Inventory',
       route: '/inventory',
+      comingSoon: false,
     },
-    { icon: 'calendar_month', label: 'Calendar', route: '/calendar' },
-    { icon: 'group', label: 'Customers', route: '/customers' },
-    { icon: 'payments', label: 'Payments', route: '/payments' },
-    { icon: 'bar_chart', label: 'Reports', route: '/reports' },
-    { icon: 'notifications', label: 'Notifications', route: '/notifications' },
-    { icon: 'settings', label: 'Settings', route: '/settings' },
+    {
+      icon: 'calendar_month',
+      label: 'Calendar',
+      route: '/calendar',
+      comingSoon: true,
+    },
+    {
+      icon: 'group',
+      label: 'Customers',
+      route: '/customers',
+      comingSoon: true,
+    },
+    {
+      icon: 'payments',
+      label: 'Payments',
+      route: '/payments',
+      comingSoon: true,
+    },
+    {
+      icon: 'bar_chart',
+      label: 'Reports',
+      route: '/reports',
+      comingSoon: true,
+    },
+    {
+      icon: 'notifications',
+      label: 'Notifications',
+      route: '/notifications',
+      comingSoon: true,
+    },
+    {
+      icon: 'settings',
+      label: 'Settings',
+      route: '/settings',
+      comingSoon: true,
+    },
   ];
 }

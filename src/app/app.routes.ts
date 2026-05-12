@@ -1,14 +1,18 @@
 import { Routes } from '@angular/router';
+import { noAuthGuard } from './core/guards/no-auth.guard';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
     path: 'login',
+    canActivate: [noAuthGuard],
     loadComponent: () =>
       import('./pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/layout.component').then((m) => m.LayoutComponent),
     children: [
@@ -62,6 +66,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'inventory/insights/:id',
+        loadComponent: () =>
+          import('./pages/product-insights/product-insights.component').then(
+            (m) => m.ProductInsightsComponent,
+          ),
+      },
+      {
         path: 'inventory/edit/:id',
         loadComponent: () =>
           import('./pages/edit-product/edit-product.component').then(
@@ -69,12 +80,48 @@ export const routes: Routes = [
           ),
       },
       { path: 'inventory', redirectTo: '/inventory-detail', pathMatch: 'full' },
-      { path: 'calendar', redirectTo: '/bookings', pathMatch: 'full' },
-      { path: 'customers', redirectTo: '/bookings', pathMatch: 'full' },
-      { path: 'payments', redirectTo: '/bookings', pathMatch: 'full' },
-      { path: 'reports', redirectTo: '/bookings', pathMatch: 'full' },
-      { path: 'notifications', redirectTo: '/bookings', pathMatch: 'full' },
-      { path: 'settings', redirectTo: '/bookings', pathMatch: 'full' },
+      {
+        path: 'calendar',
+        loadComponent: () =>
+          import('./pages/coming-soon/coming-soon.component').then(
+            (m) => m.ComingSoonComponent,
+          ),
+      },
+      {
+        path: 'customers',
+        loadComponent: () =>
+          import('./pages/coming-soon/coming-soon.component').then(
+            (m) => m.ComingSoonComponent,
+          ),
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./pages/coming-soon/coming-soon.component').then(
+            (m) => m.ComingSoonComponent,
+          ),
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./pages/coming-soon/coming-soon.component').then(
+            (m) => m.ComingSoonComponent,
+          ),
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./pages/coming-soon/coming-soon.component').then(
+            (m) => m.ComingSoonComponent,
+          ),
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./pages/coming-soon/coming-soon.component').then(
+            (m) => m.ComingSoonComponent,
+          ),
+      },
     ],
   },
 ];

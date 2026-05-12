@@ -1,0 +1,148 @@
+<div class="drawer-backdrop" (click)="close()"></div>
+
+<aside class="drawer">
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header__left">
+      <div class="drawer-header__icon">
+        <span class="material-symbols-outlined">upload_file</span>
+      </div>
+      <div>
+        <h2 class="drawer-title">Import Products</h2>
+        <p class="drawer-subtitle">Upload a CSV or Excel file</p>
+      </div>
+    </div>
+    <button class="drawer-close" (click)="close()">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <!-- Sample File -->
+  <div class="sample-row">
+    <span class="material-symbols-outlined sample-icon">info</span>
+    <span class="sample-text">Sample File</span>
+    <a [href]="sampleCsvUrl" download="sample_products.csv" class="sample-link"
+      >CSV</a
+    >
+    <span class="sample-divider">·</span>
+    <a
+      [href]="sampleXlsxUrl"
+      download="sample_products.xlsx"
+      class="sample-link"
+      >Excel</a
+    >
+  </div>
+
+  <!-- Drop Zone -->
+  <div
+    class="drop-zone"
+    [class.drop-zone--active]="isDragOver"
+    [class.drop-zone--has-file]="selectedFile"
+    (click)="!selectedFile && triggerFilePicker()"
+  >
+    @if (!selectedFile) {
+      <span class="material-symbols-outlined drop-zone__icon"
+        >cloud_upload</span
+      >
+      <p class="drop-zone__title">Click or drop to upload file</p>
+      <p class="drop-zone__sub">Supports .csv, .xlsx, .xls · Max 5 MB</p>
+    } @else {
+      <div class="file-preview">
+        <div class="file-preview__icon">
+          <span class="material-symbols-outlined">description</span>
+        </div>
+        <div class="file-preview__info">
+          <p class="file-preview__name">{{ selectedFile.name }}</p>
+          <p class="file-preview__size">{{ fileSize }}</p>
+        </div>
+        <button
+          class="file-preview__remove"
+          (click)="removeFile(); $event.stopPropagation()"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <input
+    #fileInput
+    type="file"
+    accept=".csv,.xlsx,.xls"
+    class="hidden-input"
+    (change)="onFileSelected($event)"
+  />
+
+  <!-- Column Reference -->
+  <div class="column-ref">
+    <p class="column-ref__heading">Expected Columns</p>
+    <div class="column-ref__list">
+      <span class="col-tag col-tag--required">name *</span>
+      <span class="col-tag col-tag--required">serialNumber *</span>
+      <span class="col-tag col-tag--required">rentPrice *</span>
+      <span class="col-tag col-tag--required">sellingPrice *</span>
+      <span class="col-tag col-tag--required">purchasePrice *</span>
+      <span class="col-tag">category</span>
+      <span class="col-tag">imageUrl</span>
+    </div>
+    <p class="column-ref__note">
+      * Required fields. Valid categories: lehenga, saree, sherwani,
+      salwar_suit, kurta, indo_western, other
+    </p>
+  </div>
+
+  <!-- Import Result -->
+  @if (result) {
+    <div class="result-section">
+      <div class="result-stats">
+        <div class="result-stat result-stat--success">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span>{{ result.imported }} Imported</span>
+        </div>
+        @if (result.skipped > 0) {
+          <div class="result-stat result-stat--warn">
+            <span class="material-symbols-outlined">warning</span>
+            <span>{{ result.skipped }} Skipped</span>
+          </div>
+        }
+      </div>
+
+      @if (result.errors.length > 0) {
+        <div class="error-list">
+          <p class="error-list__heading">Row Errors</p>
+          @for (e of result.errors; track e.row) {
+            <div class="error-item">
+              <span class="error-item__row">Row {{ e.row }}</span>
+              <span class="error-item__msg">{{ e.message }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Footer -->
+  <div class="drawer-footer">
+    <div class="footer-count">
+      <span class="material-symbols-outlined footer-count__icon">info</span>
+      {{ selectedFile ? "1 file selected" : "No file selected" }}
+    </div>
+    <div class="footer-actions">
+      <button class="btn-cancel" (click)="close()" [disabled]="importing">
+        Cancel
+      </button>
+      <button
+        class="btn-import"
+        [disabled]="!selectedFile || importing"
+        (click)="doImport()"
+      >
+        @if (importing) {
+          <span class="material-symbols-outlined spinning"
+            >progress_activity</span
+          >
+        }
+        {{ importing ? "Importing…" : "Import" }}
+      </button>
+    </div>
+  </div>
+</aside>

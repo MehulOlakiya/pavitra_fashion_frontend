@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Product {
@@ -9,9 +10,25 @@ export interface Product {
   imageUrl: string;
   serialNumber: string;
   sellingPrice: number;
+  purchasePrice: number;
   rentPrice: number;
   category: string;
   isActive: boolean;
+}
+
+export interface PaginatedProducts {
+  data: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ProductAnalytics {
+  total: number;
+  active: number;
+  inactive: number;
+  categories: string[];
 }
 
 export interface ApiBooking {
@@ -38,9 +55,34 @@ export class ProductService {
   private readonly base = `${environment.apiUrl}/products`;
 
   getAll(category?: string): Observable<Product[]> {
-    let params = new HttpParams();
+    // High-limit fetch for places that need all products (image maps, dropdowns)
+    let params = new HttpParams().set('page', '1').set('limit', '500');
     if (category) params = params.set('category', category);
-    return this.http.get<Product[]>(this.base, { params });
+    return this.http
+      .get<PaginatedProducts>(this.base, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  getPaginated(
+    params: {
+      page?: number;
+      limit?: number;
+      category?: string;
+      search?: string;
+    } = {},
+  ): Observable<PaginatedProducts> {
+    let httpParams = new HttpParams();
+    if (params.page) httpParams = httpParams.set('page', String(params.page));
+    if (params.limit)
+      httpParams = httpParams.set('limit', String(params.limit));
+    if (params.category)
+      httpParams = httpParams.set('category', params.category);
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PaginatedProducts>(this.base, { params: httpParams });
+  }
+
+  getAnalytics(): Observable<ProductAnalytics> {
+    return this.http.get<ProductAnalytics>(`${this.base}/analytics`);
   }
 
   getById(id: string): Observable<Product> {
@@ -71,5 +113,30 @@ export class ProductService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${encodeURIComponent(id)}`);
+  }
+
+  search(query: string, limit = 20): Observable<Product[]> {
+    const params = new HttpParams()
+      .set('search', query.trim())
+      .set('limit', limit.toString());
+    return this.http
+      .get<{ data: Product[] }>(this.base, { params })
+      .pipe(map((res) => res.data.filter((p) => p.isActive)));
+  }
+
+  importProducts(
+    file: File,
+  ): Observable<{
+    imported: number;
+    skipped: number;
+    errors: { row: number; message: string }[];
+  }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{
+      imported: number;
+      skipped: number;
+      errors: { row: number; message: string }[];
+    }>(`${this.base}/import`, form);
   }
 }

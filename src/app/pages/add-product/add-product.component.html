@@ -27,7 +27,10 @@
               >PRODUCT NAME <span class="required">*</span></label
             >
             <input
-              class="field__input"
+              [class]="
+                'field__input' +
+                (isFieldError(form.name) ? ' field__input--error' : '')
+              "
               type="text"
               placeholder="e.g. Royal Blue Silk Sherwani"
               [(ngModel)]="form.name"
@@ -37,9 +40,7 @@
 
           <div class="field-row">
             <div class="field">
-              <label class="field__label"
-                >PRODUCT CATEGORY <span class="required">*</span></label
-              >
+              <label class="field__label">PRODUCT CATEGORY</label>
               <app-custom-select
                 [(ngModel)]="form.category"
                 name="category"
@@ -53,7 +54,12 @@
                 >SERIAL NUMBER / SKU <span class="required">*</span></label
               >
               <input
-                class="field__input"
+                [class]="
+                  'field__input' +
+                  (isFieldError(form.serialNumber)
+                    ? ' field__input--error'
+                    : '')
+                "
                 type="text"
                 placeholder="e.g. SH-BLU-001"
                 [(ngModel)]="form.serialNumber"
@@ -71,11 +77,16 @@
         <div class="card__body">
           <div class="field-row field-row--3">
             <div class="field">
-              <label class="field__label">RENT PRICE (/DAY)</label>
+              <label class="field__label"
+                >RENT PRICE (/DAY)<span class="required">*</span></label
+              >
               <div class="price-wrap">
                 <span class="price-symbol">₹</span>
                 <input
-                  class="field__input field__input--price"
+                  [class]="
+                    'field__input field__input--price' +
+                    (isFieldError(form.rentPrice) ? ' field__input--error' : '')
+                  "
                   type="number"
                   min="0"
                   placeholder="0.00"
@@ -86,11 +97,18 @@
             </div>
 
             <div class="field">
-              <label class="field__label">PURCHASE PRICE</label>
+              <label class="field__label"
+                >PURCHASE PRICE<span class="required">*</span></label
+              >
               <div class="price-wrap">
                 <span class="price-symbol">₹</span>
                 <input
-                  class="field__input field__input--price"
+                  [class]="
+                    'field__input field__input--price' +
+                    (isFieldError(form.purchasePrice)
+                      ? ' field__input--error'
+                      : '')
+                  "
                   type="number"
                   min="0"
                   placeholder="0.00"
@@ -101,11 +119,18 @@
             </div>
 
             <div class="field">
-              <label class="field__label">SELLING PRICE</label>
+              <label class="field__label"
+                >SELLING PRICE<span class="required">*</span></label
+              >
               <div class="price-wrap">
                 <span class="price-symbol">₹</span>
                 <input
-                  class="field__input field__input--price"
+                  [class]="
+                    'field__input field__input--price' +
+                    (isFieldError(form.sellingPrice)
+                      ? ' field__input--error'
+                      : '')
+                  "
                   type="number"
                   min="0"
                   placeholder="0.00"

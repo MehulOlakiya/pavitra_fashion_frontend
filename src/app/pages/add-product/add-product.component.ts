@@ -33,6 +33,11 @@ export class AddProductComponent {
   selectedFiles: File[] = [];
 
   submitting = false;
+  submitted = false;
+
+  isFieldError(value: string | number | null | undefined): boolean {
+    return this.submitted && !value;
+  }
 
   constructor(
     private productService: ProductService,
@@ -77,10 +82,14 @@ export class AddProductComponent {
   }
 
   onSubmit(): void {
+    this.submitted = true;
+
     if (
       !this.form.name.trim() ||
-      !this.form.category ||
-      !this.form.serialNumber.trim()
+      !this.form.serialNumber.trim() ||
+      !this.form.sellingPrice ||
+      !this.form.rentPrice ||
+      !this.form.purchasePrice
     ) {
       this.toastService.show(
         'error',

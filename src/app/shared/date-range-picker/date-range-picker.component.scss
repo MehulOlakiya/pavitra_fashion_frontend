@@ -1,0 +1,218 @@
+:host {
+  display: block;
+}
+
+.drp {
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(191, 199, 212, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
+  padding: 16px;
+  width: 280px;
+  user-select: none;
+  animation: drpIn 0.15s ease;
+
+  // ── Header ─────────────────────────────────────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  &__year-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__year-select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--on-surface);
+    cursor: pointer;
+    padding-right: 20px;
+    outline: none;
+  }
+
+  &__year-arrow {
+    position: absolute;
+    right: 0;
+    font-size: 18px;
+    color: var(--on-surface-variant);
+    pointer-events: none;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--on-surface-variant);
+    transition: background 0.15s;
+
+    .material-symbols-outlined { font-size: 18px; }
+
+    &:hover { background: var(--surface-container-high); }
+  }
+
+  // ── Month label ─────────────────────────────────────────
+  &__month-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+
+  // ── Day headers ─────────────────────────────────────────
+  &__day-headers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+
+  &__day-header {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    text-align: center;
+    padding: 4px 0;
+  }
+
+  // ── Calendar grid ───────────────────────────────────────
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+  }
+
+  &__day {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--on-surface);
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.1s, color 0.1s;
+    z-index: 0;
+
+    &--other {
+      color: var(--outline);
+      pointer-events: none;
+    }
+
+    &--today:not(.drp__day--selected) {
+      font-weight: 700;
+      color: var(--primary);
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+    }
+
+    // Range fill (strip between start and end)
+    &--in-range {
+      background: rgba(0, 97, 166, 0.14);
+      color: var(--primary);
+      border-radius: 0;
+    }
+
+    // Start / End circles
+    &--start,
+    &--end {
+      background: var(--primary) !important;
+      color: #fff !important;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    // Connect range strip to the circle on start side
+    &--start.drp__day--in-range-adjacent-end::after,
+    &--end.drp__day--in-range-adjacent-start::after {
+      content: '';
+    }
+
+    &:hover:not(.drp__day--selected):not(.drp__day--other):not(.drp__day--in-range) {
+      background: rgba(0, 97, 166, 0.08);
+      border-radius: 50%;
+      color: var(--primary);
+    }
+  }
+
+  // ── Selection label ─────────────────────────────────────
+  &__selection-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--on-surface-variant);
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  // ── Footer ──────────────────────────────────────────────
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(191, 199, 212, 0.2);
+  }
+
+  &__btn-clear {
+    padding: 7px 16px;
+    background: transparent;
+    border: 1px solid rgba(191, 199, 212, 0.5);
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: var(--surface-container); }
+  }
+
+  &__btn-apply {
+    padding: 7px 20px;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.2s, opacity 0.15s;
+
+    &:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2); }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+}
+
+@keyframes drpIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}

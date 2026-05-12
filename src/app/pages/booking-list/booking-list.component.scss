@@ -211,9 +211,41 @@
   color: var(--on-surface);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 
   &:hover { background: var(--surface-container); }
+
+  &--active {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(0, 97, 166, 0.06);
+  }
+}
+
+.btn-clear-icon {
+  font-size: 16px !important;
+  margin-left: 2px;
+  opacity: 0.7;
+
+  &:hover { opacity: 1; }
+}
+
+// ── Filters Wrap (anchor for dropdown) ───────────────────
+.filters-wrap {
+  position: relative;
+}
+
+// ── Date Range Dropdown ────────────────────────────────────
+.date-range-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 200;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .btn-primary {
@@ -297,7 +329,16 @@
   &:hover { background: rgba(240, 243, 252, 0.5); }
 }
 
-.col-actions { text-align: right; }
+.col-status {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.col-actions {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
 
 .cell-sn {
   font-family: 'Inter', sans-serif;
@@ -328,7 +369,7 @@
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
   }
 }
@@ -365,6 +406,21 @@
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--on-surface-variant);
+}
+
+.customer-village {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--outline);
+  margin-top: 1px;
+}
+
+.cell-rent {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  white-space: nowrap;
 }
 
 // ── Date Cells ─────────────────────────────────────────────

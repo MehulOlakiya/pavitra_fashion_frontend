@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DecimalPipe, TitleCasePipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ApiBooking,
   InventoryDetail,
@@ -61,7 +61,7 @@ function toDisplayBooking(b: ApiBooking, idx: number): DisplayBooking {
 
 @Component({
   selector: 'app-inventory-detail',
-  imports: [DecimalPipe, TitleCasePipe],
+  imports: [DecimalPipe, TitleCasePipe, RouterLink],
   templateUrl: './inventory-detail.component.html',
   styleUrl: './inventory-detail.component.scss',
 })

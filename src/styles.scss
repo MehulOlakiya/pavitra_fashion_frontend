@@ -96,3 +96,29 @@ input {
   outline: none;
   background: none;
 }
+
+// ── Scrollbar ──────────────────────────────────────────────
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-container-low);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: var(--radius-full);
+  transition: background 0.2s;
+
+  &:hover {
+    background: var(--outline);
+  }
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline-variant) var(--surface-container-low);
+}

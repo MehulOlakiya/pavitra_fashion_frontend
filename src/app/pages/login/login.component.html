@@ -130,9 +130,14 @@
         </div> -->
 
         <!-- Primary Action -->
-        <button type="submit" class="btn-primary">
-          Sign In
-          <span class="material-symbols-outlined btn-arrow">arrow_forward</span>
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          {{ loading ? "Signing in…" : "Sign In" }}
+          <span
+            class="material-symbols-outlined btn-arrow"
+            [class.spinning]="loading"
+          >
+            {{ loading ? "progress_activity" : "arrow_forward" }}
+          </span>
         </button>
       </form>
 

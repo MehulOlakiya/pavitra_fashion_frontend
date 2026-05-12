@@ -1,0 +1,58 @@
+<div class="coming-soon-page">
+  <!-- Floating decorative blobs -->
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+
+  <div class="cs-card">
+    <!-- Avatar / Icon -->
+    <div class="cs-avatar" [ngClass]="module.accentClass">
+      <div class="cs-avatar__ring">
+        <div class="cs-avatar__circle">
+          <span class="material-symbols-outlined cs-avatar__icon">{{
+            module.icon
+          }}</span>
+        </div>
+      </div>
+      <!-- Orbiting dot -->
+      <div class="cs-avatar__orbit">
+        <div class="cs-avatar__dot"></div>
+      </div>
+    </div>
+
+    <!-- Badge -->
+    <div class="cs-badge">
+      <span class="material-symbols-outlined cs-badge__icon">construction</span>
+      Under Development
+    </div>
+
+    <!-- Title & Description -->
+    <h1 class="cs-title">
+      {{ module.title }} <span class="cs-title__coming">is Coming Soon</span>
+    </h1>
+    <p class="cs-description">{{ module.description }}</p>
+
+    <!-- Feature list -->
+    @if (module.features.length) {
+      <div class="cs-features">
+        <p class="cs-features__heading">What to expect</p>
+        <ul class="cs-features__list">
+          @for (f of module.features; track f) {
+            <li class="cs-features__item">
+              <span class="material-symbols-outlined cs-features__check"
+                >check_circle</span
+              >
+              {{ f }}
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Footer note -->
+    <p class="cs-footer">
+      <span class="material-symbols-outlined cs-footer__icon">schedule</span>
+      We're working hard to bring this to you. Stay tuned!
+    </p>
+  </div>
+</div>

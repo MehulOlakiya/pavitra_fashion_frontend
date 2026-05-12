@@ -96,7 +96,15 @@
         <div class="section-body">
           @if (!productSelected) {
             <div class="product-search-wrap">
-              <span class="material-symbols-outlined search-icon">search</span>
+              @if (searchLoading) {
+                <span class="material-symbols-outlined search-icon spinning"
+                  >progress_activity</span
+                >
+              } @else {
+                <span class="material-symbols-outlined search-icon"
+                  >search</span
+                >
+              }
               <input
                 type="text"
                 class="product-search-input"

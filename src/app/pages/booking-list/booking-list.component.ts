@@ -8,11 +8,13 @@ import {
   Booking,
   BookingService,
   BookingStatus,
+  BookingAnalytics,
 } from '../../core/booking.service';
 import { Product, ProductService } from '../../core/product.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+import { DateRangePickerComponent } from '../../shared/date-range-picker/date-range-picker.component';
 
 @Component({
   selector: 'app-booking-list',
@@ -22,6 +24,7 @@ import { CustomSelectComponent } from '../../shared/custom-select/custom-select.
     DecimalPipe,
     PaginationComponent,
     CustomSelectComponent,
+    DateRangePickerComponent,
   ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss',
@@ -31,6 +34,28 @@ export class BookingListComponent implements OnInit, OnDestroy {
   statusFilter = '';
   loading = false;
   openMenuId: string | null = null;
+
+  // Date range filter
+  dateRangeOpen = false;
+  fromDate: Date | null = null;
+  toDate: Date | null = null;
+
+  get dateRangeActive(): boolean {
+    return !!(this.fromDate || this.toDate);
+  }
+
+  get dateRangeLabel(): string {
+    if (this.fromDate && this.toDate) {
+      return `${this.fmt(this.fromDate)} – ${this.fmt(this.toDate)}`;
+    }
+    if (this.fromDate) return `From ${this.fmt(this.fromDate)}`;
+    if (this.toDate) return `To ${this.fmt(this.toDate)}`;
+    return 'Date Range';
+  }
+
+  private fmt(d: Date): string {
+    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+  }
 
   summary = {
     total: 0,
@@ -66,6 +91,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   bookings: Booking[] = [];
   private productImageMap = new Map<string, string>();
+  private productRentMap = new Map<string, number>();
 
   // Pagination state
   currentPage = 1;
@@ -88,6 +114,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
       next: (products) => {
         products.forEach((p) => {
           if (p.imageUrl) this.productImageMap.set(p.serialNumber, p.imageUrl);
+          this.productRentMap.set(p.serialNumber, p.rentPrice);
         });
       },
     });
@@ -134,6 +161,31 @@ export class BookingListComponent implements OnInit, OnDestroy {
   @HostListener('document:click')
   closeMenu(): void {
     this.openMenuId = null;
+  }
+
+  toggleDateRange(event: MouseEvent): void {
+    event.stopPropagation();
+    this.dateRangeOpen = !this.dateRangeOpen;
+  }
+
+  closeDateRange(): void {
+    this.dateRangeOpen = false;
+  }
+
+  applyDateRange(range: { from: Date | null; to: Date | null }): void {
+    this.fromDate = range.from;
+    this.toDate = range.to;
+    this.dateRangeOpen = false;
+    this.currentPage = 1;
+    this.load();
+  }
+
+  clearDateRange(): void {
+    this.fromDate = null;
+    this.toDate = null;
+    this.dateRangeOpen = false;
+    this.currentPage = 1;
+    this.load();
   }
 
   openEdit(booking: Booking, event: MouseEvent): void {
@@ -213,10 +265,17 @@ export class BookingListComponent implements OnInit, OnDestroy {
     });
   }
 
+  private toISODate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}T00:00:00.000Z`;
+  }
+
   private load(): void {
     this.loading = true;
     const q = this.searchQuery.trim() || undefined;
-    const hasFilter = q || this.statusFilter;
+    const hasFilter = q || this.statusFilter || this.fromDate || this.toDate;
 
     const obs = hasFilter
       ? this.bookingService.search({
@@ -224,6 +283,8 @@ export class BookingListComponent implements OnInit, OnDestroy {
           serialNumber: q,
           customerPhone: q,
           status: (this.statusFilter as BookingStatus) || undefined,
+          fromDate: this.fromDate ? this.toISODate(this.fromDate) : undefined,
+          toDate: this.toDate ? this.toISODate(this.toDate) : undefined,
           page: this.currentPage,
           limit: this.limit,
         })
@@ -249,16 +310,21 @@ export class BookingListComponent implements OnInit, OnDestroy {
     return this.productImageMap.get(serialNumber) ?? '';
   }
 
+  getProductRent(serialNumber: string): number | null {
+    return this.productRentMap.get(serialNumber) ?? null;
+  }
+
   private loadSummary(): void {
-    this.bookingService.findAll(1, 1000).subscribe({
-      next: (res) => {
-        this.summary.total = res.total;
-        this.summary.active = res.data.filter(
-          (b) => b.status === 'active',
-        ).length;
-        this.summary.pendingReturn = res.data.filter(
-          (b) => b.status === 'pending_return',
-        ).length;
+    const params: { fromDate?: string; toDate?: string } = {};
+    if (this.fromDate) params.fromDate = this.toISODate(this.fromDate);
+    if (this.toDate) params.toDate = this.toISODate(this.toDate);
+    this.bookingService.getAnalytics(params).subscribe({
+      next: (analytics: BookingAnalytics) => {
+        this.summary.total = analytics.total;
+        this.summary.active = analytics.active;
+        this.summary.pendingReturn = analytics.pending_return;
+        this.summary.returned = analytics.returned;
+        this.summary.cancelled = analytics.cancelled;
       },
     });
   }

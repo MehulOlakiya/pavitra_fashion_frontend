@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, of } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BookingService, Booking } from '../../core/booking.service';
 import { Product, ProductService } from '../../core/product.service';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -31,9 +34,10 @@ export class BookingComponent implements OnInit {
   selectedProduct: Product | null = null;
   productSelected = false;
   searchQuery = '';
-  allProducts: Product[] = [];
   filteredProducts: Product[] = [];
   dropdownVisible = false;
+  searchLoading = false;
+  private searchSubject = new Subject<string>();
 
   // Conflict
   conflictBookings: Booking[] = [];
@@ -58,15 +62,36 @@ export class BookingComponent implements OnInit {
     private bookingService: BookingService,
     private productService: ProductService,
     private toast: ToastService,
-  ) {}
-
-  ngOnInit(): void {
-    this.productService.getAll().subscribe({
-      next: (products) =>
-        (this.allProducts = products.filter((p) => p.isActive)),
-      error: () => {},
-    });
+  ) {
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((q) => {
+          if (!q) {
+            this.filteredProducts = [];
+            this.dropdownVisible = false;
+            this.searchLoading = false;
+            return of([]);
+          }
+          this.searchLoading = true;
+          return this.productService.search(q);
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe({
+        next: (products) => {
+          this.searchLoading = false;
+          this.filteredProducts = products;
+          this.dropdownVisible = products.length > 0;
+        },
+        error: () => {
+          this.searchLoading = false;
+        },
+      });
   }
+
+  ngOnInit(): void {}
 
   onDateChange(): void {
     if (this.productSelected) {
@@ -75,18 +100,13 @@ export class BookingComponent implements OnInit {
   }
 
   onSearchInput(): void {
-    const q = this.searchQuery.trim().toLowerCase();
+    const q = this.searchQuery.trim();
     if (!q) {
       this.filteredProducts = [];
       this.dropdownVisible = false;
-      return;
+      this.searchLoading = false;
     }
-    this.filteredProducts = this.allProducts.filter(
-      (p) =>
-        p.serialNumber.toLowerCase().includes(q) ||
-        p.name.toLowerCase().includes(q),
-    );
-    this.dropdownVisible = true;
+    this.searchSubject.next(q);
   }
 
   selectProduct(product: Product): void {
@@ -112,7 +132,7 @@ export class BookingComponent implements OnInit {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}T00:00:00.000+05:30`;
+    return `${y}-${m}-${day}T00:00:00.000Z`;
   }
 
   private checkConflict(product: Product): void {

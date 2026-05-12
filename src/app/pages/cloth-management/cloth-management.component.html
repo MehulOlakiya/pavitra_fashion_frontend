@@ -52,7 +52,7 @@
         <span class="material-symbols-outlined btn-icon">download</span>
         Export
       </button>
-      <button class="btn-outline">
+      <button class="btn-outline" (click)="importDrawerOpen = true">
         <span class="material-symbols-outlined btn-icon">upload</span>
         Import
       </button>
@@ -98,7 +98,7 @@
                 </div>
               </td>
             </tr>
-          } @else if (pagedProducts.length === 0) {
+          } @else if (products.length === 0) {
             <tr>
               <td colspan="6" class="cell-state">
                 <div class="empty-state">
@@ -114,8 +114,11 @@
             </tr>
           }
 
-          @for (product of pagedProducts; track product._id) {
-            <tr class="table-row">
+          @for (product of products; track product._id) {
+            <tr
+              class="table-row table-row--clickable"
+              (click)="onViewInsights(product)"
+            >
               <!-- Item -->
               <td class="px-item">
                 <div class="item-cell">
@@ -128,16 +131,20 @@
                   </div>
                   <div>
                     <p class="item-name">{{ product.name }}</p>
-                    <p class="item-sub">{{ product.category | titlecase }}</p>
+                    <!-- <p class="item-sub">{{ product.category | titlecase }}</p> -->
                   </div>
                 </div>
               </td>
 
               <!-- Category -->
               <td>
-                <span class="cell-text">{{
-                  product.category | titlecase
-                }}</span>
+                <span class="cell-text">
+                  @if (product?.category !== "") {
+                    {{ product?.category | titlecase }}
+                  } @else {
+                    —
+                  }
+                </span>
               </td>
 
               <!-- Serial Number -->
@@ -164,7 +171,7 @@
               </td>
 
               <!-- Actions -->
-              <td class="col-actions">
+              <td class="col-actions" (click)="$event.stopPropagation()">
                 <div class="action-menu-wrap">
                   <button
                     class="action-btn"
@@ -222,6 +229,14 @@
     }
   </div>
 </div>
+
+<!-- Import Products Drawer -->
+@if (importDrawerOpen) {
+  <app-import-products
+    (closed)="importDrawerOpen = false"
+    (imported)="onImportComplete()"
+  />
+}
 
 <!-- Delete Confirmation Modal -->
 @if (deletingProduct) {

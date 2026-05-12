@@ -38,6 +38,11 @@
     border-color: rgba(0, 97, 166, 0.4);
   }
 
+  &--error {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.15);
+  }
+
   .cs-wrap--open & {
     border-color: var(--primary, #0061a6);
     box-shadow: 0 0 0 3px rgba(0, 97, 166, 0.12);

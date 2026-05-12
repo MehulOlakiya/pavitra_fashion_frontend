@@ -28,6 +28,7 @@ export interface SelectOption {
 export class CustomSelectComponent implements ControlValueAccessor {
   @Input() options: SelectOption[] = [];
   @Input() placeholder = 'Select...';
+  @Input() hasError = false;
 
   isOpen = false;
   selectedValue = '';

@@ -1,0 +1,281 @@
+<div class="page">
+  <!-- Page Header with Breadcrumb -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="breadcrumb">
+        <a routerLink="/inventory" class="breadcrumb__link">Inventory</a>
+        <span class="material-symbols-outlined breadcrumb__sep"
+          >chevron_right</span
+        >
+        <span class="breadcrumb__current">Product Insights</span>
+      </div>
+      <h2 class="page-title">
+        @if (product) {
+          {{ product.name }}
+        } @else {
+          Product Insights
+        }
+      </h2>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="material-symbols-outlined spinning">progress_activity</span>
+      <p>Loading product…</p>
+    </div>
+  } @else if (product) {
+    <!-- Analytics Cards -->
+    <div class="analytics-grid">
+      <div class="analytics-card">
+        <div class="analytics-card__icon analytics-card__icon--primary">
+          <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div>
+          <p class="analytics-card__label">Total Revenue</p>
+          <p class="analytics-card__value">₹{{ totalRevenue | number }}</p>
+        </div>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-card__icon analytics-card__icon--tertiary">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+        </div>
+        <div>
+          <p class="analytics-card__label">Collected</p>
+          <p class="analytics-card__value">₹{{ collected | number }}</p>
+        </div>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-card__icon analytics-card__icon--secondary">
+          <span class="material-symbols-outlined">shopping_bag</span>
+        </div>
+        <div>
+          <p class="analytics-card__label">Rental Count</p>
+          <p class="analytics-card__value">{{ rentalCount }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Detail Card -->
+    <div class="product-card">
+      <!-- Image -->
+      <div class="product-card__image-wrap">
+        @if (product.imageUrl) {
+          <img
+            [src]="product.imageUrl"
+            [alt]="product.name"
+            class="product-card__image"
+          />
+        } @else {
+          <div class="product-card__image-placeholder">
+            <span class="material-symbols-outlined">checkroom</span>
+          </div>
+        }
+        <div
+          class="product-card__status-badge"
+          [class.product-card__status-badge--inactive]="!product.isActive"
+        >
+          <div
+            class="status-dot"
+            [class.status-dot--inactive]="!product.isActive"
+          ></div>
+          <span>{{ product.isActive ? "Active" : "Inactive" }}</span>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="product-card__info">
+        <div class="product-card__header">
+          <div>
+            <h2 class="product-card__name">{{ product.name }}</h2>
+            <div class="product-card__meta">
+              <span class="meta-chip">{{ product.category | titlecase }}</span>
+              <span class="meta-sn">SN: {{ product.serialNumber }}</span>
+            </div>
+          </div>
+          <div class="product-card__actions">
+            <a
+              [routerLink]="['/inventory/edit', product._id]"
+              class="action-icon-btn action-icon-btn--edit"
+            >
+              <span class="material-symbols-outlined">edit</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="price-grid">
+          <div class="price-tile">
+            <p class="price-tile__label">RENT PRICE</p>
+            <p class="price-tile__value price-tile__value--primary">
+              ₹{{ product.rentPrice | number
+              }}<span class="price-tile__unit"> /day</span>
+            </p>
+          </div>
+          <div class="price-tile">
+            <p class="price-tile__label">PURCHASE PRICE</p>
+            <p class="price-tile__value">
+              ₹{{ product.purchasePrice | number }}
+            </p>
+          </div>
+          <div class="price-tile">
+            <p class="price-tile__label">SELLING PRICE</p>
+            <p class="price-tile__value price-tile__value--secondary">
+              ₹{{ product.sellingPrice | number }}
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="product-card__notice"
+          [class.product-card__notice--inactive]="!product.isActive"
+        >
+          <span class="material-symbols-outlined">info</span>
+          <p>
+            @if (product.isActive) {
+              This product is currently active and available for rentals.
+            } @else {
+              This product is inactive and not available for new bookings.
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking History Table -->
+    <div class="table-card">
+      <div class="table-card__header">
+        <h3 class="table-card__title">
+          <span class="material-symbols-outlined">history</span>
+          Booking History
+        </h3>
+      </div>
+
+      <div class="table-scroll">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Village</th>
+              <th>Booking Date</th>
+              <th>Return Date</th>
+              <th>Advance (₹)</th>
+              <th>Remaining (₹)</th>
+              <th class="col-status">Status</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (bookingsLoading) {
+              <tr>
+                <td colspan="8" class="cell-state">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined spinning"
+                      >progress_activity</span
+                    >
+                    <p class="empty-state__title">Loading history…</p>
+                  </div>
+                </td>
+              </tr>
+            } @else if (pagedBookings.length === 0) {
+              <tr>
+                <td colspan="8" class="cell-state">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <span class="material-symbols-outlined"
+                        >receipt_long</span
+                      >
+                    </div>
+                    <p class="empty-state__title">No booking history</p>
+                    <p class="empty-state__sub">
+                      This product has not been booked yet.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            }
+            @for (b of pagedBookings; track b._id; let idx = $index) {
+              <tr class="table-row">
+                <td>
+                  <div class="customer-cell">
+                    <div class="avatar" [ngClass]="avatarClass(idx)">
+                      {{ initials(b.customerName) }}
+                    </div>
+                    <div>
+                      <p class="customer-name">{{ b.customerName }}</p>
+                      <p class="customer-phone">{{ b.customerPhone }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="cell-text">{{ b.village }}</td>
+                <td
+                  class="cell-date"
+                  [class.text-strike]="isCancelled(b.status)"
+                >
+                  {{ formatDate(b.bookingDate) }}
+                </td>
+                <td
+                  class="cell-date cell-return"
+                  [class.text-active]="b.status === 'active'"
+                  [class.text-pending]="b.status === 'pending_return'"
+                  [class.text-strike]="isCancelled(b.status)"
+                >
+                  {{ formatDate(b.returnDate) }}
+                </td>
+                <td class="cell-amount">₹{{ b.advancePayment | number }}</td>
+                <td class="cell-remaining">
+                  @if (b.remainingPayment > 0) {
+                    <span class="remaining-amount"
+                      >₹{{ b.remainingPayment | number }}</span
+                    >
+                  } @else {
+                    <span class="remaining-paid">Paid</span>
+                  }
+                </td>
+                <td class="col-status">
+                  <span class="badge" [ngClass]="statusClass(b.status)">{{
+                    statusLabel(b.status)
+                  }}</span>
+                </td>
+                <td class="col-actions">
+                  <div class="action-menu-wrap">
+                    <button
+                      class="action-btn"
+                      title="Actions"
+                      (click)="toggleMenu(b._id, $event)"
+                    >
+                      <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                    @if (openMenuId === b._id) {
+                      <div
+                        class="action-menu"
+                        (click)="$event.stopPropagation()"
+                      >
+                        <button
+                          class="action-menu__item"
+                          (click)="editBooking(b._id)"
+                        >
+                          <span class="material-symbols-outlined">edit</span>
+                          Edit Booking
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (total > 0) {
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [total]="total"
+          [limit]="limit"
+          (pageChange)="goToPage($event)"
+        />
+      }
+    </div>
+  }
+</div>

@@ -44,6 +44,14 @@ export interface PaginatedBookings {
   totalPages: number;
 }
 
+export interface BookingAnalytics {
+  total: number;
+  active: number;
+  pending_return: number;
+  returned: number;
+  cancelled: number;
+}
+
 export interface SearchBookingParams {
   customerName?: string;
   serialNumber?: string;
@@ -96,5 +104,17 @@ export class BookingService {
 
   findById(id: string): Observable<Booking> {
     return this.http.get<Booking>(`${this.base}/${id}`);
+  }
+
+  getAnalytics(
+    params: { fromDate?: string; toDate?: string } = {},
+  ): Observable<BookingAnalytics> {
+    let httpParams = new HttpParams();
+    if (params.fromDate)
+      httpParams = httpParams.set('fromDate', params.fromDate);
+    if (params.toDate) httpParams = httpParams.set('toDate', params.toDate);
+    return this.http.get<BookingAnalytics>(`${this.base}/analytics`, {
+      params: httpParams,
+    });
   }
 }

@@ -1,6 +1,7 @@
 // ── Page ──────────────────────────────────────────────────────────────────────
 .page {
   padding: 40px;
+  padding-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -107,7 +108,7 @@
 .stat-card__trend--secondary      { color: var(--secondary); }
 .stat-card__trend--tertiary       { color: var(--tertiary-container); }
 .stat-card__trend--neutral        { color: var(--outline); }
-.stat-card__trend--primary-text   { color: var(--primary); }
+.stat-card__trend--primary-text   { color: rgba(255, 255, 255, 0.85); }
 
 .stat-card__trend-icon { font-size: 14px; }
 

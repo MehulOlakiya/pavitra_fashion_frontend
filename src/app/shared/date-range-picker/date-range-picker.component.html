@@ -1,0 +1,75 @@
+<div class="drp">
+  <!-- Header: year selector + month nav -->
+  <div class="drp__header">
+    <div class="drp__year-wrap">
+      <select
+        class="drp__year-select"
+        [value]="viewYear"
+        (change)="onYearChange($any($event.target).value)"
+      >
+        @for (y of years; track y) {
+          <option [value]="y">{{ y }}</option>
+        }
+      </select>
+      <span class="material-symbols-outlined drp__year-arrow"
+        >keyboard_arrow_down</span
+      >
+    </div>
+    <div class="drp__nav">
+      <button type="button" class="drp__nav-btn" (click)="prevMonth()">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <button type="button" class="drp__nav-btn" (click)="nextMonth()">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Month label -->
+  <div class="drp__month-label">{{ monthNames[viewMonth].toUpperCase() }}</div>
+
+  <!-- Day headers -->
+  <div class="drp__day-headers">
+    @for (h of dayHeaders; track h) {
+      <span class="drp__day-header">{{ h }}</span>
+    }
+  </div>
+
+  <!-- Calendar grid -->
+  <div class="drp__grid" (mouseleave)="onDayLeave()">
+    @for (day of calendarDays; track $index) {
+      <button
+        type="button"
+        class="drp__day"
+        [class.drp__day--other]="!isCurrentMonth(day)"
+        [class.drp__day--today]="isToday(day)"
+        [class.drp__day--start]="isStart(day)"
+        [class.drp__day--end]="isEnd(day)"
+        [class.drp__day--in-range]="isInRange(day)"
+        [class.drp__day--selected]="isSelected(day)"
+        (click)="onDayClick(day)"
+        (mouseenter)="onDayHover(day)"
+      >
+        {{ day.getDate() }}
+      </button>
+    }
+  </div>
+
+  <!-- Selection label -->
+  <div class="drp__selection-label">{{ labelText }}</div>
+
+  <!-- Footer actions -->
+  <div class="drp__footer">
+    <button type="button" class="drp__btn-clear" (click)="onClear()">
+      Clear
+    </button>
+    <button
+      type="button"
+      class="drp__btn-apply"
+      [disabled]="!pendingFrom"
+      (click)="onApply()"
+    >
+      Apply
+    </button>
+  </div>
+</div>

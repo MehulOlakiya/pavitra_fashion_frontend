@@ -1,12 +1,19 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { TitleCasePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Product, ProductService } from '../../core/product.service';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import {
+  Product,
+  ProductService,
+  ProductAnalytics,
+} from '../../core/product.service';
 import { BookingService } from '../../core/booking.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+import { ImportProductsComponent } from '../../shared/import-products/import-products.component';
 
 @Component({
   selector: 'app-cloth-management',
@@ -17,19 +24,34 @@ import { CustomSelectComponent } from '../../shared/custom-select/custom-select.
     FormsModule,
     PaginationComponent,
     CustomSelectComponent,
+    ImportProductsComponent,
   ],
   templateUrl: './cloth-management.component.html',
   styleUrl: './cloth-management.component.scss',
 })
-export class ClothManagementComponent implements OnInit {
-  allProducts: Product[] = [];
-  filteredProducts: Product[] = [];
-  pagedProducts: Product[] = [];
+export class ClothManagementComponent implements OnInit, OnDestroy {
+  products: Product[] = [];
   categories: string[] = [];
   loading = false;
   errorMessage = '';
+  importDrawerOpen = false;
   searchQuery = '';
   categoryFilter = '';
+
+  // Analytics (from dedicated API)
+  analytics: ProductAnalytics = {
+    total: 0,
+    active: 0,
+    inactive: 0,
+    categories: [],
+  };
+
+  get activeCount(): number {
+    return this.analytics.active;
+  }
+  get inactiveCount(): number {
+    return this.analytics.inactive;
+  }
 
   get categoryOptions(): { value: string; label: string }[] {
     const fmt = (s: string) =>
@@ -58,6 +80,9 @@ export class ClothManagementComponent implements OnInit {
   total = 0;
   readonly limit = 10;
 
+  private searchSubject = new Subject<string>();
+  private sub = new Subscription();
+
   constructor(
     private productService: ProductService,
     private bookingService: BookingService,
@@ -67,6 +92,27 @@ export class ClothManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadAnalytics();
+
+    this.sub.add(
+      this.searchSubject
+        .pipe(debounceTime(400), distinctUntilChanged())
+        .subscribe(() => {
+          this.currentPage = 1;
+          this.load();
+        }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+
+  onImportComplete(): void {
+    this.importDrawerOpen = false;
+    this.currentPage = 1;
+    this.load();
+    this.loadAnalytics();
   }
 
   addProduct(): void {
@@ -87,6 +133,10 @@ export class ClothManagementComponent implements OnInit {
     this.openMenuId = null;
   }
 
+  onViewInsights(product: Product): void {
+    this.router.navigate(['/inventory/insights', product._id]);
+  }
+
   onEdit(product: Product): void {
     this.router.navigate(['/inventory/edit', product._id]);
   }
@@ -98,7 +148,7 @@ export class ClothManagementComponent implements OnInit {
       .subscribe({
         next: () => {
           product.isActive = updated.isActive;
-          this.applyFilter();
+          this.loadAnalytics();
           this.toastService.show(
             'success',
             'Status Updated',
@@ -146,16 +196,14 @@ export class ClothManagementComponent implements OnInit {
     const product = this.deletingProduct;
     this.productService.delete(product._id).subscribe({
       next: () => {
-        this.allProducts = this.allProducts.filter(
-          (p) => p._id !== product._id,
-        );
-        this.applyFilter();
         this.toastService.show(
           'success',
           'Deleted',
           `${product.name} has been deleted.`,
         );
         this.closeDeleteModal();
+        this.load();
+        this.loadAnalytics();
       },
       error: () => {
         this.toastService.show('error', 'Error', 'Failed to delete product.');
@@ -167,55 +215,53 @@ export class ClothManagementComponent implements OnInit {
   private load(): void {
     this.loading = true;
     this.errorMessage = '';
-    this.productService.getAll().subscribe({
-      next: (products) => {
-        this.allProducts = products;
-        this.categories = [...new Set(products.map((p) => p.category))].sort();
-        this.applyFilter();
-        this.loading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Failed to load inventory. Please try again.';
-        this.loading = false;
-      },
-    });
+    this.sub.add(
+      this.productService
+        .getPaginated({
+          page: this.currentPage,
+          limit: this.limit,
+          category: this.categoryFilter || undefined,
+          search: this.searchQuery.trim() || undefined,
+        })
+        .subscribe({
+          next: (res) => {
+            this.products = res.data;
+            this.total = res.total;
+            this.totalPages = res.totalPages;
+            this.loading = false;
+          },
+          error: () => {
+            this.errorMessage = 'Failed to load inventory. Please try again.';
+            this.loading = false;
+          },
+        }),
+    );
   }
 
-  private applyFilter(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    const cat = this.categoryFilter.toLowerCase();
-    this.filteredProducts = this.allProducts.filter((p) => {
-      const matchesSearch =
-        !q ||
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.serialNumber.toLowerCase().includes(q);
-      const matchesCategory = !cat || p.category.toLowerCase() === cat;
-      return matchesSearch && matchesCategory;
-    });
-    this.total = this.filteredProducts.length;
-    this.totalPages = Math.max(1, Math.ceil(this.total / this.limit));
-    this.updatePage();
-  }
-
-  private updatePage(): void {
-    const start = (this.currentPage - 1) * this.limit;
-    this.pagedProducts = this.filteredProducts.slice(start, start + this.limit);
+  private loadAnalytics(): void {
+    this.sub.add(
+      this.productService.getAnalytics().subscribe({
+        next: (a) => {
+          this.analytics = a;
+          this.categories = a.categories.slice().sort();
+        },
+      }),
+    );
   }
 
   onSearchChange(): void {
-    this.currentPage = 1;
-    this.applyFilter();
+    this.searchSubject.next(this.searchQuery);
   }
 
   onCategoryChange(): void {
     this.currentPage = 1;
-    this.applyFilter();
+    this.load();
   }
 
   onPageChange(page: number): void {
+    if (page === this.currentPage) return;
     this.currentPage = page;
-    this.updatePage();
+    this.load();
   }
 
   statusLabel(isActive: boolean): 'Available' | 'Inactive' {
@@ -224,13 +270,5 @@ export class ClothManagementComponent implements OnInit {
 
   statusClass(isActive: boolean): string {
     return isActive ? 'status--available' : 'status--inactive';
-  }
-
-  get activeCount(): number {
-    return this.filteredProducts.filter((p) => p.isActive).length;
-  }
-
-  get inactiveCount(): number {
-    return this.filteredProducts.filter((p) => !p.isActive).length;
   }
 }
