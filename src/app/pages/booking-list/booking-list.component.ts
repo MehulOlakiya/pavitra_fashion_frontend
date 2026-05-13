@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DecimalPipe } from '@angular/common';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
@@ -11,10 +12,12 @@ import {
   BookingAnalytics,
 } from '../../core/booking.service';
 import { Product, ProductService } from '../../core/product.service';
+import { WhatsappService, WhatsAppStatus } from '../../core/whatsapp.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 import { DateRangePickerComponent } from '../../shared/date-range-picker/date-range-picker.component';
+import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.directive';
 
 @Component({
   selector: 'app-booking-list',
@@ -25,11 +28,30 @@ import { DateRangePickerComponent } from '../../shared/date-range-picker/date-ra
     PaginationComponent,
     CustomSelectComponent,
     DateRangePickerComponent,
+    NumbersOnlyDirective,
   ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss',
 })
 export class BookingListComponent implements OnInit, OnDestroy {
+  // ── WhatsApp bill ───────────────────────────────────────────────
+  waModalOpen = false;
+  waStatus: WhatsAppStatus = { state: 'idle', qr: null };
+  waInitLoading = false;
+  sendingBill = false;
+  pendingBillBooking: Booking | null = null;
+  billResendModalOpen = false;
+  private waBookingProduct: Product | null = null;
+  /** Which modal triggered the send-bill ('detail' | 'edit' | null) */
+  private billSourceModal: 'detail' | 'edit' | null = null;
+  private waSseSub: Subscription | null = null;
+
+  get waQrSafeUrl(): SafeUrl | null {
+    const qr = this.waStatus.qr;
+    if (!qr) return null;
+    return this.sanitizer.bypassSecurityTrustUrl(qr);
+  }
+
   searchQuery = '';
   statusFilter = '';
   loading = false;
@@ -74,6 +96,11 @@ export class BookingListComponent implements OnInit, OnDestroy {
   };
   saving = false;
 
+  // Detail view modal
+  viewingBooking: Booking | null = null;
+  viewingProduct: Product | null = null;
+  viewingProductLoading = false;
+
   readonly statusFilterOptions = [
     { value: '', label: 'Status: All' },
     { value: 'active', label: 'Active' },
@@ -107,6 +134,8 @@ export class BookingListComponent implements OnInit, OnDestroy {
     private bookingService: BookingService,
     private productService: ProductService,
     private toastService: ToastService,
+    private whatsappService: WhatsappService,
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
@@ -132,6 +161,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.waSseSub?.unsubscribe();
   }
 
   onSearchChange(): void {
@@ -151,6 +181,26 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   newBooking(): void {
     this.router.navigate(['/bookings/new']);
+  }
+
+  viewBooking(booking: Booking): void {
+    this.viewingBooking = booking;
+    this.viewingProduct = null;
+    this.viewingProductLoading = true;
+    this.productService.search(booking.productSerialNumber, 1).subscribe({
+      next: (products) => {
+        this.viewingProduct = products[0] ?? null;
+        this.viewingProductLoading = false;
+      },
+      error: () => {
+        this.viewingProductLoading = false;
+      },
+    });
+  }
+
+  closeDetail(): void {
+    this.viewingBooking = null;
+    this.viewingProduct = null;
   }
 
   toggleMenu(id: string, event: MouseEvent): void {
@@ -188,8 +238,8 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  openEdit(booking: Booking, event: MouseEvent): void {
-    event.stopPropagation();
+  openEdit(booking: Booking, event?: MouseEvent): void {
+    event?.stopPropagation();
     this.openMenuId = null;
     this.editingBooking = booking;
     this.editForm.status = booking.status;
@@ -307,11 +357,11 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   getProductImage(serialNumber: string): string {
-    return this.productImageMap.get(serialNumber) ?? '';
+    return this.productImageMap.get(serialNumber.trim().toLowerCase()) ?? '';
   }
 
   getProductRent(serialNumber: string): number | null {
-    return this.productRentMap.get(serialNumber) ?? null;
+    return this.productRentMap.get(serialNumber.trim().toLowerCase()) ?? null;
   }
 
   private loadSummary(): void {
@@ -369,5 +419,215 @@ export class BookingListComponent implements OnInit, OnDestroy {
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  totalRemaining(booking: Booking): number {
+    if (booking.remainingPayment === 0) {
+      return 0;
+    }
+    return (
+      (booking.remainingPayment ?? 0) +
+      (booking.freshPiece ? (booking.freshPieceCost ?? 0) : 0)
+    );
+  }
+
+  // ── WhatsApp Bill ─────────────────────────────────────────────────
+
+  sendBillWhatsApp(
+    booking: Booking,
+    event?: MouseEvent,
+    source?: 'detail' | 'edit',
+  ): void {
+    event?.stopPropagation();
+    this.openMenuId = null;
+
+    // If bill was already sent, show the resend-warning modal first
+    if (booking.isBillSend) {
+      this.pendingBillBooking = booking;
+      this.billSourceModal = source ?? null;
+      this.billResendModalOpen = true;
+      return;
+    }
+
+    this.initiateSendBillFlow(booking, source);
+  }
+
+  confirmResend(): void {
+    this.billResendModalOpen = false;
+    if (this.pendingBillBooking) {
+      this.initiateSendBillFlow(
+        this.pendingBillBooking,
+        this.billSourceModal ?? undefined,
+      );
+    }
+  }
+
+  cancelResend(): void {
+    this.billResendModalOpen = false;
+    this.pendingBillBooking = null;
+    this.billSourceModal = null;
+  }
+
+  private initiateSendBillFlow(
+    booking: Booking,
+    source?: 'detail' | 'edit',
+  ): void {
+    this.pendingBillBooking = booking;
+    this.billSourceModal = source ?? null;
+    // Resolve the product info (may already be in the map)
+    const sn = booking.productSerialNumber.trim().toLowerCase();
+    this.waBookingProduct = null;
+    if (this.productRentMap.has(sn)) {
+      // build a minimal product stub from map data so we can include rent in msg
+      this.waBookingProduct = {
+        serialNumber: sn,
+        rentPrice: this.productRentMap.get(sn)!,
+      } as Product;
+    }
+
+    this.whatsappService.getStatus().subscribe({
+      next: (status) => {
+        this.waStatus = status;
+        if (status.state === 'connected') {
+          this.doSendBill(booking);
+        } else {
+          this.waModalOpen = true;
+          this.startWaSession();
+        }
+      },
+      error: () => {
+        this.waModalOpen = true;
+        this.startWaSession();
+      },
+    });
+  }
+
+  private startWaSession(): void {
+    this.waInitLoading = true;
+    this.whatsappService.initialize().subscribe({
+      next: () => {
+        this.waInitLoading = false;
+        this.subscribeWaSse();
+      },
+      error: () => {
+        this.waInitLoading = false;
+        this.subscribeWaSse(); // still subscribe; may already be initializing
+      },
+    });
+  }
+
+  private subscribeWaSse(): void {
+    this.waSseSub?.unsubscribe();
+    const token = localStorage.getItem('accessToken') ?? '';
+    this.waSseSub = this.whatsappService.streamStatus(token).subscribe({
+      next: (status) => {
+        this.waStatus = status;
+        if (
+          status.state === 'connected' &&
+          this.pendingBillBooking &&
+          this.waModalOpen
+        ) {
+          this.waSseSub?.unsubscribe();
+          this.waSseSub = null;
+          this.waModalOpen = false;
+          this.doSendBill(this.pendingBillBooking);
+        }
+      },
+    });
+  }
+
+  closeWaModal(): void {
+    this.waModalOpen = false;
+    this.waSseSub?.unsubscribe();
+    this.waSseSub = null;
+    this.pendingBillBooking = null;
+    this.billSourceModal = null;
+    this.waStatus = { state: 'idle', qr: null };
+  }
+
+  private doSendBill(booking: Booking): void {
+    const phone = booking.customerPhone.replace(/\D/g, '');
+    const message = this.buildBillMessage(booking);
+    const imageUrl =
+      this.productImageMap.get(
+        booking.productSerialNumber.trim().toLowerCase(),
+      ) || undefined;
+
+    this.sendingBill = true;
+    this.whatsappService
+      .sendMessage({ mobileNumber: phone, message, imageUrl })
+      .subscribe({
+        next: () => {
+          this.sendingBill = false;
+          // Mark isBillSend = true on backend (best-effort)
+          this.bookingService.markBillSent(booking._id).subscribe({
+            next: (updated) => {
+              // Update the booking in the local list so the flag is reflected
+              const idx = this.bookings.findIndex((b) => b._id === booking._id);
+              if (idx !== -1) this.bookings[idx] = updated;
+            },
+            error: (e) => console.error('markBillSent failed', e),
+          });
+          this.pendingBillBooking = null;
+          // Close the modal that triggered the send
+          if (this.billSourceModal === 'detail') {
+            this.closeDetail();
+          } else if (this.billSourceModal === 'edit') {
+            this.closeEdit();
+          }
+          this.billSourceModal = null;
+          this.toastService.show(
+            'success',
+            'Bill Sent',
+            'Booking bill sent on WhatsApp.',
+          );
+        },
+        error: (err) => {
+          this.sendingBill = false;
+          this.toastService.show(
+            'error',
+            'Send Failed',
+            err?.error?.message ?? 'Could not send bill on WhatsApp.',
+          );
+        },
+      });
+  }
+
+  private buildBillMessage(booking: Booking): string {
+    const lines: string[] = [];
+    lines.push('🧾 *Pavitra Fashion – Booking Bill*');
+    lines.push('');
+    if (this.waBookingProduct?.rentPrice) {
+      lines.push(
+        `💵 *Total Price:* ₹${this.waBookingProduct.rentPrice.toLocaleString('en-IN')}`,
+      );
+    }
+    lines.push('');
+    lines.push(`📅 *Booking Date:* ${this.formatDate(booking.bookingDate)}`);
+    lines.push(`📅 *Return Date:* ${this.formatDate(booking.returnDate)}`);
+    lines.push('');
+    lines.push(
+      `💰 *Advance Paid:* ₹${(booking.advancePayment ?? 0).toLocaleString('en-IN')}`,
+    );
+    const remaining = booking.remainingPayment ?? 0;
+    if (remaining > 0) {
+      lines.push(`💳 *Remaining:* ₹${remaining.toLocaleString('en-IN')}`);
+    } else {
+      lines.push(`✅ *Payment:* Fully Paid`);
+    }
+    if (booking.freshPiece && (booking.freshPieceCost ?? 0) > 0) {
+      lines.push('');
+      lines.push(
+        `🪡 *Extra (Fresh Piece):* ₹${(booking.freshPieceCost ?? 0).toLocaleString('en-IN')}`,
+      );
+    }
+    if (booking.beltType) lines.push(`🔗 *Belt:* ${booking.beltType}`);
+    if (booking.note) {
+      lines.push('');
+      lines.push(`📝 *Note:* ${booking.note}`);
+    }
+    lines.push('');
+    lines.push('🙏 Thank you for choosing *Pavitra Fashion*!');
+    return lines.join('\n');
   }
 }

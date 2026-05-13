@@ -9,10 +9,17 @@ import { Product, ProductService } from '../../core/product.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CommonModule } from '@angular/common';
 import { DatepickerComponent } from '../../shared/datepicker/datepicker.component';
+import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.directive';
 
 @Component({
   selector: 'app-booking',
-  imports: [FormsModule, CommonModule, RouterLink, DatepickerComponent],
+  imports: [
+    FormsModule,
+    CommonModule,
+    RouterLink,
+    DatepickerComponent,
+    NumbersOnlyDirective,
+  ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
 })
@@ -51,6 +58,10 @@ export class BookingComponent implements OnInit {
     villageCity: '',
     advancePayment: null as number | null,
     remainingPayment: null as number | null,
+    note: '',
+    beltType: 'HB' as 'HB' | 'FB',
+    freshPiece: false,
+    freshPieceCost: null as number | null,
   };
 
   submitted = false;
@@ -178,11 +189,8 @@ export class BookingComponent implements OnInit {
       !this.selectedProduct ||
       !this.bookingDate ||
       !this.returnDate ||
-      !this.form.customerName ||
       !this.form.mobileNumber ||
-      !this.form.villageCity ||
-      this.form.advancePayment === null ||
-      this.form.remainingPayment === null
+      !this.form.villageCity
     ) {
       this.toast.show(
         'error',
@@ -195,13 +203,20 @@ export class BookingComponent implements OnInit {
     this.bookingService
       .create({
         productSerialNumber: this.selectedProduct.serialNumber,
-        customerName: this.form.customerName,
-        customerPhone: this.form.mobileNumber,
+        customerName: this.form.customerName || undefined,
+        customerPhone: this.form.mobileNumber.toString(),
         village: this.form.villageCity,
-        advancePayment: this.form.advancePayment!,
-        remainingPayment: this.form.remainingPayment!,
+        advancePayment: this.form.advancePayment ?? undefined,
+        remainingPayment: this.form.remainingPayment ?? undefined,
         bookingDate: this.toISTDate(this.bookingDate),
         returnDate: this.toISTDate(this.returnDate),
+        beltType: this.form.beltType,
+        note: this.form.note || undefined,
+        freshPiece: this.form.freshPiece || undefined,
+        freshPieceCost:
+          this.form.freshPiece && this.form.freshPieceCost !== null
+            ? this.form.freshPieceCost
+            : undefined,
       })
       .subscribe({
         next: () => {

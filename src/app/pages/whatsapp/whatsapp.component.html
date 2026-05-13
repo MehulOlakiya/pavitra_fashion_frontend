@@ -1,0 +1,170 @@
+<div class="whatsapp-page">
+  <div class="page-header">
+    <h2 class="page-title">
+      <span class="material-symbols-outlined">chat</span>
+      WhatsApp Messaging
+    </h2>
+    <p class="page-subtitle">
+      Send WhatsApp messages to customers directly from the dashboard.
+    </p>
+  </div>
+
+  <!-- Status Badge -->
+  <div class="status-bar">
+    <span class="status-badge" [ngClass]="'status-badge--' + state">
+      <span class="status-dot"></span>
+      {{ state | titlecase }}
+    </span>
+  </div>
+
+  <!-- ── IDLE / DISCONNECTED ── -->
+  @if (state === "idle" || state === "disconnected") {
+    <div class="card setup-card">
+      <div class="setup-icon">
+        <span class="material-symbols-outlined">phonelink_setup</span>
+      </div>
+      <h3>Connect WhatsApp</h3>
+      <p>
+        Start a session to connect your WhatsApp account. You'll need to scan a
+        QR code with your phone.
+      </p>
+      <button
+        class="btn btn--primary"
+        (click)="initialize()"
+        [disabled]="initLoading()"
+      >
+        @if (initLoading()) {
+          <span class="spinner"></span> Starting…
+        } @else {
+          <span class="material-symbols-outlined">play_circle</span> Start
+          Session
+        }
+      </button>
+    </div>
+  }
+
+  <!-- ── INITIALIZING ── -->
+  @if (state === "initializing") {
+    <div class="card info-card">
+      <span class="spinner spinner--lg"></span>
+      <p>Initializing WhatsApp client, please wait…</p>
+    </div>
+  }
+
+  <!-- ── QR CODE ── -->
+  @if (state === "qr") {
+    <div class="card qr-card">
+      <h3>Scan QR Code</h3>
+      <p>
+        Open <strong>WhatsApp → Linked Devices → Link a Device</strong> and scan
+        this code.
+      </p>
+      @if (qrSafeUrl) {
+        <img class="qr-image" [src]="qrSafeUrl" alt="WhatsApp QR Code" />
+      } @else {
+        <div class="qr-placeholder">
+          <span class="spinner spinner--lg"></span>
+          <p>Generating QR code…</p>
+        </div>
+      }
+      <p class="qr-note">
+        The QR code refreshes automatically. Keep this page open while scanning.
+      </p>
+    </div>
+  }
+
+  <!-- ── CONNECTED – Send Message ── -->
+  @if (state === "connected") {
+    <div class="card send-card">
+      <div class="connected-header">
+        <span class="material-symbols-outlined connected-icon">verified</span>
+        <div>
+          <h3>WhatsApp Connected</h3>
+          <p>Your session is active. Send a message below.</p>
+        </div>
+        <button
+          class="btn btn--danger btn--sm"
+          (click)="disconnect()"
+          [disabled]="disconnectLoading()"
+          title="Disconnect & clear session"
+        >
+          @if (disconnectLoading()) {
+            <span class="spinner spinner--dark"></span>
+          } @else {
+            <span class="material-symbols-outlined">logout</span>
+          }
+          Disconnect
+        </button>
+      </div>
+
+      @if (successMessage()) {
+        <div class="alert alert--success">
+          <span class="material-symbols-outlined">check_circle</span>
+          {{ successMessage() }}
+        </div>
+      }
+      @if (errorMessage()) {
+        <div class="alert alert--error">
+          <span class="material-symbols-outlined">error</span>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form #sendForm="ngForm" (ngSubmit)="sendMessage(sendForm)" novalidate>
+        <div class="form-group">
+          <label for="mobileNumber"
+            >Mobile Number <span class="req">*</span></label
+          >
+          <div class="input-hint">
+            Include country code without + (e.g. 919328454608)
+          </div>
+          <input
+            id="mobileNumber"
+            type="text"
+            name="mobileNumber"
+            [(ngModel)]="mobileNumber"
+            required
+            pattern="^\d{7,15}$"
+            placeholder="919328454608"
+            class="form-control"
+            #mobile="ngModel"
+          />
+          @if (mobile.invalid && mobile.touched) {
+            <span class="field-error"
+              >Enter a valid number (7–15 digits with country code).</span
+            >
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message <span class="req">*</span></label>
+          <textarea
+            id="message"
+            name="message"
+            rows="4"
+            [(ngModel)]="message"
+            required
+            placeholder="Type your message here…"
+            class="form-control"
+            #msg="ngModel"
+          ></textarea>
+          @if (msg.invalid && msg.touched) {
+            <span class="field-error">Message is required.</span>
+          }
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn--primary btn--full"
+          [disabled]="sendForm.invalid || sendLoading()"
+        >
+          @if (sendLoading()) {
+            <span class="spinner"></span> Sending…
+          } @else {
+            <span class="material-symbols-outlined">send</span> Send Message
+          }
+        </button>
+      </form>
+    </div>
+  }
+</div>

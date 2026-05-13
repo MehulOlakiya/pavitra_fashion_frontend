@@ -4,11 +4,17 @@ import { Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../core/product.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.directive';
 
 @Component({
   selector: 'app-add-product',
   standalone: true,
-  imports: [FormsModule, RouterModule, CustomSelectComponent],
+  imports: [
+    FormsModule,
+    RouterModule,
+    CustomSelectComponent,
+    NumbersOnlyDirective,
+  ],
   templateUrl: './add-product.component.html',
   styleUrl: './add-product.component.scss',
 })
@@ -20,17 +26,15 @@ export class AddProductComponent {
     rentPrice: null as number | null,
     purchasePrice: null as number | null,
     sellingPrice: null as number | null,
+    imageUrl: '',
     isActive: true,
   };
 
-  categories = ['Sherwani', 'Lehenga', 'Saree', 'Kurta Set', 'Accessories'];
+  categories = ['Lehenga', 'Saree', 'Accessories'];
 
   get categoryOptions(): { value: string; label: string }[] {
     return this.categories.map((c) => ({ value: c, label: c }));
   }
-
-  previewUrls: string[] = [];
-  selectedFiles: File[] = [];
 
   submitting = false;
   submitted = false;
@@ -49,48 +53,10 @@ export class AddProductComponent {
     this.router.navigate(['/inventory']);
   }
 
-  onFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    this.addFiles(Array.from(input.files));
-    input.value = '';
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    const files = event.dataTransfer?.files;
-    if (files) this.addFiles(Array.from(files));
-  }
-
-  private addFiles(files: File[]): void {
-    const first = files.find((f) =>
-      ['image/jpeg', 'image/png'].includes(f.type),
-    );
-    if (!first) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.previewUrls = [e.target?.result as string];
-    };
-    reader.readAsDataURL(first);
-    this.selectedFiles = [first];
-  }
-
-  removeImage(index: number, event: MouseEvent): void {
-    event.stopPropagation();
-    this.previewUrls.splice(index, 1);
-    this.selectedFiles.splice(index, 1);
-  }
-
   onSubmit(): void {
     this.submitted = true;
 
-    if (
-      !this.form.name.trim() ||
-      !this.form.serialNumber.trim() ||
-      !this.form.sellingPrice ||
-      !this.form.rentPrice ||
-      !this.form.purchasePrice
-    ) {
+    if (!this.form.serialNumber.trim() || !this.form.rentPrice) {
       this.toastService.show(
         'error',
         'Validation Error',
@@ -100,18 +66,16 @@ export class AddProductComponent {
     }
 
     this.submitting = true;
-
     const payload = {
-      name: this.form.name.trim(),
+      name: this.form.name.trim() || undefined,
       category: this.form.category,
       serialNumber: this.form.serialNumber.trim(),
       rentPrice: this.form.rentPrice ?? 0,
-      purchasePrice: this.form.purchasePrice ?? 0,
-      sellingPrice: this.form.sellingPrice ?? 0,
+      purchasePrice: this.form.purchasePrice ?? undefined,
+      sellingPrice: this.form.sellingPrice ?? undefined,
       isActive: this.form.isActive,
-      imageUrl: this.previewUrls[0] ?? '',
+      imageUrl: this.form.imageUrl.trim() || undefined,
     };
-
     this.productService.create(payload).subscribe({
       next: () => {
         this.toastService.show(

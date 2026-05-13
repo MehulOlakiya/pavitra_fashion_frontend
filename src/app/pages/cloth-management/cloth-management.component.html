@@ -48,10 +48,43 @@
         (ngModelChange)="onCategoryChange()"
         [options]="categoryOptions"
       />
-      <button class="btn-outline">
-        <span class="material-symbols-outlined btn-icon">download</span>
-        Export
-      </button>
+      <div class="date-range-wrap" (click)="$event.stopPropagation()">
+        <button
+          class="btn-outline"
+          [class.btn-outline--active]="dateRangeFrom"
+          (click)="onToggleDateRangePicker($event)"
+        >
+          @if (availabilityLoading) {
+            <span class="material-symbols-outlined btn-icon spinning"
+              >progress_activity</span
+            >
+          } @else {
+            <span class="material-symbols-outlined btn-icon"
+              >calendar_month</span
+            >
+          }
+          {{ dateRangeFrom ? formatDateRange() : "Date Range" }}
+        </button>
+        @if (dateRangeFrom) {
+          <button
+            class="btn-range-clear"
+            title="Clear date filter"
+            (click)="onDateRangeClear()"
+          >
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        }
+        @if (dateRangePickerOpen) {
+          <div class="date-range-dropdown">
+            <app-date-range-picker
+              [fromDate]="dateRangeFrom"
+              [toDate]="dateRangeTo"
+              (apply)="onDateRangeApply($event)"
+              (clear)="onDateRangeClear()"
+            />
+          </div>
+        }
+      </div>
       <button class="btn-outline" (click)="importDrawerOpen = true">
         <span class="material-symbols-outlined btn-icon">upload</span>
         Import
@@ -69,9 +102,9 @@
       <table class="inventory-table">
         <thead>
           <tr>
+            <th>Serial Number</th>
             <th>Item</th>
             <th>Category</th>
-            <th>Serial Number</th>
             <th>Rental Price</th>
             <th>Status</th>
             <th class="col-actions">Actions</th>
@@ -98,26 +131,41 @@
                 </div>
               </td>
             </tr>
-          } @else if (products.length === 0) {
+          } @else if (displayedProducts.length === 0) {
             <tr>
               <td colspan="6" class="cell-state">
                 <div class="empty-state">
                   <div class="empty-state__icon-wrap">
                     <span class="material-symbols-outlined">checkroom</span>
                   </div>
-                  <p class="empty-state__title">No items found</p>
+                  <p class="empty-state__title">
+                    @if (dateRangeFrom) {
+                      No products available for selected dates
+                    } @else {
+                      No items found
+                    }
+                  </p>
                   <p class="empty-state__sub">
-                    Add your first cloth item to get started.
+                    @if (dateRangeFrom) {
+                      All products are booked during {{ formatDateRange() }}.
+                    } @else {
+                      Add your first cloth item to get started.
+                    }
                   </p>
                 </div>
               </td>
             </tr>
           } @else {
-            @for (product of products; track product._id) {
+            @for (product of displayedProducts; track product._id) {
               <tr
                 class="table-row table-row--clickable"
                 (click)="onViewInsights(product)"
               >
+                <!-- Serial Number -->
+                <td>
+                  <code class="serial-code">{{ product.serialNumber }}</code>
+                </td>
+
                 <!-- Item -->
                 <td class="px-item">
                   <div class="item-cell">
@@ -130,7 +178,6 @@
                     </div>
                     <div>
                       <p class="item-name">{{ product.name }}</p>
-                      <!-- <p class="item-sub">{{ product.category | titlecase }}</p> -->
                     </div>
                   </div>
                 </td>
@@ -144,11 +191,6 @@
                       —
                     }
                   </span>
-                </td>
-
-                <!-- Serial Number -->
-                <td>
-                  <code class="serial-code">{{ product.serialNumber }}</code>
                 </td>
 
                 <!-- Rental Price -->

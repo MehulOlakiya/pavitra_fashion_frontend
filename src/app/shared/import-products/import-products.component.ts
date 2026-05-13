@@ -44,9 +44,9 @@ export class ImportProductsComponent {
 
   private buildSampleCsvUrl(): string {
     const headers =
-      'name,serialNumber,rentPrice,sellingPrice,purchasePrice,category,imageUrl';
+      'serialNumber,rentPrice,category,name,sellingPrice,purchasePrice,imageUrl';
     const sample =
-      'Sample Lehenga,SN001,500,5000,3000,lehenga,https://example.com/image.jpg';
+      'SN001,500,lehenga,Sample Lehenga,5000,3000,https://example.com/image.jpg';
     const blob = new Blob([`${headers}\n${sample}`], { type: 'text/csv' });
     return URL.createObjectURL(blob);
   }
@@ -54,23 +54,24 @@ export class ImportProductsComponent {
   private buildSampleXlsxUrl(): string {
     const rows = [
       [
-        'name',
         'serialNumber',
         'rentPrice',
+        'category',
+        'name',
         'sellingPrice',
         'purchasePrice',
-        'category',
         'imageUrl',
       ],
       [
-        'Sample Lehenga',
         'SN001',
         500,
+        'lehenga',
+        'Sample Lehenga',
         5000,
         3000,
-        'lehenga',
         'https://example.com/image.jpg',
       ],
+      ['SN002', 300, 'saree', '', '', '', ''],
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();

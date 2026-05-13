@@ -68,6 +68,17 @@
   box-sizing: border-box;
 }
 
+// ── Remove number input spinners (all browsers) ────────────
+input[type='number'] {
+  -moz-appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
 html, body {
   height: 100%;
   font-family: 'Inter', sans-serif;

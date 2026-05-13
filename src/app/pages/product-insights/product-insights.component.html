@@ -114,13 +114,21 @@
           <div class="price-tile">
             <p class="price-tile__label">PURCHASE PRICE</p>
             <p class="price-tile__value">
-              ₹{{ product.purchasePrice | number }}
+              @if (product.purchasePrice) {
+                ₹{{ product.purchasePrice | number }}
+              } @else {
+                N/A
+              }
             </p>
           </div>
           <div class="price-tile">
             <p class="price-tile__label">SELLING PRICE</p>
             <p class="price-tile__value price-tile__value--secondary">
-              ₹{{ product.sellingPrice | number }}
+              @if (product.sellingPrice) {
+                ₹{{ product.sellingPrice | number }}
+              } @else {
+                N/A
+              }
             </p>
           </div>
         </div>
@@ -198,7 +206,7 @@
                 <td>
                   <div class="customer-cell">
                     <div class="avatar" [ngClass]="avatarClass(idx)">
-                      {{ initials(b.customerName) }}
+                      {{ initials(b.customerName ?? "") }}
                     </div>
                     <div>
                       <p class="customer-name">{{ b.customerName }}</p>
@@ -223,7 +231,7 @@
                 </td>
                 <td class="cell-amount">₹{{ b.advancePayment | number }}</td>
                 <td class="cell-remaining">
-                  @if (b.remainingPayment > 0) {
+                  @if ((b.remainingPayment ?? 0) > 0) {
                     <span class="remaining-amount"
                       >₹{{ b.remainingPayment | number }}</span
                     >

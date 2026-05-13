@@ -1,0 +1,169 @@
+<div class="page">
+  <!-- Header -->
+  <div class="detail-header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <div class="detail-header__title-wrap">
+      <h2 class="detail-header__title">Booking Details</h2>
+      @if (booking) {
+        <span class="badge {{ statusClass(booking.status) }}">
+          {{ statusLabel(booking.status) }}
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  @if (loading) {
+    <div class="state-center">
+      <span class="material-symbols-outlined spinning">progress_activity</span>
+      <p>Loading booking…</p>
+    </div>
+  } @else if (errorMessage) {
+    <div class="state-center">
+      <span class="material-symbols-outlined">error_outline</span>
+      <p>{{ errorMessage }}</p>
+    </div>
+  } @else if (booking) {
+    <div class="detail-grid">
+      <!-- LEFT COLUMN -->
+      <div class="detail-col">
+        <!-- Product Card -->
+        <div class="detail-card">
+          <p class="detail-card__heading">Product</p>
+          <div class="product-row">
+            <div class="product-thumb">
+              @if (product?.imageUrl) {
+                <img [src]="product!.imageUrl" [alt]="product!.name" />
+              } @else {
+                <span class="material-symbols-outlined">checkroom</span>
+              }
+            </div>
+            <div class="product-info">
+              <p class="product-name">{{ product?.name ?? "—" }}</p>
+              <p class="product-serial">
+                SN: {{ booking.productSerialNumber }}
+              </p>
+              @if (product?.rentPrice) {
+                <p class="product-rent">
+                  ₹{{ product!.rentPrice | number }} / day
+                </p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule Card -->
+        <div class="detail-card">
+          <p class="detail-card__heading">Schedule</p>
+          <div class="info-grid">
+            <div class="info-item">
+              <p class="info-item__label">Booking Date</p>
+              <p class="info-item__value">
+                {{ formatDate(booking.bookingDate) }}
+              </p>
+            </div>
+            <div class="info-item">
+              <p class="info-item__label">Return Date</p>
+              <p class="info-item__value">
+                {{ formatDate(booking.returnDate) }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="detail-col">
+        <!-- Customer Card -->
+        <div class="detail-card">
+          <p class="detail-card__heading">Customer</p>
+          <div class="info-grid">
+            @if (booking.customerName) {
+              <div class="info-item info-item--full">
+                <p class="info-item__label">Full Name</p>
+                <p class="info-item__value">{{ booking.customerName }}</p>
+              </div>
+            }
+            <div class="info-item">
+              <p class="info-item__label">Mobile</p>
+              <p class="info-item__value">{{ booking.customerPhone }}</p>
+            </div>
+            <div class="info-item">
+              <p class="info-item__label">Village / City</p>
+              <p class="info-item__value">{{ booking.village }}</p>
+            </div>
+            @if (booking.beltType) {
+              <div class="info-item">
+                <p class="info-item__label">Belt Type</p>
+                <span class="type-chip">{{ booking.beltType }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Payment Card -->
+        <div class="detail-card">
+          <p class="detail-card__heading">Payment</p>
+          <div class="info-grid">
+            <div class="info-item">
+              <p class="info-item__label">Advance Paid</p>
+              <p class="info-item__value info-item__value--money">
+                ₹{{ booking.advancePayment ?? 0 | number }}
+              </p>
+            </div>
+            <div class="info-item">
+              <p class="info-item__label">Remaining</p>
+              @if ((booking.remainingPayment ?? 0) > 0) {
+                <p class="info-item__value info-item__value--due">
+                  ₹{{ booking.remainingPayment | number }}
+                </p>
+              } @else {
+                <p class="info-item__value info-item__value--paid">Paid</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Extras Card (shown only when applicable) -->
+        @if (booking.freshPiece || booking.note) {
+          <div class="detail-card">
+            <p class="detail-card__heading">Extras</p>
+            <div class="info-grid">
+              @if (booking.freshPiece) {
+                <div class="info-item">
+                  <p class="info-item__label">Fresh Piece</p>
+                  <p class="info-item__value">Yes</p>
+                </div>
+                @if (booking.freshPieceCost) {
+                  <div class="info-item">
+                    <p class="info-item__label">Fresh Piece Cost</p>
+                    <p class="info-item__value info-item__value--money">
+                      ₹{{ booking.freshPieceCost | number }}
+                    </p>
+                  </div>
+                }
+              }
+              @if (booking.note) {
+                <div class="info-item info-item--full">
+                  <p class="info-item__label">Note</p>
+                  <p class="info-item__value info-item__value--note">
+                    {{ booking.note }}
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Timestamps -->
+    <div class="timestamps">
+      <span>Created: {{ formatDate(booking.createdAt) }}</span>
+      <span class="timestamps__sep">·</span>
+      <span>Last updated: {{ formatDate(booking.updatedAt) }}</span>
+    </div>
+  }
+</div>

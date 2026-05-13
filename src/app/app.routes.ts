@@ -38,6 +38,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'bookings/:id',
+        loadComponent: () =>
+          import('./pages/booking-detail/booking-detail.component').then(
+            (m) => m.BookingDetailComponent,
+          ),
+      },
+      {
         path: 'inventory-detail',
         loadComponent: () =>
           import('./pages/inventory-detail/inventory-detail.component').then(
@@ -120,6 +127,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/coming-soon/coming-soon.component').then(
             (m) => m.ComingSoonComponent,
+          ),
+      },
+      {
+        path: 'whatsapp',
+        loadComponent: () =>
+          import('./pages/whatsapp/whatsapp.component').then(
+            (m) => m.WhatsappComponent,
           ),
       },
     ],

@@ -45,13 +45,16 @@ export class ProductInsightsComponent implements OnInit {
   get totalRevenue(): number {
     return this.allBookings
       .filter((b) => b.status !== 'cancelled')
-      .reduce((sum, b) => sum + b.advancePayment + b.remainingPayment, 0);
+      .reduce(
+        (sum, b) => sum + (b.advancePayment ?? 0) + (b.remainingPayment ?? 0),
+        0,
+      );
   }
 
   get collected(): number {
     return this.allBookings
       .filter((b) => b.status !== 'cancelled')
-      .reduce((sum, b) => sum + b.advancePayment, 0);
+      .reduce((sum, b) => sum + (b.advancePayment ?? 0), 0);
   }
 
   get rentalCount(): number {

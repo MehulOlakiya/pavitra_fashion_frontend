@@ -127,67 +127,26 @@
       <div class="col-side">
         <!-- Product Media -->
         <div class="card">
-          <h3 class="card__title">Product Media</h3>
-
-          <input
-            #fileInput
-            type="file"
-            accept="image/jpeg,image/png"
-            class="upload-file-input"
-            (change)="onFilesSelected($event)"
-          />
-
-          <div
-            class="upload-zone"
-            [class.upload-zone--locked]="hasImage"
-            (click)="!hasImage && fileInput.click()"
-            (dragover)="!hasImage && $event.preventDefault()"
-            (drop)="!hasImage && onDrop($event)"
-          >
-            @if (!hasImage) {
-              <div class="upload-zone__icon">
-                <span class="material-symbols-outlined"
-                  >add_photo_alternate</span
-                >
-              </div>
-              <p class="upload-zone__primary">Click to upload an image</p>
-              <p class="upload-zone__secondary">or drag and drop here</p>
-              <p class="upload-zone__hint">JPG, PNG up to 10MB</p>
-            } @else if (previewUrls.length) {
-              <div class="upload-previews">
-                <div class="preview-thumb">
-                  <img
-                    [src]="previewUrls[0]"
-                    alt="Preview"
-                    class="preview-img"
-                  />
-                  <button
-                    type="button"
-                    class="preview-remove"
-                    (click)="removeNewImage($event)"
-                    title="Remove"
-                  >
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                </div>
-              </div>
-            } @else {
-              <div class="upload-previews">
-                <div class="preview-thumb">
-                  <img
-                    [src]="existingImageUrl"
-                    alt="Product Image"
-                    class="preview-img"
-                  />
-                  <button
-                    type="button"
-                    class="preview-remove"
-                    (click)="removeExistingImage($event)"
-                    title="Remove"
-                  >
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                </div>
+          <h3 class="card__title">Product Image URL</h3>
+          <div class="card__body">
+            <div class="field">
+              <label class="field__label">IMAGE URL</label>
+              <input
+                class="field__input"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                [(ngModel)]="form.imageUrl"
+                name="imageUrl"
+              />
+            </div>
+            @if (form.imageUrl.trim()) {
+              <div class="url-preview">
+                <img
+                  [src]="form.imageUrl.trim()"
+                  alt="Preview"
+                  class="preview-img"
+                  (error)="form.imageUrl = ''"
+                />
               </div>
             }
           </div>

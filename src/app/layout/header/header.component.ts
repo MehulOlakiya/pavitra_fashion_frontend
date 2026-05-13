@@ -8,6 +8,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/auth.service';
 import { UserStateService } from '../../core/user-state.service';
 
 @Component({
@@ -22,6 +23,7 @@ export class HeaderComponent {
   profileMenuOpen = false;
   mobileSearchOpen = false;
   userState = inject(UserStateService);
+  private authService = inject(AuthService);
 
   constructor(private router: Router) {}
 
@@ -54,8 +56,18 @@ export class HeaderComponent {
 
   logout(): void {
     this.profileMenuOpen = false;
-    this.userState.clear();
-    this.router.navigate(['/login']);
+    // Call API to clear WhatsApp session and reset user flag, then clear local state
+    this.authService.logout().subscribe({
+      next: () => {
+        this.userState.clear();
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        // Always clear local state even if API call fails
+        this.userState.clear();
+        this.router.navigate(['/login']);
+      },
+    });
   }
 
   @HostListener('document:click')

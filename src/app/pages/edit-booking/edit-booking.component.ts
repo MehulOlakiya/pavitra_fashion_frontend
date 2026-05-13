@@ -6,6 +6,7 @@ import { BookingService, BookingStatus } from '../../core/booking.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { DatepickerComponent } from '../../shared/datepicker/datepicker.component';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.directive';
 
 @Component({
   selector: 'app-edit-booking',
@@ -15,6 +16,7 @@ import { CustomSelectComponent } from '../../shared/custom-select/custom-select.
     RouterLink,
     DatepickerComponent,
     CustomSelectComponent,
+    NumbersOnlyDirective,
   ],
   templateUrl: './edit-booking.component.html',
   styleUrl: './edit-booking.component.scss',
@@ -65,11 +67,11 @@ export class EditBookingComponent implements OnInit {
     this.bookingService.findById(this.bookingId).subscribe({
       next: (b) => {
         this.form.productSerialNumber = b.productSerialNumber;
-        this.form.customerName = b.customerName;
+        this.form.customerName = b.customerName ?? '';
         this.form.customerPhone = b.customerPhone;
         this.form.village = b.village;
-        this.form.advancePayment = b.advancePayment;
-        this.form.remainingPayment = b.remainingPayment;
+        this.form.advancePayment = b.advancePayment ?? null;
+        this.form.remainingPayment = b.remainingPayment ?? null;
         this.form.status = b.status;
         this.bookingDate = new Date(b.bookingDate);
         this.returnDate = new Date(b.returnDate);

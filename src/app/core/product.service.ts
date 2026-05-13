@@ -6,11 +6,11 @@ import { environment } from '../../environments/environment';
 
 export interface Product {
   _id: string;
-  name: string;
+  name?: string;
   imageUrl: string;
   serialNumber: string;
-  sellingPrice: number;
-  purchasePrice: number;
+  sellingPrice?: number;
+  purchasePrice?: number;
   rentPrice: number;
   category: string;
   isActive: boolean;
@@ -96,7 +96,7 @@ export class ProductService {
   }
 
   create(
-    payload: Omit<Product, '_id' | 'imageUrl'> & { imageBase64?: string },
+    payload: Omit<Product, '_id' | 'imageUrl'> & { imageUrl?: string },
   ): Observable<Product> {
     return this.http.post<Product>(this.base, payload);
   }
@@ -115,6 +115,42 @@ export class ProductService {
     return this.http.delete<void>(`${this.base}/${encodeURIComponent(id)}`);
   }
 
+  /** Upload an image file to Cloudinary via the backend, returns the public URL. */
+  uploadImage(file: File): Observable<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ url: string }>(
+      `${environment.apiUrl}/upload/image`,
+      formData,
+    );
+  }
+
+  /**
+   * Returns paginated products that are available (not booked) within the
+   * given [from, to] date range. Server handles all overlap logic.
+   */
+  getAvailable(params: {
+    from: Date;
+    to: Date;
+    page?: number;
+    limit?: number;
+    category?: string;
+    search?: string;
+  }): Observable<PaginatedProducts> {
+    let httpParams = new HttpParams()
+      .set('from', params.from.toISOString())
+      .set('to', params.to.toISOString());
+    if (params.page) httpParams = httpParams.set('page', String(params.page));
+    if (params.limit)
+      httpParams = httpParams.set('limit', String(params.limit));
+    if (params.category)
+      httpParams = httpParams.set('category', params.category);
+    if (params.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PaginatedProducts>(`${this.base}/available`, {
+      params: httpParams,
+    });
+  }
+
   search(query: string, limit = 20): Observable<Product[]> {
     const params = new HttpParams()
       .set('search', query.trim())
@@ -124,9 +160,7 @@ export class ProductService {
       .pipe(map((res) => res.data.filter((p) => p.isActive)));
   }
 
-  importProducts(
-    file: File,
-  ): Observable<{
+  importProducts(file: File): Observable<{
     imported: number;
     skipped: number;
     errors: { row: number; message: string }[];

@@ -23,14 +23,9 @@
         <h3 class="card__title">Basic Information</h3>
         <div class="card__body">
           <div class="field">
-            <label class="field__label"
-              >PRODUCT NAME <span class="required">*</span></label
-            >
+            <label class="field__label">PRODUCT NAME</label>
             <input
-              [class]="
-                'field__input' +
-                (isFieldError(form.name) ? ' field__input--error' : '')
-              "
+              class="field__input"
               type="text"
               placeholder="e.g. Royal Blue Silk Sherwani"
               [(ngModel)]="form.name"
@@ -40,7 +35,9 @@
 
           <div class="field-row">
             <div class="field">
-              <label class="field__label">PRODUCT CATEGORY</label>
+              <label class="field__label"
+                >PRODUCT CATEGORY<span class="required">*</span></label
+              >
               <app-custom-select
                 [(ngModel)]="form.category"
                 name="category"
@@ -97,18 +94,11 @@
             </div>
 
             <div class="field">
-              <label class="field__label"
-                >PURCHASE PRICE<span class="required">*</span></label
-              >
+              <label class="field__label">PURCHASE PRICE</label>
               <div class="price-wrap">
                 <span class="price-symbol">₹</span>
                 <input
-                  [class]="
-                    'field__input field__input--price' +
-                    (isFieldError(form.purchasePrice)
-                      ? ' field__input--error'
-                      : '')
-                  "
+                  class="field__input field__input--price"
                   type="number"
                   min="0"
                   placeholder="0.00"
@@ -119,18 +109,11 @@
             </div>
 
             <div class="field">
-              <label class="field__label"
-                >SELLING PRICE<span class="required">*</span></label
-              >
+              <label class="field__label">SELLING PRICE</label>
               <div class="price-wrap">
                 <span class="price-symbol">₹</span>
                 <input
-                  [class]="
-                    'field__input field__input--price' +
-                    (isFieldError(form.sellingPrice)
-                      ? ' field__input--error'
-                      : '')
-                  "
+                  class="field__input field__input--price"
                   type="number"
                   min="0"
                   placeholder="0.00"
@@ -148,45 +131,26 @@
     <div class="col-side">
       <!-- Product Media -->
       <div class="card">
-        <h3 class="card__title">Product Media</h3>
-
-        <!-- Hidden file input -->
-        <input
-          #fileInput
-          type="file"
-          accept="image/jpeg,image/png"
-          class="upload-file-input"
-          (change)="onFilesSelected($event)"
-        />
-
-        <div
-          class="upload-zone"
-          (click)="previewUrls.length === 0 && fileInput.click()"
-          (dragover)="$event.preventDefault()"
-          (drop)="onDrop($event)"
-        >
-          @if (previewUrls.length === 0) {
-            <div class="upload-zone__icon">
-              <span class="material-symbols-outlined">add_photo_alternate</span>
-            </div>
-            <p class="upload-zone__primary">Click to upload an image</p>
-            <p class="upload-zone__secondary">or drag and drop here</p>
-            <p class="upload-zone__hint">JPG, PNG up to 10MB</p>
-          } @else {
-            <div class="upload-previews">
-              @for (url of previewUrls; track url; let i = $index) {
-                <div class="preview-thumb">
-                  <img [src]="url" alt="Preview" class="preview-img" />
-                  <button
-                    type="button"
-                    class="preview-remove"
-                    (click)="removeImage(i, $event)"
-                    title="Remove"
-                  >
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                </div>
-              }
+        <h3 class="card__title">Product Image URL</h3>
+        <div class="card__body">
+          <div class="field">
+            <label class="field__label">IMAGE URL</label>
+            <input
+              class="field__input"
+              type="url"
+              placeholder="https://example.com/image.jpg"
+              [(ngModel)]="form.imageUrl"
+              name="imageUrl"
+            />
+          </div>
+          @if (form.imageUrl.trim()) {
+            <div class="url-preview">
+              <img
+                [src]="form.imageUrl.trim()"
+                alt="Preview"
+                class="preview-img"
+                (error)="form.imageUrl = ''"
+              />
             </div>
           }
         </div>

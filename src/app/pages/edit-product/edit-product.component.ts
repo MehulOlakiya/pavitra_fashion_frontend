@@ -4,11 +4,17 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Product, ProductService } from '../../core/product.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.directive';
 
 @Component({
   selector: 'app-edit-product',
   standalone: true,
-  imports: [FormsModule, RouterModule, CustomSelectComponent],
+  imports: [
+    FormsModule,
+    RouterModule,
+    CustomSelectComponent,
+    NumbersOnlyDirective,
+  ],
   templateUrl: './edit-product.component.html',
   styleUrl: './edit-product.component.scss',
 })
@@ -24,6 +30,7 @@ export class EditProductComponent implements OnInit {
     rentPrice: null as number | null,
     purchasePrice: null as number | null,
     sellingPrice: null as number | null,
+    imageUrl: '',
     isActive: true,
   };
 
@@ -32,11 +39,6 @@ export class EditProductComponent implements OnInit {
   get categoryOptions(): { value: string; label: string }[] {
     return this.categories.map((c) => ({ value: c, label: c }));
   }
-
-  // Image state
-  existingImageUrl = ''; // loaded from API
-  previewUrls: string[] = []; // new local preview (base64)
-  selectedFiles: File[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -53,14 +55,14 @@ export class EditProductComponent implements OnInit {
     }
     this.productService.getById(this.productId).subscribe({
       next: (p: Product) => {
-        this.form.name = p.name;
+        this.form.name = p.name ?? '';
         this.form.category = p.category;
         this.form.serialNumber = p.serialNumber;
         this.form.rentPrice = p.rentPrice ?? null;
         this.form.purchasePrice = (p as any).purchasePrice ?? null;
         this.form.sellingPrice = p.sellingPrice ?? null;
         this.form.isActive = p.isActive;
-        this.existingImageUrl = p.imageUrl ?? '';
+        this.form.imageUrl = p.imageUrl ?? '';
         this.loading = false;
       },
       error: () => {
@@ -78,48 +80,6 @@ export class EditProductComponent implements OnInit {
     this.router.navigate(['/inventory']);
   }
 
-  onFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    this.addFiles(Array.from(input.files));
-    input.value = '';
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    const files = event.dataTransfer?.files;
-    if (files) this.addFiles(Array.from(files));
-  }
-
-  private addFiles(files: File[]): void {
-    const first = files.find((f) =>
-      ['image/jpeg', 'image/png'].includes(f.type),
-    );
-    if (!first) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.previewUrls = [e.target?.result as string];
-      this.existingImageUrl = '';
-    };
-    reader.readAsDataURL(first);
-    this.selectedFiles = [first];
-  }
-
-  removeNewImage(event: MouseEvent): void {
-    event.stopPropagation();
-    this.previewUrls = [];
-    this.selectedFiles = [];
-  }
-
-  removeExistingImage(event: MouseEvent): void {
-    event.stopPropagation();
-    this.existingImageUrl = '';
-  }
-
-  get hasImage(): boolean {
-    return !!(this.previewUrls.length || this.existingImageUrl);
-  }
-
   onSubmit(): void {
     if (
       !this.form.name.trim() ||
@@ -135,24 +95,17 @@ export class EditProductComponent implements OnInit {
     }
     this.submitting = true;
 
-    const payload: Partial<Omit<Product, '_id'>> & {
-      imageBase64?: string;
-      purchasePrice?: number;
-    } = {
-      name: this.form.name.trim(),
-      category: this.form.category,
-      serialNumber: this.form.serialNumber.trim(),
-      rentPrice: this.form.rentPrice ?? 0,
-      purchasePrice: this.form.purchasePrice ?? 0,
-      sellingPrice: this.form.sellingPrice ?? 0,
-      isActive: this.form.isActive,
-    };
-
-    if (this.previewUrls.length) {
-      payload['imageUrl'] = this.previewUrls[0];
-    } else if (this.existingImageUrl) {
-      payload.imageUrl = this.existingImageUrl;
-    }
+    const payload: Partial<Omit<Product, '_id'>> & { purchasePrice?: number } =
+      {
+        name: this.form.name.trim(),
+        category: this.form.category,
+        serialNumber: this.form.serialNumber.trim(),
+        rentPrice: this.form.rentPrice ?? 0,
+        purchasePrice: this.form.purchasePrice ?? 0,
+        sellingPrice: this.form.sellingPrice ?? 0,
+        isActive: this.form.isActive,
+        imageUrl: this.form.imageUrl.trim() || undefined,
+      };
 
     this.productService.update(this.productId, payload).subscribe({
       next: () => {

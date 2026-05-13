@@ -14,6 +14,7 @@ import { ToastService } from '../../shared/toast/toast.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 import { ImportProductsComponent } from '../../shared/import-products/import-products.component';
+import { DateRangePickerComponent } from '../../shared/date-range-picker/date-range-picker.component';
 
 @Component({
   selector: 'app-cloth-management',
@@ -25,6 +26,7 @@ import { ImportProductsComponent } from '../../shared/import-products/import-pro
     PaginationComponent,
     CustomSelectComponent,
     ImportProductsComponent,
+    DateRangePickerComponent,
   ],
   templateUrl: './cloth-management.component.html',
   styleUrl: './cloth-management.component.scss',
@@ -37,6 +39,13 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
   importDrawerOpen = false;
   searchQuery = '';
   categoryFilter = '';
+
+  // Date range availability filter
+  dateRangePickerOpen = false;
+  dateRangeFrom: Date | null = null;
+  dateRangeTo: Date | null = null;
+  availabilityLoading = false;
+  dateFilteredProducts: Product[] | null = null;
 
   // Analytics (from dedicated API)
   analytics: ProductAnalytics = {
@@ -99,7 +108,11 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
         .pipe(debounceTime(400), distinctUntilChanged())
         .subscribe(() => {
           this.currentPage = 1;
-          this.load();
+          if (this.dateRangeFrom) {
+            this.loadAvailable();
+          } else {
+            this.load();
+          }
         }),
     );
   }
@@ -131,6 +144,7 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
   @HostListener('document:click')
   onDocumentClick(): void {
     this.openMenuId = null;
+    this.dateRangePickerOpen = false;
   }
 
   onViewInsights(product: Product): void {
@@ -255,13 +269,21 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
 
   onCategoryChange(): void {
     this.currentPage = 1;
-    this.load();
+    if (this.dateRangeFrom) {
+      this.loadAvailable();
+    } else {
+      this.load();
+    }
   }
 
   onPageChange(page: number): void {
     if (page === this.currentPage) return;
     this.currentPage = page;
-    this.load();
+    if (this.dateRangeFrom) {
+      this.loadAvailable();
+    } else {
+      this.load();
+    }
   }
 
   statusLabel(isActive: boolean): 'Available' | 'Inactive' {
@@ -270,5 +292,76 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
 
   statusClass(isActive: boolean): string {
     return isActive ? 'status--available' : 'status--inactive';
+  }
+
+  // ── Date Range Availability Filter ─────────────────────
+
+  get displayedProducts(): Product[] {
+    return this.dateFilteredProducts ?? this.products;
+  }
+
+  formatDateRange(): string {
+    if (!this.dateRangeFrom) return '';
+    const fmt = (d: Date) =>
+      d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    return this.dateRangeTo
+      ? `${fmt(this.dateRangeFrom)} – ${fmt(this.dateRangeTo)}`
+      : fmt(this.dateRangeFrom);
+  }
+
+  onToggleDateRangePicker(event: MouseEvent): void {
+    event.stopPropagation();
+    this.dateRangePickerOpen = !this.dateRangePickerOpen;
+  }
+
+  onDateRangeApply(range: { from: Date | null; to: Date | null }): void {
+    if (!range.from || !range.to) return;
+    this.dateRangeFrom = range.from;
+    this.dateRangeTo = range.to;
+    this.dateRangePickerOpen = false;
+    this.currentPage = 1;
+    this.loadAvailable();
+  }
+
+  private loadAvailable(): void {
+    if (!this.dateRangeFrom || !this.dateRangeTo) return;
+    this.availabilityLoading = true;
+    this.dateFilteredProducts = null;
+    this.sub.add(
+      this.productService
+        .getAvailable({
+          from: this.dateRangeFrom,
+          to: this.dateRangeTo,
+          page: this.currentPage,
+          limit: this.limit,
+          category: this.categoryFilter || undefined,
+          search: this.searchQuery.trim() || undefined,
+        })
+        .subscribe({
+          next: (res) => {
+            this.dateFilteredProducts = res.data;
+            this.total = res.total;
+            this.totalPages = res.totalPages;
+            this.availabilityLoading = false;
+          },
+          error: () => {
+            this.availabilityLoading = false;
+            this.toastService.show(
+              'error',
+              'Error',
+              'Failed to check availability.',
+            );
+          },
+        }),
+    );
+  }
+
+  onDateRangeClear(): void {
+    this.dateRangeFrom = null;
+    this.dateRangeTo = null;
+    this.dateRangePickerOpen = false;
+    this.dateFilteredProducts = null;
+    this.currentPage = 1;
+    this.load();
   }
 }

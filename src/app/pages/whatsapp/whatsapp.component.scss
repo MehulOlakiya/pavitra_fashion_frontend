@@ -1,0 +1,345 @@
+.whatsapp-page {
+  padding: 1.5rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 0.25rem;
+
+  .material-symbols-outlined {
+    font-size: 1.75rem;
+    color: #25d366;
+  }
+}
+
+.page-subtitle {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ── Status Badge ── */
+.status-bar {
+  margin-bottom: 1.25rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &--idle,
+  &--disconnected {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+
+  &--initializing {
+    background: #fef9c3;
+    color: #854d0e;
+  }
+
+  &--qr {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  &--connected {
+    background: #dcfce7;
+    color: #166534;
+  }
+}
+
+/* ── Cards ── */
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Setup Card ── */
+.setup-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a2e;
+  }
+
+  p {
+    color: #6b7280;
+    margin: 0;
+    max-width: 380px;
+  }
+}
+
+.setup-icon .material-symbols-outlined {
+  font-size: 3rem;
+  color: #25d366;
+}
+
+/* ── Info Card ── */
+.info-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #6b7280;
+}
+
+/* ── QR Card ── */
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a2e;
+  }
+
+  p {
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+.qr-image {
+  width: 240px;
+  height: 240px;
+  border: 4px solid #e5e7eb;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.qr-placeholder {
+  width: 240px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  color: #9ca3af;
+}
+
+.qr-note {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+/* ── Connected header ── */
+.connected-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+    color: #1a1a2e;
+  }
+
+  p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 0.875rem;
+  }
+
+  // push disconnect button to the right
+  .btn--danger {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+}
+
+.connected-icon {
+  font-size: 2rem;
+  color: #25d366;
+  flex-shrink: 0;
+}
+
+/* ── Form ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.1rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+  }
+}
+
+.input-hint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  background: #fff;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: #25d366;
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.15);
+  }
+}
+
+.field-error {
+  font-size: 0.78rem;
+  color: #ef4444;
+}
+
+.req {
+  color: #ef4444;
+}
+
+/* ── Alerts ── */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+
+  &--success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &--error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+
+  &--primary {
+    background: #25d366;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #1ebe57;
+    }
+  }
+
+  &--danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+
+    &:hover:not(:disabled) {
+      background: #fecaca;
+    }
+  }
+
+  &--sm {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  &--full {
+    width: 100%;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Spinner ── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+
+  &--lg {
+    width: 32px;
+    height: 32px;
+    border-color: #e5e7eb;
+    border-top-color: #25d366;
+  }
+
+  &--dark {
+    border-color: rgba(153, 27, 27, 0.3);
+    border-top-color: #991b1b;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

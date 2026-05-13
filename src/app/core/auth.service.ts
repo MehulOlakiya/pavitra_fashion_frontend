@@ -24,10 +24,14 @@ export interface LoginResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private readonly loginUrl = `${environment.apiUrl}/auth/login`;
+  private readonly base = `${environment.apiUrl}/auth`;
 
   login(payload: LoginPayload): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(this.loginUrl, payload);
+    return this.http.post<LoginResponse>(`${this.base}/login`, payload);
+  }
+
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.base}/logout`, {});
   }
 
   /** Returns true when a JWT token exists in localStorage and has not expired. */

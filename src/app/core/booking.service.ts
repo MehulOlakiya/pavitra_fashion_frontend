@@ -9,29 +9,40 @@ export type BookingStatus =
   | 'returned'
   | 'cancelled';
 
+export type BeltType = 'HB' | 'FB';
+
 export interface CreateBookingPayload {
   productSerialNumber: string;
-  customerName: string;
+  customerName?: string;
   customerPhone: string;
   village: string;
-  advancePayment: number;
-  remainingPayment: number;
+  advancePayment?: number;
+  remainingPayment?: number;
   bookingDate: string; // ISO date string
   returnDate: string; // ISO date string
   status?: BookingStatus;
+  beltType?: BeltType;
+  note?: string;
+  freshPiece?: boolean;
+  freshPieceCost?: number;
 }
 
 export interface Booking {
   _id: string;
   productSerialNumber: string;
-  customerName: string;
+  customerName?: string;
   customerPhone: string;
   village: string;
-  advancePayment: number;
-  remainingPayment: number;
+  advancePayment?: number;
+  remainingPayment?: number;
   bookingDate: string;
   returnDate: string;
   status: BookingStatus;
+  beltType?: BeltType;
+  note?: string;
+  freshPiece?: boolean;
+  freshPieceCost?: number;
+  isBillSend?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,6 +115,10 @@ export class BookingService {
 
   findById(id: string): Observable<Booking> {
     return this.http.get<Booking>(`${this.base}/${id}`);
+  }
+
+  markBillSent(id: string): Observable<Booking> {
+    return this.http.patch<Booking>(`${this.base}/${id}/bill-sent`, {});
   }
 
   getAnalytics(
