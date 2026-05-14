@@ -204,9 +204,9 @@
                   }
                 </td>
                 <td class="cell-remaining">
-                  @if ((b.remainingPayment ?? 0) > 0) {
+                  @if (totalRemaining(b) > 0) {
                     <span class="remaining-amount">{{
-                      b.remainingPayment | number
+                      totalRemaining(b) | number
                     }}</span>
                   } @else {
                     <span class="remaining-paid">Paid</span>
