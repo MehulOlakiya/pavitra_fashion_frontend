@@ -97,8 +97,8 @@ export const routes: Routes = [
       {
         path: 'customers',
         loadComponent: () =>
-          import('./pages/coming-soon/coming-soon.component').then(
-            (m) => m.ComingSoonComponent,
+          import('./pages/customer-list/customer-list.component').then(
+            (m) => m.CustomerListComponent,
           ),
       },
       {

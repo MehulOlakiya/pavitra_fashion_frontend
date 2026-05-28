@@ -3,8 +3,8 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DecimalPipe } from '@angular/common';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, Subscription, forkJoin, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, catchError, map } from 'rxjs/operators';
 import {
   Booking,
   BookingService,
@@ -98,7 +98,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   // Detail view modal
   viewingBooking: Booking | null = null;
-  viewingProduct: Product | null = null;
+  viewingProducts: { product: Product; quantity: number }[] = [];
   viewingProductLoading = false;
 
   readonly statusFilterOptions = [
@@ -184,23 +184,12 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   viewBooking(booking: Booking): void {
-    this.viewingBooking = booking;
-    this.viewingProduct = null;
-    this.viewingProductLoading = true;
-    this.productService.search(booking.productSerialNumber, 1).subscribe({
-      next: (products) => {
-        this.viewingProduct = products[0] ?? null;
-        this.viewingProductLoading = false;
-      },
-      error: () => {
-        this.viewingProductLoading = false;
-      },
-    });
+    this.router.navigate(['/bookings', booking._id]);
   }
 
   closeDetail(): void {
     this.viewingBooking = null;
-    this.viewingProduct = null;
+    this.viewingProducts = [];
   }
 
   toggleMenu(id: string, event: MouseEvent): void {
@@ -356,12 +345,27 @@ export class BookingListComponent implements OnInit, OnDestroy {
     );
   }
 
-  getProductImage(serialNumber: string): string {
+  getProductImage(serialNumber: string | undefined): string {
+    if (!serialNumber) return '';
     return this.productImageMap.get(serialNumber.trim().toLowerCase()) ?? '';
   }
 
-  getProductRent(serialNumber: string): number | null {
+  getProductRent(serialNumber: string | undefined): number | null {
+    if (!serialNumber) return null;
     return this.productRentMap.get(serialNumber.trim().toLowerCase()) ?? null;
+  }
+
+  getTotalRent(booking: Booking): number {
+    let total = 0;
+    const items = booking.items && booking.items.length > 0
+      ? booking.items
+      : (booking.productSerialNumber ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }] : []);
+      
+    items.forEach(i => {
+      const rent = this.getProductRent(i.serialNumber) || 0;
+      total += rent * i.quantity;
+    });
+    return total;
   }
 
   private loadSummary(): void {
@@ -431,6 +435,27 @@ export class BookingListComponent implements OnInit, OnDestroy {
     );
   }
 
+  // ── Download Bill ─────────────────────────────────────────────────
+  downloadInvoice(booking: Booking, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.openMenuId = null;
+    
+    this.toastService.show('success', 'Downloading', 'Invoice download started...');
+    this.bookingService.downloadInvoice(booking._id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.toastService.show('error', 'Download Failed', 'Failed to download invoice PDF.');
+      }
+    });
+  }
+
   // ── WhatsApp Bill ─────────────────────────────────────────────────
 
   sendBillWhatsApp(
@@ -474,16 +499,10 @@ export class BookingListComponent implements OnInit, OnDestroy {
   ): void {
     this.pendingBillBooking = booking;
     this.billSourceModal = source ?? null;
-    // Resolve the product info (may already be in the map)
-    const sn = booking.productSerialNumber.trim().toLowerCase();
+    // Build a minimal product stub from map data so we can include rent in msg
+    const sn = booking.productSerialNumber?.trim().toLowerCase() || '';
     this.waBookingProduct = null;
-    if (this.productRentMap.has(sn)) {
-      // build a minimal product stub from map data so we can include rent in msg
-      this.waBookingProduct = {
-        serialNumber: sn,
-        rentPrice: this.productRentMap.get(sn)!,
-      } as Product;
-    }
+    // (Legacy handling if needed, but we rely on items array directly inside buildBillMessage now)
 
     this.whatsappService.getStatus().subscribe({
       next: (status) => {
@@ -546,12 +565,15 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   private doSendBill(booking: Booking): void {
-    const phone = booking.customerPhone.replace(/\D/g, '');
+    const phone = (booking.customer?.mobileNumber || '').replace(/\D/g, '');
     const message = this.buildBillMessage(booking);
-    const imageUrl =
-      this.productImageMap.get(
-        booking.productSerialNumber.trim().toLowerCase(),
-      ) || undefined;
+    const firstImageSn = booking.items && booking.items.length > 0
+      ? booking.items[0].serialNumber
+      : booking.productSerialNumber;
+
+    const imageUrl = firstImageSn 
+      ? this.productImageMap.get(firstImageSn.trim().toLowerCase()) 
+      : undefined;
 
     this.sendingBill = true;
     this.whatsappService
@@ -597,9 +619,21 @@ export class BookingListComponent implements OnInit, OnDestroy {
     const lines: string[] = [];
     lines.push('🧾 *Pavitra Fashion – Booking Bill*');
     lines.push('');
-    if (this.waBookingProduct?.rentPrice) {
+    // List items
+    const items = booking.items && booking.items.length > 0
+      ? booking.items
+      : (booking.productSerialNumber ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }] : []);
+    
+    let totalRent = 0;
+    items.forEach(i => {
+       const rent = this.getProductRent(i.serialNumber) || 0;
+       totalRent += rent * i.quantity;
+       lines.push(`👗 *Item:* #${i.serialNumber} (Qty: ${i.quantity})`);
+    });
+
+    if (totalRent > 0) {
       lines.push(
-        `💵 *Total Price:* ₹${this.waBookingProduct.rentPrice.toLocaleString('en-IN')}`,
+        `💵 *Total Rental Rate:* ₹${totalRent.toLocaleString('en-IN')}`,
       );
     }
     lines.push('');

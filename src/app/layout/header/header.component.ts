@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { UserStateService } from '../../core/user-state.service';
+import { WhatsappService } from '../../core/whatsapp.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-header',
@@ -24,8 +26,12 @@ export class HeaderComponent {
   mobileSearchOpen = false;
   userState = inject(UserStateService);
   private authService = inject(AuthService);
+  private whatsappService = inject(WhatsappService);
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private toastService: ToastService,
+  ) {}
 
   onSearch(): void {
     const q = this.searchQuery.trim();
@@ -66,6 +72,18 @@ export class HeaderComponent {
         // Always clear local state even if API call fails
         this.userState.clear();
         this.router.navigate(['/login']);
+      },
+    });
+  }
+
+  whatsappLogout(): void {
+    this.profileMenuOpen = false;
+    this.whatsappService.logout().subscribe({
+      next: () => {
+        this.toastService.success('WhatsApp logged out successfully');
+      },
+      error: () => {
+        this.toastService.error('Failed to logout from WhatsApp');
       },
     });
   }

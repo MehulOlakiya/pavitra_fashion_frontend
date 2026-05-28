@@ -66,7 +66,7 @@ export class SidebarComponent {
       icon: 'group',
       label: 'Customers',
       route: '/customers',
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       icon: 'payments',

@@ -14,6 +14,7 @@ export interface LoggedInUser {
   email: string;
   role: string;
   profileImage: string | null;
+  isWhatsAppLogin: boolean | undefined;
 }
 
 export interface LoginResponse {

@@ -206,15 +206,15 @@
                 <td>
                   <div class="customer-cell">
                     <div class="avatar" [ngClass]="avatarClass(idx)">
-                      {{ initials(b.customerName ?? "") }}
+                      {{ initials(b.customer.name) }}
                     </div>
                     <div>
-                      <p class="customer-name">{{ b.customerName }}</p>
-                      <p class="customer-phone">{{ b.customerPhone }}</p>
+                      <p class="customer-name">{{ b.customer.name }}</p>
+                      <p class="customer-phone">{{ b.customer.mobileNumber }}</p>
                     </div>
                   </div>
                 </td>
-                <td class="cell-text">{{ b.village }}</td>
+                <td class="cell-text">{{ b.customer.village }}</td>
                 <td
                   class="cell-date"
                   [class.text-strike]="isCancelled(b.status)"

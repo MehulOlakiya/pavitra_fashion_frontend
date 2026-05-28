@@ -1,0 +1,200 @@
+<div class="page">
+  <div class="header-analytics-row">
+    <!-- Summary Cards -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-card__icon summary-card__icon--primary">
+          <span class="material-symbols-outlined">group</span>
+        </div>
+        <div>
+          <p class="summary-card__label">TOTAL CUSTOMERS</p>
+          <p class="summary-card__value">{{ analytics.total }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__icon summary-card__icon--secondary">
+          <span class="material-symbols-outlined">assignment_return</span>
+        </div>
+        <div>
+          <p class="summary-card__label">ACTIVE RENTAL</p>
+          <p class="summary-card__value">{{ analytics.active }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__icon summary-card__icon--returned">
+          <span class="material-symbols-outlined">person_add</span>
+        </div>
+        <div>
+          <p class="summary-card__label">NEW THIS MONTH</p>
+          <p class="summary-card__value">{{ analytics.newThisMonth }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-wrap">
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by name, number or village..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+        />
+      </div>
+      <div class="filters-actions">
+        <button class="btn-primary" (click)="addCustomer()">
+          <span class="material-symbols-outlined btn-icon">add</span>
+          New Customer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="bookings-table">
+        <thead>
+          <tr>
+            <th>Customer ID</th>
+            <th>Name</th>
+            <th>Phone Number</th>
+            <th>Village / City</th>
+            <th>Total Bookings</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr>
+              <td colspan="6" class="cell-state">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined spinning">progress_activity</span>
+                  <p class="empty-state__title">Loading customers…</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (filteredCustomers.length === 0) {
+            <tr>
+              <td colspan="6" class="cell-state">
+                <div class="empty-state">
+                  <div class="empty-state__icon-wrap">
+                    <span class="material-symbols-outlined">group</span>
+                  </div>
+                  <p class="empty-state__title">No customers found</p>
+                  <p class="empty-state__sub">
+                    Try adjusting your search query.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (c of filteredCustomers; track c._id) {
+              <tr class="table-row">
+                <td class="cell-sn">{{ c.customerId }}</td>
+                <td>
+                  <p class="customer-name" style="margin: 0;">{{ c.name }}</p>
+                </td>
+                <td>
+                  <p class="customer-phone" style="margin: 0;">{{ c.mobileNumber }}</p>
+                </td>
+                <td>
+                  <p class="customer-village" style="margin: 0;">{{ c.village }}</p>
+                </td>
+                <td>
+                  <span class="badge badge--active">{{ c.totalBookings || 0 }} Bookings</span>
+                </td>
+                <td class="col-actions">
+                  <button class="action-btn" title="View Customer">
+                    <span class="material-symbols-outlined">visibility</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1 || total > 0) {
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [total]="total"
+        [limit]="limit"
+        (pageChange)="goToPage($event)"
+      />
+    }
+  </div>
+
+  @if (isAddingCustomer) {
+    <div class="modal-backdrop" (click)="closeAddCustomer()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h3 class="modal__title">New Customer</h3>
+          <button class="modal__close" (click)="closeAddCustomer()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="modal__body">
+          <div class="modal-field">
+            <label class="modal-field__label">NAME</label>
+            <div class="modal-input-wrap">
+              <input
+                type="text"
+                class="modal-field__input"
+                placeholder="Enter full name"
+                [(ngModel)]="newCustomerForm.name"
+                name="newCustomerName"
+              />
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-field__label">MOBILE NUMBER</label>
+            <div class="modal-input-wrap">
+              <input
+                type="tel"
+                class="modal-field__input"
+                placeholder="Enter mobile number"
+                [(ngModel)]="newCustomerForm.mobileNumber"
+                name="newCustomerMobile"
+              />
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-field__label">VILLAGE / CITY</label>
+            <div class="modal-input-wrap">
+              <input
+                type="text"
+                class="modal-field__input"
+                placeholder="Enter village or city"
+                [(ngModel)]="newCustomerForm.village"
+                name="newCustomerVillage"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button class="btn-cancel" (click)="closeAddCustomer()" [disabled]="saving">
+            Cancel
+          </button>
+          <button class="btn-save" (click)="saveCustomer()" [disabled]="saving">
+            @if (saving) {
+              <span class="material-symbols-outlined spinning">progress_activity</span>
+            }
+            Save Customer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

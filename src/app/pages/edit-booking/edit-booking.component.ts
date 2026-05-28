@@ -31,6 +31,7 @@ export class EditBookingComponent implements OnInit {
 
   bookingDate: Date | null = null;
   returnDate: Date | null = null;
+  items: { serialNumber: string; quantity: number }[] = [];
 
   form = {
     productSerialNumber: '',
@@ -40,6 +41,7 @@ export class EditBookingComponent implements OnInit {
     advancePayment: null as number | null,
     remainingPayment: null as number | null,
     status: 'active' as BookingStatus,
+    customerId: '' as string,
   };
 
   readonly statusOptions: { value: BookingStatus; label: string }[] = [
@@ -66,10 +68,12 @@ export class EditBookingComponent implements OnInit {
     }
     this.bookingService.findById(this.bookingId).subscribe({
       next: (b) => {
-        this.form.productSerialNumber = b.productSerialNumber;
-        this.form.customerName = b.customerName ?? '';
-        this.form.customerPhone = b.customerPhone;
-        this.form.village = b.village;
+        this.form.productSerialNumber = b.productSerialNumber || '';
+        this.items = b.items || [];
+        this.form.customerName = b.customer?.name ?? '';
+        this.form.customerPhone = b.customer?.mobileNumber ?? '';
+        this.form.village = b.customer?.village ?? '';
+        this.form.customerId = b.customer?._id ?? '';
         this.form.advancePayment = b.advancePayment ?? null;
         this.form.remainingPayment = b.remainingPayment ?? null;
         this.form.status = b.status;
@@ -117,9 +121,7 @@ export class EditBookingComponent implements OnInit {
     this.bookingService
       .update(this.bookingId, {
         productSerialNumber: this.form.productSerialNumber,
-        customerName: this.form.customerName,
-        customerPhone: this.form.customerPhone,
-        village: this.form.village,
+        customer: this.form.customerId,
         advancePayment: this.form.advancePayment!,
         remainingPayment: this.form.remainingPayment!,
         bookingDate: this.toISTDate(this.bookingDate),

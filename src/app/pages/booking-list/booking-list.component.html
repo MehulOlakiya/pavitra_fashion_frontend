@@ -119,7 +119,7 @@
       <table class="bookings-table">
         <thead>
           <tr>
-            <th>SN</th>
+            <th>Order ID</th>
             <th>Item</th>
             <th>Customer</th>
             <th>Booking Date</th>
@@ -162,11 +162,22 @@
                 class="table-row table-row--clickable"
                 (click)="viewBooking(b)"
               >
-                <td class="cell-sn">{{ b.productSerialNumber }}</td>
+                <td class="cell-sn">
+                  <span class="order-id" style="font-weight: 600; color: var(--primary);">{{ b.orderId || 'ORD-' + b._id.substring(b._id.length - 6).toUpperCase() }}</span>
+                  @if (b.items && b.items.length > 0) {
+                    <div class="multi-sn" style="font-size: 11px; color: var(--on-surface-variant); margin-top: 4px;">{{ b.items.length }} Items</div>
+                  } @else if (b.productSerialNumber) {
+                    <div class="multi-sn" style="font-size: 11px; color: var(--on-surface-variant); margin-top: 4px;">SN: {{ b.productSerialNumber }}</div>
+                  }
+                </td>
                 <td>
                   <div class="item-cell">
                     <div class="item-thumb">
-                      @if (getProductImage(b.productSerialNumber)) {
+                      @if (b.items && b.items.length > 0) {
+                        <div class="multi-item-icon" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; background:var(--surface-container); color:var(--on-surface-variant); border-radius:6px;">
+                          <span class="material-symbols-outlined" style="font-size:20px;">view_cozy</span>
+                        </div>
+                      } @else if (getProductImage(b.productSerialNumber)) {
                         <img
                           [src]="getProductImage(b.productSerialNumber)"
                           [alt]="b.productSerialNumber"
@@ -178,9 +189,9 @@
                   </div>
                 </td>
                 <td>
-                  <p class="customer-name">{{ b?.customerName }}</p>
-                  <p class="customer-phone">{{ b?.customerPhone }}</p>
-                  <p class="customer-village">{{ b.village }}</p>
+                  <p class="customer-name">{{ b.customer.name }}</p>
+                  <p class="customer-phone">{{ b.customer.mobileNumber }}</p>
+                  <p class="customer-village">{{ b.customer.village }}</p>
                 </td>
                 <td
                   [class.text-strike]="isCancelled(b.status)"
@@ -197,8 +208,8 @@
                   {{ formatDate(b.returnDate) }}
                 </td>
                 <td class="cell-rent">
-                  @if (getProductRent(b.productSerialNumber) !== null) {
-                    ₹{{ getProductRent(b.productSerialNumber) | number }}
+                  @if (getTotalRent(b) > 0) {
+                    ₹{{ getTotalRent(b) | number }}
                   } @else {
                     —
                   }
@@ -237,6 +248,13 @@
                         >
                           <span class="material-symbols-outlined">edit</span>
                           Edit
+                        </button>
+                        <button
+                          class="action-menu__item"
+                          (click)="downloadInvoice(b, $event)"
+                        >
+                          <span class="material-symbols-outlined">download</span>
+                          Download Bill
                         </button>
                         <button
                           class="action-menu__item action-menu__item--whatsapp"
@@ -285,216 +303,6 @@
   </div>
 </div>
 
-<!-- Booking Detail Modal -->
-@if (viewingBooking) {
-  <div class="modal-backdrop" (click)="closeDetail()">
-    <div class="detail-modal" (click)="$event.stopPropagation()">
-      <!-- Header -->
-      <div class="detail-modal__header">
-        <div class="detail-modal__title-wrap">
-          <h3 class="detail-modal__title">Booking Details</h3>
-          <span class="badge" [ngClass]="statusClass(viewingBooking.status)">
-            {{ statusLabel(viewingBooking.status) }}
-          </span>
-        </div>
-        <button class="modal__close" (click)="closeDetail()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <!-- Body -->
-      <div class="detail-modal__body">
-        <!-- Product row -->
-        <div class="dm-product-row">
-          <div class="dm-thumb">
-            @if (viewingProductLoading) {
-              <span class="material-symbols-outlined spinning dm-thumb__spinner"
-                >progress_activity</span
-              >
-            } @else if (viewingProduct?.imageUrl) {
-              <img
-                [src]="viewingProduct!.imageUrl"
-                [alt]="viewingProduct!.name"
-              />
-            } @else {
-              <span class="material-symbols-outlined">checkroom</span>
-            }
-          </div>
-          <div class="dm-product-info">
-            <p class="dm-product-name">{{ viewingProduct?.name ?? "—" }}</p>
-            <p class="dm-product-serial">
-              SN: {{ viewingBooking.productSerialNumber }}
-            </p>
-            @if (viewingProduct?.rentPrice) {
-              <p class="dm-product-rent">
-                ₹{{ viewingProduct!.rentPrice | number }} / day
-              </p>
-            }
-          </div>
-        </div>
-
-        <div class="dm-divider"></div>
-
-        <!-- Info grid -->
-        <div class="dm-grid">
-          <!-- Schedule -->
-          <div class="dm-section">
-            <p class="dm-section__label">SCHEDULE</p>
-            <div class="dm-row">
-              <span class="dm-key">Booking Date</span>
-              <span class="dm-val">{{
-                formatDate(viewingBooking.bookingDate)
-              }}</span>
-            </div>
-            <div class="dm-row">
-              <span class="dm-key">Return Date</span>
-              <span class="dm-val">{{
-                formatDate(viewingBooking.returnDate)
-              }}</span>
-            </div>
-          </div>
-
-          <!-- Customer -->
-          <div class="dm-section">
-            <p class="dm-section__label">CUSTOMER</p>
-            @if (viewingBooking.customerName) {
-              <div class="dm-row">
-                <span class="dm-key">Name</span>
-                <span class="dm-val">{{ viewingBooking.customerName }}</span>
-              </div>
-            }
-            <div class="dm-row">
-              <span class="dm-key">Mobile</span>
-              <span class="dm-val">{{ viewingBooking.customerPhone }}</span>
-            </div>
-            <div class="dm-row">
-              <span class="dm-key">Village / City</span>
-              <span class="dm-val">{{ viewingBooking.village }}</span>
-            </div>
-          </div>
-
-          <!-- Payment -->
-          <div class="dm-section">
-            <p class="dm-section__label">PAYMENT</p>
-            <div class="dm-row">
-              <span class="dm-key">Advance Paid</span>
-              <span class="dm-val"
-                >₹{{ viewingBooking.advancePayment ?? 0 | number }}</span
-              >
-            </div>
-            <div class="dm-row">
-              <span class="dm-key">Remaining</span>
-              @if ((viewingBooking.remainingPayment ?? 0) > 0) {
-                <span class="dm-val dm-val--due"
-                  >₹{{ viewingBooking.remainingPayment | number }}</span
-                >
-              } @else {
-                <span class="dm-val dm-val--paid">Paid</span>
-              }
-            </div>
-            @if (
-              viewingBooking.freshPiece &&
-              (viewingBooking.freshPieceCost ?? 0) > 0
-            ) {
-              <div class="dm-row">
-                <span class="dm-key">Extra Cost</span>
-                <span class="dm-val"
-                  >₹{{ viewingBooking.freshPieceCost ?? 0 | number }}</span
-                >
-              </div>
-              <div class="dm-row dm-row--total">
-                <span class="dm-key dm-key--total">Total Remaining</span>
-                @if (totalRemaining(viewingBooking) > 0) {
-                  <span class="dm-val dm-val--total-due"
-                    >₹{{ totalRemaining(viewingBooking) | number }}</span
-                  >
-                } @else {
-                  <span class="dm-val dm-val--paid">Paid</span>
-                }
-              </div>
-            }
-          </div>
-
-          <!-- Extras — always shown -->
-          <div class="dm-section">
-            <p class="dm-section__label">EXTRAS</p>
-            <div class="dm-row">
-              <span class="dm-key">Belt Type</span>
-              @if (viewingBooking.beltType) {
-                <span class="type-chip">{{ viewingBooking.beltType }}</span>
-              } @else {
-                <span class="dm-val dm-val--muted">—</span>
-              }
-            </div>
-            <div class="dm-row">
-              <span class="dm-key">Fresh Piece</span>
-              @if (viewingBooking.freshPiece) {
-                <span class="dm-val dm-val--yes">Yes</span>
-                @if (viewingBooking.freshPieceCost) {
-                  <span class="dm-val dm-val--sub"
-                    >(₹{{ viewingBooking.freshPieceCost | number }})</span
-                  >
-                }
-              } @else {
-                <span class="dm-val dm-val--muted">No</span>
-              }
-            </div>
-            @if (viewingBooking.note) {
-              <div class="dm-row dm-row--col">
-                <span class="dm-key">Note</span>
-                <span class="dm-val dm-val--note">{{
-                  viewingBooking.note
-                }}</span>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="detail-modal__footer">
-        <button class="btn-cancel" (click)="closeDetail()">Close</button>
-        <button
-          class="btn-whatsapp"
-          (click)="sendBillWhatsApp(viewingBooking!, undefined, 'detail')"
-          [disabled]="sendingBill"
-          title="Send bill on WhatsApp"
-        >
-          @if (sendingBill && pendingBillBooking?._id === viewingBooking!._id) {
-            <span
-              class="material-symbols-outlined spinning"
-              style="font-size: 16px"
-              >progress_activity</span
-            >
-          } @else {
-            <span class="wa-icon">
-              <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="currentColor"
-              >
-                <path
-                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
-                />
-              </svg>
-            </span>
-          }
-          Send Bill
-        </button>
-        <button
-          class="btn-save"
-          (click)="openEdit(viewingBooking!); closeDetail()"
-        >
-          <span class="material-symbols-outlined" style="font-size: 16px"
-            >edit</span
-          >
-          Edit
-        </button>
-      </div>
-    </div>
-  </div>
-}
 
 <!-- Quick-Edit Modal -->
 @if (editingBooking) {
@@ -636,7 +444,7 @@
           }
           <p class="wa-modal__note">
             Once scanned, the bill will be sent to
-            <strong>{{ pendingBillBooking?.customerPhone }}</strong>
+            <strong>{{ pendingBillBooking?.customer?.mobileNumber }}</strong>
             automatically.
           </p>
         } @else if (waStatus.state === "connected") {
@@ -685,7 +493,7 @@
       </div>
       <p class="confirm-modal__body">
         The WhatsApp bill for this booking was already sent to
-        <strong>{{ pendingBillBooking?.customerPhone }}</strong
+        <strong>{{ pendingBillBooking?.customer?.mobileNumber }}</strong
         >. Do you want to send it again?
       </p>
       <div class="confirm-modal__actions">

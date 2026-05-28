@@ -16,6 +16,10 @@ export class UserStateService {
     return name.slice(0, 2).toUpperCase();
   });
 
+  isWhatsAppLogin(): boolean {
+    return this._user()?.isWhatsAppLogin ?? false;
+  }
+
   setUser(user: LoggedInUser): void {
     this._user.set(user);
   }

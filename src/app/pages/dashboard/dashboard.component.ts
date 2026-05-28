@@ -73,7 +73,7 @@ export class DashboardComponent {
       trendIcon: 'trending_up',
       trendText: '+18% vs last month',
       color: 'primary',
-      gradient: true,
+      gradient: false,
     },
     {
       icon: 'assignment_return',

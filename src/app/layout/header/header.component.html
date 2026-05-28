@@ -92,6 +92,15 @@
             <span class="material-symbols-outlined">manage_accounts</span>
             Manage Profile
           </button>
+          <!-- @if (userState.isWhatsAppLogin()) { -->
+          <button
+            class="profile-menu__item profile-menu__item--danger"
+            (click)="whatsappLogout()"
+          >
+            <span class="material-symbols-outlined">logout</span>
+            WhatsApp Logout
+          </button>
+          <!-- } -->
           <button
             class="profile-menu__item profile-menu__item--danger"
             (click)="logout()"

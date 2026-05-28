@@ -111,20 +111,36 @@
 
       <!-- ── Right column ────────────────────────────────── -->
       <div class="col-side">
-        <!-- Product -->
+        <!-- Products -->
         <div class="card">
           <div class="card__accent"></div>
-          <h3 class="card__title">Product</h3>
+          <h3 class="card__title">Products</h3>
           <div class="card__body">
-            <div class="field">
-              <label class="field__label">SERIAL NUMBER</label>
-              <input
-                class="field__input field__input--readonly"
-                type="text"
-                [value]="form.productSerialNumber"
-                readonly
-              />
-            </div>
+            @if (items.length > 0) {
+              <div class="items-readonly-list" style="display: flex; flex-direction: column; gap: 8px;">
+                @for (item of items; track item.serialNumber) {
+                  <div class="field">
+                    <label class="field__label">ITEM</label>
+                    <input
+                      class="field__input field__input--readonly"
+                      type="text"
+                      [value]="'SN: ' + item.serialNumber + ' (Qty: ' + item.quantity + ')'"
+                      readonly
+                    />
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="field">
+                <label class="field__label">SERIAL NUMBER</label>
+                <input
+                  class="field__input field__input--readonly"
+                  type="text"
+                  [value]="form.productSerialNumber"
+                  readonly
+                />
+              </div>
+            }
           </div>
         </div>
 

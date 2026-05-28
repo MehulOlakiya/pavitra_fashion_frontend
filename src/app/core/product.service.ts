@@ -34,9 +34,12 @@ export interface ProductAnalytics {
 export interface ApiBooking {
   _id: string;
   productSerialNumber: string;
-  customerName: string;
-  customerPhone: string;
-  village: string;
+  customer: {
+    _id: string;
+    name: string;
+    mobileNumber: string;
+    village: string;
+  };
   advancePayment: number;
   remainingPayment: number;
   bookingDate: string;

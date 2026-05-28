@@ -1,16 +1,15 @@
 <div class="page">
-  <!-- Header -->
-  <div class="detail-header">
-    <button class="back-btn" (click)="goBack()">
-      <span class="material-symbols-outlined">arrow_back</span>
-    </button>
-    <div class="detail-header__title-wrap">
-      <h2 class="detail-header__title">Booking Details</h2>
-      @if (booking) {
-        <span class="badge {{ statusClass(booking.status) }}">
-          {{ statusLabel(booking.status) }}
-        </span>
-      }
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="breadcrumb">
+        <a routerLink="/bookings" class="breadcrumb__link">Bookings</a>
+        <span class="material-symbols-outlined breadcrumb__sep"
+          >chevron_right</span
+        >
+        <span class="breadcrumb__current">Booking Details</span>
+      </div>
+      <h2 class="page-title">Booking Details</h2>
     </div>
   </div>
 
@@ -26,144 +25,465 @@
       <p>{{ errorMessage }}</p>
     </div>
   } @else if (booking) {
-    <div class="detail-grid">
-      <!-- LEFT COLUMN -->
-      <div class="detail-col">
-        <!-- Product Card -->
-        <div class="detail-card">
-          <p class="detail-card__heading">Product</p>
-          <div class="product-row">
-            <div class="product-thumb">
-              @if (product?.imageUrl) {
-                <img [src]="product!.imageUrl" [alt]="product!.name" />
-              } @else {
-                <span class="material-symbols-outlined">checkroom</span>
-              }
-            </div>
-            <div class="product-info">
-              <p class="product-name">{{ product?.name ?? "—" }}</p>
-              <p class="product-serial">
-                SN: {{ booking.productSerialNumber }}
-              </p>
-              @if (product?.rentPrice) {
-                <p class="product-rent">
-                  ₹{{ product!.rentPrice | number }} / day
+    <div class="form-stack">
+      <!-- Row 1: Schedule and Customer -->
+      <div class="row-grid">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon">event</span>
+            <h3 class="section-title">Rental Schedule</h3>
+          </div>
+          <div class="section-body">
+            <div class="info-grid">
+              <div class="info-item">
+                <p class="info-item__label">Booking Date</p>
+                <p class="info-item__value">
+                  {{ formatDate(booking.bookingDate) }}
                 </p>
-              }
+              </div>
+              <div class="info-item">
+                <p class="info-item__label">Return Date</p>
+                <p class="info-item__value">
+                  {{ formatDate(booking.returnDate) }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Schedule Card -->
-        <div class="detail-card">
-          <p class="detail-card__heading">Schedule</p>
-          <div class="info-grid">
-            <div class="info-item">
-              <p class="info-item__label">Booking Date</p>
-              <p class="info-item__value">
-                {{ formatDate(booking.bookingDate) }}
-              </p>
-            </div>
-            <div class="info-item">
-              <p class="info-item__label">Return Date</p>
-              <p class="info-item__value">
-                {{ formatDate(booking.returnDate) }}
-              </p>
+        <div class="section-card">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon">person</span>
+            <h3 class="section-title">Customer Information</h3>
+          </div>
+          <div class="section-body">
+            <div class="info-grid info-grid--3col">
+              @if (booking.customer.name) {
+                <div class="info-item">
+                  <p class="info-item__label">Full Name</p>
+                  <p class="info-item__value">{{ booking.customer.name }}</p>
+                </div>
+              }
+              <div class="info-item">
+                <p class="info-item__label">Mobile</p>
+                <p class="info-item__value">
+                  {{ booking.customer.mobileNumber }}
+                </p>
+              </div>
+              <div class="info-item">
+                <p class="info-item__label">Village / City</p>
+                <p class="info-item__value">{{ booking.customer.village }}</p>
+              </div>
+              @if (booking.beltType) {
+                <div class="info-item">
+                  <p class="info-item__label">Belt Type</p>
+                  <span class="type-chip">{{ booking.beltType }}</span>
+                </div>
+              }
             </div>
           </div>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN -->
-      <div class="detail-col">
-        <!-- Customer Card -->
-        <div class="detail-card">
-          <p class="detail-card__heading">Customer</p>
-          <div class="info-grid">
-            @if (booking.customerName) {
-              <div class="info-item info-item--full">
-                <p class="info-item__label">Full Name</p>
-                <p class="info-item__value">{{ booking.customerName }}</p>
-              </div>
-            }
-            <div class="info-item">
-              <p class="info-item__label">Mobile</p>
-              <p class="info-item__value">{{ booking.customerPhone }}</p>
-            </div>
-            <div class="info-item">
-              <p class="info-item__label">Village / City</p>
-              <p class="info-item__value">{{ booking.village }}</p>
-            </div>
-            @if (booking.beltType) {
-              <div class="info-item">
-                <p class="info-item__label">Belt Type</p>
-                <span class="type-chip">{{ booking.beltType }}</span>
-              </div>
-            }
+      <!-- Row 2: Status & Payment -->
+      <div class="row-grid">
+        <!-- Status & Extras -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon">tune</span>
+            <h3 class="section-title">Manage Status & Extras</h3>
           </div>
-        </div>
-
-        <!-- Payment Card -->
-        <div class="detail-card">
-          <p class="detail-card__heading">Payment</p>
-          <div class="info-grid">
-            <div class="info-item">
-              <p class="info-item__label">Advance Paid</p>
-              <p class="info-item__value info-item__value--money">
-                ₹{{ booking.advancePayment ?? 0 | number }}
-              </p>
+          <div class="section-body manage-card">
+            <!-- STATUS -->
+            <div class="form-group">
+              <label class="form-label">STATUS</label>
+              <div class="float-input">
+                <select class="float-input__field" [(ngModel)]="editStatus">
+                  <option value="active">Active</option>
+                  <option value="pending_return">Pending Return</option>
+                  <option value="returned">Returned</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <span class="material-symbols-outlined select-icon"
+                  >expand_more</span
+                >
+              </div>
             </div>
-            <div class="info-item">
-              <p class="info-item__label">Remaining</p>
-              @if ((booking.remainingPayment ?? 0) > 0) {
-                <p class="info-item__value info-item__value--due">
-                  ₹{{ booking.remainingPayment | number }}
-                </p>
-              } @else {
-                <p class="info-item__value info-item__value--paid">Paid</p>
-              }
-            </div>
-          </div>
-        </div>
 
-        <!-- Extras Card (shown only when applicable) -->
-        @if (booking.freshPiece || booking.note) {
-          <div class="detail-card">
-            <p class="detail-card__heading">Extras</p>
-            <div class="info-grid">
-              @if (booking.freshPiece) {
-                <div class="info-item">
-                  <p class="info-item__label">Fresh Piece</p>
-                  <p class="info-item__value">Yes</p>
-                </div>
-                @if (booking.freshPieceCost) {
+            <!-- Extras (if any) -->
+            @if (booking.freshPiece || booking.note) {
+              <div class="info-grid" style="margin-top: 8px">
+                @if (booking.freshPiece) {
                   <div class="info-item">
-                    <p class="info-item__label">Fresh Piece Cost</p>
-                    <p class="info-item__value info-item__value--money">
-                      ₹{{ booking.freshPieceCost | number }}
+                    <p class="info-item__label">Fresh Piece</p>
+                    <p class="info-item__value">Yes</p>
+                  </div>
+                  @if (booking.freshPieceCost) {
+                    <div class="info-item">
+                      <p class="info-item__label">Fresh Piece Cost</p>
+                      <p class="info-item__value info-item__value--money">
+                        ₹{{ booking.freshPieceCost | number }}
+                      </p>
+                    </div>
+                  }
+                }
+                @if (booking.note) {
+                  <div class="info-item info-item--full">
+                    <p class="info-item__label">Note</p>
+                    <p class="info-item__value info-item__value--note">
+                      {{ booking.note }}
                     </p>
                   </div>
                 }
-              }
-              @if (booking.note) {
-                <div class="info-item info-item--full">
-                  <p class="info-item__label">Note</p>
-                  <p class="info-item__value info-item__value--note">
-                    {{ booking.note }}
-                  </p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="material-symbols-outlined section-icon">payments</span>
+            <h3 class="section-title">Payment Management</h3>
+          </div>
+          <div class="section-body manage-card">
+            <!-- REMAINING PAYMENT -->
+            <div class="form-group">
+              <label class="form-label">REMAINING PAYMENT</label>
+              <div class="readonly-box">
+                <span class="readonly-box__label">Current Remaining:</span>
+                <span class="readonly-box__value"
+                  >₹{{ booking.remainingPayment || 0 }}</span
+                >
+              </div>
+            </div>
+
+            @if (booking.remainingPayment && booking.remainingPayment > 0) {
+              <!-- Full Payment Toggle -->
+              <div class="toggle-row">
+                <label class="switch">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="fullPaymentReceived"
+                    (change)="onFullPaymentToggle()"
+                  />
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">Full Payment Received</span>
+              </div>
+
+              <!-- AMOUNT RECEIVED NOW -->
+              @if (!fullPaymentReceived) {
+                <div class="form-group">
+                  <label class="form-label">AMOUNT RECEIVED NOW</label>
+                  <div class="float-input">
+                    <span class="float-input__prefix">₹</span>
+                    <input
+                      type="number"
+                      class="float-input__field float-input__field--prefix"
+                      [(ngModel)]="editPaymentAmount"
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
               }
-            </div>
+            }
           </div>
-        }
+        </div>
       </div>
-    </div>
 
-    <!-- Timestamps -->
-    <div class="timestamps">
-      <span>Created: {{ formatDate(booking.createdAt) }}</span>
-      <span class="timestamps__sep">·</span>
-      <span>Last updated: {{ formatDate(booking.updatedAt) }}</span>
+      <!-- Row 3: Products -->
+      <div class="section-card">
+        <div class="section-header section-header--between">
+          <div class="section-header__left">
+            <span class="material-symbols-outlined section-icon"
+              >checkroom</span
+            >
+            <h3 class="section-title">Products</h3>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="product-cards">
+            @for (item of products; track item.product?.serialNumber) {
+              <div class="product-card">
+                <div class="product-card__top">
+                  <div class="product-card__info">
+                    <div class="product-card__thumb">
+                      @if (item.product.imageUrl) {
+                        <img
+                          [src]="item.product.imageUrl"
+                          [alt]="item.product.name"
+                        />
+                      } @else {
+                        <span class="material-symbols-outlined">checkroom</span>
+                      }
+                    </div>
+                    <div class="product-card__meta">
+                      <span class="product-card__serial"
+                        >#{{ item.product.serialNumber }} (Qty:
+                        {{ item.quantity }})</span
+                      >
+                      <h4 class="product-card__name">
+                        {{ item.product.name }}
+                      </h4>
+                      @if (item.product.rentPrice) {
+                        <span class="product-card__category"
+                          >₹{{ item.product.rentPrice | number }} / day (Total:
+                          ₹{{
+                            item.product.rentPrice * item.quantity | number
+                          }})</span
+                        >
+                      }
+
+                      <div
+                        class="product-extras"
+                        style="
+                          display: flex;
+                          gap: 8px;
+                          margin-top: 10px;
+                          flex-wrap: wrap;
+                        "
+                      >
+                        @if (item.freshPiece) {
+                          <span
+                            class="type-chip"
+                            style="font-size: 11px; padding: 4px 8px"
+                            >Fresh Piece (₹{{ item.freshPieceCost || 0 }})</span
+                          >
+                        } @else {
+                          <span
+                            class="type-chip"
+                            style="
+                              font-size: 11px;
+                              padding: 4px 8px;
+                              background: rgba(191, 199, 212, 0.2);
+                              color: var(--on-surface-variant);
+                            "
+                            >Not Fresh Piece</span
+                          >
+                        }
+
+                        @if (item.beltType) {
+                          <span
+                            class="type-chip"
+                            style="
+                              font-size: 11px;
+                              padding: 4px 8px;
+                              background: rgba(207, 132, 0, 0.1);
+                              color: var(--tertiary);
+                            "
+                            >{{ item.beltType }}</span
+                          >
+                        } @else {
+                          <span
+                            class="type-chip"
+                            style="
+                              font-size: 11px;
+                              padding: 4px 8px;
+                              background: rgba(191, 199, 212, 0.2);
+                              color: var(--on-surface-variant);
+                            "
+                            >No Belt</span
+                          >
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions / Footer -->
+      <div class="section-card section-card--footer">
+        <div class="form-footer">
+          <div class="form-actions" style="margin-left: auto">
+            <button type="button" class="btn-cancel" (click)="generateBill()">
+              <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">receipt_long</span>
+              Generate Bill
+            </button>
+            <button
+              type="button"
+              class="btn-confirm"
+              [disabled]="isSaving"
+              (click)="saveChanges()"
+            >
+              @if (isSaving) {
+                <span class="material-symbols-outlined spinning"
+                  >progress_activity</span
+                >
+                Saving…
+              } @else {
+                <span class="material-symbols-outlined">check</span>
+                Save
+              }
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   }
 </div>
+
+<!-- WhatsApp Session Modal -->
+@if (waModalOpen) {
+  <div class="modal-backdrop" (click)="closeWaModal()">
+    <div class="wa-modal" (click)="$event.stopPropagation()">
+      <div class="wa-modal__header">
+        <div class="wa-modal__title-wrap">
+          <svg class="wa-modal__logo" viewBox="0 0 24 24" fill="#25D366">
+            <path
+              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+            />
+          </svg>
+          <h3 class="wa-modal__title">Connect WhatsApp</h3>
+        </div>
+        <button class="modal__close" (click)="closeWaModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="wa-modal__body">
+        @if (waInitLoading || waStatus.state === "initializing") {
+          <div class="wa-modal__state">
+            <span class="material-symbols-outlined spinning wa-modal__spinner"
+              >progress_activity</span
+            >
+            <p class="wa-modal__state-text">Initializing WhatsApp session…</p>
+          </div>
+        } @else if (waStatus.state === "qr") {
+          <p class="wa-modal__instruction">
+            Open <strong>WhatsApp → Linked Devices → Link a Device</strong> and
+            scan this code.
+          </p>
+          @if (waQrSafeUrl) {
+            <img
+              class="wa-modal__qr"
+              [src]="waQrSafeUrl"
+              alt="WhatsApp QR Code"
+            />
+          } @else {
+            <div class="wa-modal__state">
+              <span class="material-symbols-outlined spinning wa-modal__spinner"
+                >progress_activity</span
+              >
+              <p class="wa-modal__state-text">Generating QR code…</p>
+            </div>
+          }
+          <p class="wa-modal__note">
+            Once scanned, the bill will be sent to
+            <strong>{{ pendingBillBooking?.customer?.mobileNumber }}</strong>
+            automatically.
+          </p>
+        } @else if (waStatus.state === "connected") {
+          <div class="wa-modal__state">
+            <span class="material-symbols-outlined wa-modal__connected-icon"
+              >check_circle</span
+            >
+            <p class="wa-modal__state-text">Connected! Sending bill…</p>
+          </div>
+        } @else {
+          <div class="wa-modal__state">
+            <span class="material-symbols-outlined spinning wa-modal__spinner"
+              >progress_activity</span
+            >
+            <p class="wa-modal__state-text">Connecting…</p>
+          </div>
+        }
+      </div>
+
+      <div class="wa-modal__footer">
+        <button class="btn-cancel" (click)="closeWaModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Bill Already Sent — Resend Warning Modal -->
+@if (billResendModalOpen) {
+  <div class="modal-backdrop" (click)="cancelResend()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-modal__header">
+        <svg
+          class="confirm-modal__icon confirm-modal__icon--warn"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+          />
+        </svg>
+        <h3 class="confirm-modal__title">Bill Already Sent</h3>
+      </div>
+      <p class="confirm-modal__body">
+        The WhatsApp bill for this booking was already sent to
+        <strong>{{ pendingBillBooking?.customer?.mobileNumber }}</strong
+        >. Do you want to send it again?
+      </p>
+      <div class="confirm-modal__actions">
+        <button class="btn-cancel" (click)="cancelResend()">Cancel</button>
+        <button class="btn-whatsapp" (click)="confirmResend()">
+          Send Again
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Bill Preview Modal -->
+@if (isPreviewModalOpen) {
+  <div class="modal-backdrop" (click)="closePreview()">
+    <div class="preview-modal" (click)="$event.stopPropagation()">
+      <div class="preview-modal__header">
+        <h3 class="preview-modal__title">Invoice Preview</h3>
+        <button class="modal__close" (click)="closePreview()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="preview-modal__body">
+        @if (isPreviewLoading) {
+          <div class="state-center" style="flex: 1; height: 100%;">
+            <span class="material-symbols-outlined spinning">progress_activity</span>
+            <p>Generating PDF preview…</p>
+          </div>
+        } @else if (pdfBlobUrl) {
+          <iframe [src]="pdfBlobUrl" width="100%" height="100%" frameborder="0" id="pdf-frame"></iframe>
+        }
+      </div>
+
+      <div class="preview-modal__footer">
+        <button class="btn-cancel" (click)="closePreview()">Close</button>
+        <button class="btn-cancel" (click)="downloadFromPreview()">
+          <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">download</span>
+          Download
+        </button>
+        <button class="btn-cancel" (click)="printFromPreview()">
+          <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">print</span>
+          Print
+        </button>
+        <button class="btn-whatsapp" (click)="sendBill()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            style="margin-right: 4px;"
+          >
+            <path
+              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
+            />
+          </svg>
+          Send WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+}

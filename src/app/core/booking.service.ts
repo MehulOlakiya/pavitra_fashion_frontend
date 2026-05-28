@@ -12,10 +12,9 @@ export type BookingStatus =
 export type BeltType = 'HB' | 'FB';
 
 export interface CreateBookingPayload {
-  productSerialNumber: string;
-  customerName?: string;
-  customerPhone: string;
-  village: string;
+  productSerialNumber?: string; // Kept for backwards compatibility
+  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number }[];
+  customer: string; // Customer ObjectId
   advancePayment?: number;
   remainingPayment?: number;
   bookingDate: string; // ISO date string
@@ -27,12 +26,20 @@ export interface CreateBookingPayload {
   freshPieceCost?: number;
 }
 
+export interface BookingCustomer {
+  _id: string;
+  customerId: string;
+  name: string;
+  mobileNumber: string;
+  village: string;
+}
+
 export interface Booking {
   _id: string;
-  productSerialNumber: string;
-  customerName?: string;
-  customerPhone: string;
-  village: string;
+  orderId?: string;
+  productSerialNumber?: string;
+  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number }[];
+  customer: BookingCustomer;
   advancePayment?: number;
   remainingPayment?: number;
   bookingDate: string;
@@ -72,6 +79,7 @@ export interface SearchBookingParams {
   toDate?: string;
   page?: number;
   limit?: number;
+  overlap?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -130,6 +138,12 @@ export class BookingService {
     if (params.toDate) httpParams = httpParams.set('toDate', params.toDate);
     return this.http.get<BookingAnalytics>(`${this.base}/analytics`, {
       params: httpParams,
+    });
+  }
+
+  downloadInvoice(id: string): Observable<Blob> {
+    return this.http.get(`${this.base}/${id}/pdf`, {
+      responseType: 'blob',
     });
   }
 }

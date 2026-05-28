@@ -26,11 +26,12 @@ const AVATAR_COLORS: DisplayBooking['color'][] = [
 ];
 
 function toDisplayBooking(b: ApiBooking, idx: number): DisplayBooking {
-  const parts = b.customerName.trim().split(' ');
+  const name = b.customer?.name || 'Unknown';
+  const parts = name.trim().split(' ');
   const initials =
     parts.length >= 2
       ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : b.customerName.slice(0, 2).toUpperCase();
+      : name.slice(0, 2).toUpperCase();
 
   const statusMap: Record<ApiBooking['status'], string> = {
     active: 'Ongoing',
@@ -42,8 +43,8 @@ function toDisplayBooking(b: ApiBooking, idx: number): DisplayBooking {
   return {
     initials,
     color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
-    customerName: b.customerName,
-    customerPhone: b.customerPhone,
+    customerName: name,
+    customerPhone: b.customer?.mobileNumber || '',
     bookingDate: new Date(b.bookingDate).toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',

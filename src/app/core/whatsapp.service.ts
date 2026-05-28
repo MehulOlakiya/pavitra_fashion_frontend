@@ -39,6 +39,10 @@ export class WhatsappService {
     return this.http.post<{ message: string }>(`${this.base}/send`, payload);
   }
 
+  sendPdf(payload: { mobileNumber: string; message: string; fileBase64: string; filename: string; mimetype: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.base}/send-pdf`, payload);
+  }
+
   logout(): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.base}/logout`, {});
   }
