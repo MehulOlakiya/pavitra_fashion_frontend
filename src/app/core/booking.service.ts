@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export type BookingStatus =
-  | 'active'
+  | 'booked'
+  | 'rented'
   | 'pending_return'
   | 'returned'
   | 'cancelled';
@@ -64,14 +65,17 @@ export interface PaginatedBookings {
 
 export interface BookingAnalytics {
   total: number;
-  active: number;
+  booked: number;
+  rented: number;
   pending_return: number;
   returned: number;
   cancelled: number;
 }
 
 export interface SearchBookingParams {
+  customerId?: string;
   customerName?: string;
+  orderId?: string;
   serialNumber?: string;
   customerPhone?: string;
   status?: BookingStatus;

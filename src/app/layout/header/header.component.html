@@ -41,6 +41,47 @@
       >
         <span class="material-symbols-outlined">search</span>
       </button>
+
+      <!-- Notification Bell -->
+      <div class="notification-wrap">
+        <button class="notification-btn" (click)="toggleNotificationMenu($event)" aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+          @if (notificationCount > 0) {
+            <span class="notification-badge">{{ notificationCount }}</span>
+          }
+        </button>
+        @if (notificationMenuOpen) {
+          <div class="notification-menu" (click)="$event.stopPropagation()">
+            <div class="notification-menu__header">
+              <span class="notification-menu__title">Notifications</span>
+            </div>
+            <div class="notification-menu__content">
+              @if (notificationCount === 0) {
+                <div class="notification-menu__empty">
+                  No new notifications
+                </div>
+              } @else {
+                @for (notif of notifications; track notif.id) {
+                  <div class="notification-item" (click)="openNotification(notif)">
+                    <div class="notification-item__icon" [ngClass]="'icon-' + notif.type">
+                      <span class="material-symbols-outlined">
+                        {{ notif.type === 'pickup' ? 'local_shipping' : notif.type === 'return' ? 'assignment_return' : 'payments' }}
+                      </span>
+                    </div>
+                    <div class="notification-item__text">
+                      <p class="notification-item__title">{{ notif.title }}</p>
+                      <p class="notification-item__message">{{ notif.message }}</p>
+                    </div>
+                    <button class="notification-item__dismiss" (click)="dismissNotification($event, notif)" title="Mark as read">
+                      <span class="material-symbols-outlined">check_circle</span>
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
     </div>
     <div class="divider"></div>
     <div class="profile-wrap">

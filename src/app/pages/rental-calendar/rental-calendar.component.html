@@ -1,0 +1,536 @@
+<div class="cal-page">
+  <!-- ── Page Header ────────────────────────────────────────── -->
+  <div class="cal-page__header">
+    <div class="cal-page__title-group">
+      <h1 class="cal-page__title">Rental Calendar</h1>
+      <p class="cal-page__subtitle">
+        Manage availability, bookings, and returns.
+      </p>
+    </div>
+
+    <div class="cal-page__controls">
+      <!-- Month Navigation -->
+      <div class="month-nav">
+        <button
+          class="month-nav__btn"
+          (click)="prevMonth()"
+          aria-label="Previous month"
+          [disabled]="isLoading()"
+        >
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <span class="month-nav__label">
+          @if (isLoading()) {
+            <span class="loading-dots">
+              <span></span><span></span><span></span>
+            </span>
+          } @else {
+            {{ currentMonthLabel() }}
+          }
+        </span>
+        <button
+          class="month-nav__btn"
+          (click)="nextMonth()"
+          aria-label="Next month"
+          [disabled]="isLoading()"
+        >
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+
+      <button class="today-btn" (click)="goToToday()" [disabled]="isLoading()">
+        Today
+      </button>
+
+      <!-- Legend -->
+      <div class="legend">
+        <span class="legend__dot legend__dot--booked"></span>
+        <span class="legend__text">Booked</span>
+        <span class="legend__dot legend__dot--rented"></span>
+        <span class="legend__text">Rented</span>
+        <span class="legend__dot legend__dot--pending_return"></span>
+        <span class="legend__text">Pending Return</span>
+        <span class="legend__dot legend__dot--returned"></span>
+        <span class="legend__text">Returned</span>
+        <span class="legend__dot legend__dot--cancelled"></span>
+        <span class="legend__text">Cancelled</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Error Banner ──────────────────────────────────────── -->
+  @if (hasError()) {
+    <div class="error-banner">
+      <span class="material-symbols-outlined">wifi_off</span>
+      <span>Failed to load bookings. Check your connection.</span>
+      <button class="error-retry-btn" (click)="retry()">Retry</button>
+    </div>
+  }
+
+  <!-- ── Summary Stats ──────────────────────────────────────── -->
+  <div class="cal-stats">
+    <div class="cal-stat cal-stat--booked" (click)="setTypeFilter('booked')">
+      <div class="cal-stat__icon-wrap">
+        <span class="material-symbols-outlined">event_available</span>
+      </div>
+      <div>
+        <p class="cal-stat__value">
+          @if (isLoading()) { <span class="skeleton-val"></span> } @else { {{ bookedCount() }} }
+        </p>
+        <p class="cal-stat__label">Booked</p>
+      </div>
+    </div>
+    <div class="cal-stat cal-stat--rented" (click)="setTypeFilter('rented')">
+      <div class="cal-stat__icon-wrap">
+        <span class="material-symbols-outlined">shopping_bag</span>
+      </div>
+      <div>
+        <p class="cal-stat__value">
+          @if (isLoading()) { <span class="skeleton-val"></span> } @else { {{ rentedCount() }} }
+        </p>
+        <p class="cal-stat__label">Rented</p>
+      </div>
+    </div>
+    <div class="cal-stat cal-stat--pending_return" (click)="setTypeFilter('pending_return')">
+      <div class="cal-stat__icon-wrap">
+        <span class="material-symbols-outlined">warning</span>
+      </div>
+      <div>
+        <p class="cal-stat__value">
+          @if (isLoading()) { <span class="skeleton-val"></span> } @else { {{ pendingReturnCount() }} }
+        </p>
+        <p class="cal-stat__label">Pending Return</p>
+      </div>
+    </div>
+    <div class="cal-stat cal-stat--returned" (click)="setTypeFilter('returned')">
+      <div class="cal-stat__icon-wrap">
+        <span class="material-symbols-outlined">assignment_return</span>
+      </div>
+      <div>
+        <p class="cal-stat__value">
+          @if (isLoading()) { <span class="skeleton-val"></span> } @else { {{ returnedCount() }} }
+        </p>
+        <p class="cal-stat__label">Returned</p>
+      </div>
+    </div>
+    <div class="cal-stat cal-stat--cancelled" (click)="setTypeFilter('cancelled')">
+      <div class="cal-stat__icon-wrap">
+        <span class="material-symbols-outlined">cancel</span>
+      </div>
+      <div>
+        <p class="cal-stat__value">
+          @if (isLoading()) { <span class="skeleton-val"></span> } @else { {{ cancelledCount() }} }
+        </p>
+        <p class="cal-stat__label">Cancelled</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Type Filters ─────────────────────────────────────── -->
+  <div class="type-filters">
+    <button
+      class="type-btn"
+      [class.type-btn--active-all]="activeTypeFilter() === 'all'"
+      (click)="setTypeFilter('all')"
+    >
+      All
+    </button>
+    <button
+      class="type-btn type-btn--booked"
+      [class.type-btn--active-booked]="activeTypeFilter() === 'booked'"
+      (click)="setTypeFilter('booked')"
+    >
+      <span class="material-symbols-outlined">event_available</span> Booked
+    </button>
+    <button
+      class="type-btn type-btn--rented"
+      [class.type-btn--active-rented]="activeTypeFilter() === 'rented'"
+      (click)="setTypeFilter('rented')"
+    >
+      <span class="material-symbols-outlined">shopping_bag</span> Rented
+    </button>
+    <button
+      class="type-btn type-btn--pending_return"
+      [class.type-btn--active-pending_return]="activeTypeFilter() === 'pending_return'"
+      (click)="setTypeFilter('pending_return')"
+    >
+      <span class="material-symbols-outlined">warning</span> Pending Return
+    </button>
+    <button
+      class="type-btn type-btn--returned"
+      [class.type-btn--active-returned]="activeTypeFilter() === 'returned'"
+      (click)="setTypeFilter('returned')"
+    >
+      <span class="material-symbols-outlined">assignment_return</span> Returned
+    </button>
+    <button
+      class="type-btn type-btn--cancelled"
+      [class.type-btn--active-cancelled]="activeTypeFilter() === 'cancelled'"
+      (click)="setTypeFilter('cancelled')"
+    >
+      <span class="material-symbols-outlined">cancel</span> Cancelled
+    </button>
+  </div>
+
+  <!-- ── Calendar Grid ──────────────────────────────────────── -->
+  <div class="cal-grid-card" [class.cal-grid-card--loading]="isLoading()">
+    <!-- Weekday Headers -->
+    <div class="cal-grid__header">
+      @for (wd of weekDays; track wd) {
+        <div class="cal-grid__wd">{{ wd }}</div>
+      }
+    </div>
+
+    <!-- Loading overlay -->
+    @if (isLoading()) {
+      <div class="cal-loading-overlay">
+        <div class="cal-spinner"></div>
+        <p>Loading bookings…</p>
+      </div>
+    }
+
+    <!-- Day Cells -->
+    <div class="cal-grid__body">
+      @for (day of calendarDays(); track trackByDay($index, day)) {
+        <div
+          class="cal-day"
+          [class.cal-day--other-month]="!day.isCurrentMonth"
+          [class.cal-day--today]="day.isToday"
+          [class.cal-day--weekend]="day.isWeekend && day.isCurrentMonth"
+          [class.cal-day--has-events]="getEventsForDay(day).length > 0"
+          (click)="onDayClick(day)"
+          role="button"
+          [attr.aria-label]="day.date | date: 'd MMMM yyyy'"
+        >
+          <!-- Day Number -->
+          <div class="cal-day__num-wrap">
+            <span class="cal-day__num">{{ day.dayNum }}</span>
+          </div>
+
+          <!-- Event Chips -->
+          <div class="cal-day__events">
+            @for (
+              ev of getEventsForDay(day).slice(0, 3);
+              track trackById($index, ev)
+            ) {
+              <div
+                class="event-chip"
+                [class.event-chip--booked]="ev.eventType === 'booked'"
+                [class.event-chip--rented]="ev.eventType === 'rented'"
+                [class.event-chip--pending_return]="ev.eventType === 'pending_return'"
+                [class.event-chip--returned]="ev.eventType === 'returned'"
+                [class.event-chip--cancelled]="ev.eventType === 'cancelled'"
+                [title]="ev.item + ' · ' + ev.customer"
+                (click)="onEventClick(ev, $event)"
+              >
+                <span class="event-chip__dot"></span>
+                <span class="event-chip__text">{{ ev.item }}</span>
+              </div>
+            }
+            @if (getEventsForDay(day).length > 3) {
+              <div class="event-chip__more">
+                +{{ getEventsForDay(day).length - 3 }} more
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL BACKDROP + DIALOG
+     Triggered on any day click
+     ══════════════════════════════════════════════════════════════ -->
+@if (modalOpen()) {
+  <div
+    class="modal-backdrop"
+    (click)="closeModal()"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="'Events for ' + (selectedDay()! | date: 'd MMMM yyyy')"
+  >
+    <div class="modal" (click)="$event.stopPropagation()">
+      <!-- ── Modal Header ─────────────────────────────────── -->
+      <div class="modal__header">
+        <div class="modal__title-group">
+          <span class="material-symbols-outlined modal__cal-icon">event</span>
+          <div>
+            <h2 class="modal__title">
+              {{ selectedDay()! | date: "EEEE, d MMMM" }}
+            </h2>
+            <p class="modal__subtitle">
+              {{ selectedDayEvents().length }} event{{
+                selectedDayEvents().length !== 1 ? "s" : ""
+              }}
+            </p>
+          </div>
+        </div>
+        <button
+          class="modal__close-btn"
+          (click)="closeModal()"
+          aria-label="Close modal"
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- ── No Events State ─────────────────────────────── -->
+      @if (selectedDayEvents().length === 0) {
+        <div class="modal__empty">
+          <span class="material-symbols-outlined modal__empty-icon"
+            >calendar_today</span
+          >
+          <p>No bookings or returns scheduled for this day.</p>
+        </div>
+      }
+
+      <!-- ── Two-panel: list + detail ────────────────────── -->
+      @if (selectedDayEvents().length > 0) {
+        <div
+          class="modal__body"
+          [class.modal__body--has-detail]="selectedEvent()"
+        >
+          <!-- Events List -->
+          <div class="modal__list">
+            @for (ev of selectedDayEvents(); track trackById($index, ev)) {
+              <div
+                class="modal-event-row"
+                [class.modal-event-row--booked]="ev.eventType === 'booked'"
+                [class.modal-event-row--rented]="ev.eventType === 'rented'"
+                [class.modal-event-row--pending_return]="ev.eventType === 'pending_return'"
+                [class.modal-event-row--returned]="ev.eventType === 'returned'"
+                [class.modal-event-row--cancelled]="ev.eventType === 'cancelled'"
+                [class.modal-event-row--active]="selectedEvent()?.id === ev.id"
+                (click)="selectEventInModal(ev)"
+                role="button"
+              >
+                <div
+                  class="modal-event-row__icon-wrap"
+                  [class.modal-event-row__icon-wrap--booked]="ev.eventType === 'booked'"
+                  [class.modal-event-row__icon-wrap--rented]="ev.eventType === 'rented'"
+                  [class.modal-event-row__icon-wrap--pending_return]="ev.eventType === 'pending_return'"
+                  [class.modal-event-row__icon-wrap--returned]="ev.eventType === 'returned'"
+                  [class.modal-event-row__icon-wrap--cancelled]="ev.eventType === 'cancelled'"
+                >
+                  <span class="material-symbols-outlined">{{
+                    getIcon(ev.eventType)
+                  }}</span>
+                </div>
+                <div class="modal-event-row__info">
+                  <p class="modal-event-row__item">{{ ev.item }}</p>
+                  <p class="modal-event-row__customer">{{ ev.customer }}</p>
+                  <p class="modal-event-row__order">{{ ev.orderId }}</p>
+                </div>
+                <span
+                  class="event-badge"
+                  [ngClass]="getChipClass(ev.eventType)"
+                >
+                  {{ getLabel(ev.eventType) }}
+                </span>
+                <span class="material-symbols-outlined modal-event-row__chevron"
+                  >chevron_right</span
+                >
+              </div>
+            }
+          </div>
+
+          <!-- Event Detail Pane (slides in when an event is selected) -->
+          @if (selectedEvent()) {
+            <div class="modal__detail">
+              <div class="modal__detail-header">
+                <button
+                  class="modal__detail-back"
+                  (click)="selectedEvent.set(null)"
+                  aria-label="Back to list"
+                >
+                  <span class="material-symbols-outlined">arrow_back</span>
+                  <span>Back</span>
+                </button>
+                <div
+                  class="event-badge"
+                  [ngClass]="getChipClass(selectedEvent()!.eventType)"
+                >
+                  <span class="material-symbols-outlined">{{
+                    getIcon(selectedEvent()!.eventType)
+                  }}</span>
+                  {{ getLabel(selectedEvent()!.eventType) }}
+                </div>
+              </div>
+
+              <h3 class="modal__detail-item">{{ selectedEvent()!.orderId }}</h3>
+
+              <div class="modal__detail-products">
+                <h4 class="modal__detail-section-title">Items</h4>
+                <ul class="modal__detail-product-list">
+                  @for (
+                    prod of selectedEvent()!.items;
+                    track prod.serialNumber
+                  ) {
+                    <li>
+                      @if (prod.product?.imageUrl) {
+                        <img
+                          [src]="prod.product!.imageUrl"
+                          alt="Product Image"
+                          class="product-img"
+                        />
+                      } @else {
+                        <div class="product-img-placeholder">
+                          <span class="material-symbols-outlined">image</span>
+                        </div>
+                      }
+                      <!-- <span class="product-name">{{ prod.product?.name || 'Unknown Product' }}</span> -->
+                      <span class="product-serial">{{
+                        prod.serialNumber
+                      }}</span>
+                      <span class="product-qty">x{{ prod.quantity }}</span>
+                    </li>
+                  } @empty {
+                    <li>No items found</li>
+                  }
+                </ul>
+              </div>
+
+              <div class="modal__detail-meta">
+                <div class="modal__detail-meta-row">
+                  <span class="material-symbols-outlined">person</span>
+                  <div>
+                    <p class="modal__detail-meta-label">Customer</p>
+                    <p class="modal__detail-meta-value">
+                      {{ selectedEvent()!.customer }}
+                    </p>
+                  </div>
+                </div>
+                @if (selectedEvent()!.customerPhone) {
+                  <div class="modal__detail-meta-row">
+                    <span class="material-symbols-outlined">phone</span>
+                    <div>
+                      <p class="modal__detail-meta-label">Phone</p>
+                      <p class="modal__detail-meta-value">
+                        {{ selectedEvent()!.customerPhone }}
+                      </p>
+                    </div>
+                  </div>
+                }
+                <div class="modal__detail-meta-row">
+                  <span class="material-symbols-outlined">shopping_bag</span>
+                  <div>
+                    <p class="modal__detail-meta-label">Booking Date</p>
+                    <p class="modal__detail-meta-value">
+                      {{ selectedEvent()!.bookingDate | date: "d MMM yyyy" }}
+                    </p>
+                  </div>
+                </div>
+                <div class="modal__detail-meta-row">
+                  <span class="material-symbols-outlined"
+                    >assignment_return</span
+                  >
+                  <div>
+                    <p class="modal__detail-meta-label">Return Date</p>
+                    <p class="modal__detail-meta-value">
+                      {{ selectedEvent()!.returnDate | date: "d MMM yyyy" }}
+                    </p>
+                  </div>
+                </div>
+                @if (selectedEvent()!.remainingPayment !== undefined) {
+                  <div class="modal__detail-meta-row">
+                    <span class="material-symbols-outlined">payments</span>
+                    <div>
+                      <p class="modal__detail-meta-label">Remaining Due</p>
+                      <p
+                        class="modal__detail-meta-value modal__detail-meta-value--payment"
+                      >
+                        ₹{{ selectedEvent()!.remainingPayment | number }}
+                      </p>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="modal__detail-actions">
+                <button
+                  class="action-btn action-btn--secondary"
+                  (click)="viewFullDetails(selectedEvent()!.bookingId)"
+                >
+                  View Full Details
+                </button>
+                @if (
+                  selectedEvent()!.eventType === "rented" ||
+                  selectedEvent()!.eventType === "pending_return"
+                ) {
+                  <button class="action-btn action-btn--primary" (click)="openPaymentModal()" [disabled]="isSubmitting()">
+                    {{ isSubmitting() ? 'Processing...' : 'Mark Returned' }}
+                  </button>
+                }
+                @if (selectedEvent()!.eventType === "booked") {
+                  <button class="action-btn action-btn--primary" (click)="markRented()" [disabled]="isSubmitting()">
+                    {{ isSubmitting() ? 'Processing...' : 'Mark Rented' }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ── Payment Collection Modal ────────────────────────────────────────────── -->
+@if (paymentModalOpen()) {
+  <div class="modal-backdrop" (click)="closePaymentModal()">
+    <div class="modal payment-modal" (click)="$event.stopPropagation()">
+      <div class="payment-modal__header">
+        <h3 class="payment-modal__title">Collect Payment</h3>
+        <button class="payment-modal__close-btn" (click)="closePaymentModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="payment-modal__body">
+        <div class="payment-group">
+          <label class="payment-label">REMAINING PAYMENT</label>
+          <div class="payment-remaining-box">
+            <span>Current Remaining:</span>
+            <span class="payment-remaining-amt">₹{{ selectedEvent()?.remainingPayment | number }}</span>
+          </div>
+        </div>
+
+        <div class="payment-toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" [checked]="fullPaymentReceived()" (change)="toggleFullPayment($event)">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">Full Payment Received</span>
+        </div>
+
+        @if (!fullPaymentReceived()) {
+          <div class="payment-group">
+            <label class="payment-label">AMOUNT RECEIVED NOW</label>
+            <div class="payment-input-wrap">
+              <span class="payment-input-prefix">₹</span>
+              <input 
+                type="number" 
+                class="payment-input"
+                [ngModel]="amountReceived()"
+                (ngModelChange)="onAmountChange($event)"
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="payment-modal__footer">
+        <button class="action-btn action-btn--secondary" (click)="closePaymentModal()">
+          Discard
+        </button>
+        <button class="action-btn action-btn--primary" (click)="confirmReturned()" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Processing...' : 'Mark Returned' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

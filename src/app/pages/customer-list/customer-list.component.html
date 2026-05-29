@@ -2,31 +2,34 @@
   <div class="header-analytics-row">
     <!-- Summary Cards -->
     <div class="summary-row">
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--primary">
-          <span class="material-symbols-outlined">group</span>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--primary"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--primary">
+          <span class="material-symbols-outlined analytics-card__icon">group</span>
         </div>
-        <div>
-          <p class="summary-card__label">TOTAL CUSTOMERS</p>
-          <p class="summary-card__value">{{ analytics.total }}</p>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--secondary">
-          <span class="material-symbols-outlined">assignment_return</span>
-        </div>
-        <div>
-          <p class="summary-card__label">ACTIVE RENTAL</p>
-          <p class="summary-card__value">{{ analytics.active }}</p>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">TOTAL CUSTOMERS</p>
+          <h3 class="analytics-card__value">{{ analytics.total }}</h3>
         </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--returned">
-          <span class="material-symbols-outlined">person_add</span>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--secondary"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--secondary">
+          <span class="material-symbols-outlined analytics-card__icon">assignment_return</span>
         </div>
-        <div>
-          <p class="summary-card__label">NEW THIS MONTH</p>
-          <p class="summary-card__value">{{ analytics.newThisMonth }}</p>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">ACTIVE RENTAL</p>
+          <h3 class="analytics-card__value">{{ analytics.active }}</h3>
+        </div>
+      </div>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--tertiary"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--tertiary">
+          <span class="material-symbols-outlined analytics-card__icon">person_add</span>
+        </div>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">NEW THIS MONTH</p>
+          <h3 class="analytics-card__value">{{ analytics.newThisMonth }}</h3>
         </div>
       </div>
     </div>
@@ -73,7 +76,9 @@
             <tr>
               <td colspan="6" class="cell-state">
                 <div class="empty-state">
-                  <span class="material-symbols-outlined spinning">progress_activity</span>
+                  <span class="material-symbols-outlined spinning"
+                    >progress_activity</span
+                  >
                   <p class="empty-state__title">Loading customers…</p>
                 </div>
               </td>
@@ -94,22 +99,28 @@
             </tr>
           } @else {
             @for (c of filteredCustomers; track c._id) {
-              <tr class="table-row">
+              <tr class="table-row" (click)="viewCustomer(c._id)" style="cursor: pointer;">
                 <td class="cell-sn">{{ c.customerId }}</td>
                 <td>
-                  <p class="customer-name" style="margin: 0;">{{ c.name }}</p>
+                  <p class="customer-name" style="margin: 0">{{ c.name }}</p>
                 </td>
                 <td>
-                  <p class="customer-phone" style="margin: 0;">{{ c.mobileNumber }}</p>
+                  <p class="customer-phone" style="margin: 0">
+                    {{ c.mobileNumber }}
+                  </p>
                 </td>
                 <td>
-                  <p class="customer-village" style="margin: 0;">{{ c.village }}</p>
+                  <p class="customer-village" style="margin: 0">
+                    {{ c.village }}
+                  </p>
                 </td>
                 <td>
-                  <span class="badge badge--active">{{ c.totalBookings || 0 }} Bookings</span>
+                  <span class="badge badge--active"
+                    >{{ c.totalBooking || 0 }} Bookings</span
+                  >
                 </td>
                 <td class="col-actions">
-                  <button class="action-btn" title="View Customer">
+                  <button class="action-btn" title="View Customer" (click)="viewCustomer(c._id); $event.stopPropagation()">
                     <span class="material-symbols-outlined">visibility</span>
                   </button>
                 </td>
@@ -184,12 +195,18 @@
         </div>
 
         <div class="modal__footer">
-          <button class="btn-cancel" (click)="closeAddCustomer()" [disabled]="saving">
+          <button
+            class="btn-cancel"
+            (click)="closeAddCustomer()"
+            [disabled]="saving"
+          >
             Cancel
           </button>
           <button class="btn-save" (click)="saveCustomer()" [disabled]="saving">
             @if (saving) {
-              <span class="material-symbols-outlined spinning">progress_activity</span>
+              <span class="material-symbols-outlined spinning"
+                >progress_activity</span
+              >
             }
             Save Customer
           </button>

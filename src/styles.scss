@@ -136,3 +136,131 @@ input {
   scrollbar-width: thin;
   scrollbar-color: var(--outline-variant) var(--surface-container-low);
 }
+
+// ── Global Analytics Card (derived from Dashboard stat-card) ────────────────
+.analytics-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--surface-container-lowest);
+  border-radius: 12px;
+  border: 1px solid rgba(191, 199, 212, 0.1);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  &--gradient {
+    background: var(--primary);
+    border-color: transparent;
+
+    .analytics-card__label,
+    .analytics-card__value {
+      color: #fff;
+    }
+    .analytics-card__icon-wrap--gradient {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .analytics-card__icon {
+      color: #fff;
+    }
+  }
+
+  &--icon-left {
+    justify-content: flex-start;
+    gap: 16px;
+  }
+}
+
+.analytics-card__bg-circle {
+  position: absolute;
+  right: -24px;
+  top: -24px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  transition: transform 0.5s;
+  .analytics-card:hover & {
+    transform: scale(1.5);
+  }
+}
+.analytics-card__bg-circle--primary { background: rgba(33, 152, 250, 0.05); }
+.analytics-card__bg-circle--secondary { background: rgba(113, 42, 226, 0.05); }
+.analytics-card__bg-circle--booked { background: rgba(113, 42, 226, 0.05); }
+.analytics-card__bg-circle--rented { background: rgba(0, 97, 166, 0.05); }
+.analytics-card__bg-circle--tertiary { background: rgba(207, 132, 0, 0.05); }
+.analytics-card__bg-circle--neutral { background: rgba(64, 71, 82, 0.05); }
+.analytics-card__bg-circle--returned { background: rgba(21, 128, 61, 0.05); }
+.analytics-card__bg-circle--cancelled { background: rgba(186, 26, 26, 0.05); }
+
+.analytics-card__body { z-index: 1; }
+
+.analytics-card__label {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.analytics-card__value {
+  font-family: "Poppins", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin-bottom: 8px;
+}
+
+.analytics-card__trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.analytics-card__trend--primary { color: var(--primary); }
+.analytics-card__trend--secondary { color: var(--secondary); }
+.analytics-card__trend--tertiary { color: var(--tertiary-container); }
+.analytics-card__trend--neutral { color: var(--outline); }
+.analytics-card__trend--primary-text { color: rgba(255, 255, 255, 0.85); }
+
+.analytics-card__trend-icon { font-size: 14px; }
+
+.analytics-card__icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.analytics-card__icon-wrap--primary { background: rgba(33, 152, 250, 0.1); }
+.analytics-card__icon-wrap--secondary { background: rgba(113, 42, 226, 0.1); }
+.analytics-card__icon-wrap--booked { background: rgba(113, 42, 226, 0.1); }
+.analytics-card__icon-wrap--rented { background: rgba(0, 97, 166, 0.1); }
+.analytics-card__icon-wrap--tertiary { background: rgba(207, 132, 0, 0.1); }
+.analytics-card__icon-wrap--neutral { background: var(--surface-container); }
+.analytics-card__icon-wrap--gradient { background: rgba(255, 255, 255, 0.2); }
+.analytics-card__icon-wrap--returned { background: rgba(21, 128, 61, 0.1); }
+.analytics-card__icon-wrap--cancelled { background: rgba(186, 26, 26, 0.1); }
+
+.analytics-card__icon {
+  font-size: 24px;
+  .analytics-card__icon-wrap--primary & { color: var(--primary); }
+  .analytics-card__icon-wrap--secondary & { color: var(--secondary); }
+  .analytics-card__icon-wrap--booked & { color: var(--secondary); }
+  .analytics-card__icon-wrap--rented & { color: var(--primary); }
+  .analytics-card__icon-wrap--tertiary & { color: var(--tertiary-container); }
+  .analytics-card__icon-wrap--neutral & { color: var(--on-surface-variant); }
+  .analytics-card__icon-wrap--gradient & { color: #fff; }
+  .analytics-card__icon-wrap--returned & { color: #15803d; }
+  .analytics-card__icon-wrap--cancelled & { color: var(--error); }
+}

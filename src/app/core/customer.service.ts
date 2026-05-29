@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Booking } from './booking.service';
 
 export interface Customer {
   _id: string;
@@ -9,7 +10,26 @@ export interface Customer {
   name: string;
   mobileNumber: string;
   village: string;
-  totalBookings?: number; // Optional for UI display
+  totalBooking?: number; // Optional for UI display
+  createdAt?: string | Date; // Added for UI display
+  bookings?: Booking[];
+}
+
+export interface CustomerInsightsResponse {
+  customer: Customer;
+  analytics: {
+    totalRevenue: number;
+    pendingPayment: number;
+    totalBookingsCount: number;
+  };
+}
+
+export interface PaginatedCustomers {
+  data: Customer[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,12 +37,28 @@ export class CustomerService {
   private http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/customers`;
 
-  getAll(): Observable<Customer[]> {
-    return this.http.get<Customer[]>(this.base);
+  getAll(page = 1, limit = 10, search?: string): Observable<PaginatedCustomers> {
+    let params = new HttpParams()
+      .set('page', String(page))
+      .set('limit', String(limit));
+      
+    if (search) {
+      params = params.set('search', search);
+    }
+    
+    return this.http.get<PaginatedCustomers>(this.base, { params });
+  }
+
+  getListAnalytics(): Observable<{ total: number, active: number, newThisMonth: number }> {
+    return this.http.get<{ total: number, active: number, newThisMonth: number }>(`${this.base}/analytics`);
   }
 
   getById(id: string): Observable<Customer> {
     return this.http.get<Customer>(`${this.base}/${encodeURIComponent(id)}`);
+  }
+
+  getInsights(id: string): Observable<CustomerInsightsResponse> {
+    return this.http.get<CustomerInsightsResponse>(`${this.base}/${encodeURIComponent(id)}/insights`);
   }
 
   create(payload: Omit<Customer, '_id'>): Observable<Customer> {
@@ -39,9 +75,12 @@ export class CustomerService {
     );
   }
 
-  search(query: string): Observable<Customer[]> {
-    const params = new HttpParams().set('search', query);
-    return this.http.get<Customer[]>(this.base, { params });
+  search(query: string, page = 1, limit = 10): Observable<PaginatedCustomers> {
+    const params = new HttpParams()
+      .set('search', query)
+      .set('page', String(page))
+      .set('limit', String(limit));
+    return this.http.get<PaginatedCustomers>(this.base, { params });
   }
 
   delete(id: string): Observable<void> {

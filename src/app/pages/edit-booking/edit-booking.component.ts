@@ -40,12 +40,13 @@ export class EditBookingComponent implements OnInit {
     village: '',
     advancePayment: null as number | null,
     remainingPayment: null as number | null,
-    status: 'active' as BookingStatus,
+    status: 'booked' as BookingStatus,
     customerId: '' as string,
   };
 
   readonly statusOptions: { value: BookingStatus; label: string }[] = [
-    { value: 'active', label: 'Active' },
+    { value: 'booked', label: 'Booked' },
+    { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
     { value: 'cancelled', label: 'Cancelled' },

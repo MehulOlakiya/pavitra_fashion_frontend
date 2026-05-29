@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserStateService } from '../../core/user-state.service';
+import { CommonModule, DatePipe } from '@angular/common';
+import { DateRangePickerComponent } from '../../shared/date-range-picker/date-range-picker.component';
 
 interface StatCard {
   icon: string;
@@ -25,19 +27,350 @@ interface Booking {
 }
 
 interface BarGroup {
-  primary: number;
-  secondary: number;
+  primary: number; // percentage
+  secondary: number; // percentage
+  primaryValue: number; // actual rented count
+  secondaryValue: number; // actual returned count
   label: string;
 }
 
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+import { FormsModule } from '@angular/forms';
+
+import { AnalyticsService } from '../../core/analytics.service';
+import { NgApexchartsModule, ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexPlotOptions, ApexYAxis, ApexLegend, ApexStroke, ApexXAxis, ApexFill, ApexTooltip, ApexGrid, ApexMarkers } from "ng-apexcharts";
+
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
+  yaxis: ApexYAxis | ApexYAxis[];
+  xaxis: ApexXAxis;
+  fill: ApexFill;
+  tooltip: ApexTooltip;
+  stroke: ApexStroke;
+  legend: ApexLegend;
+  colors: string[];
+  grid: ApexGrid;
+  markers: ApexMarkers;
+};
+
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [CommonModule, DateRangePickerComponent, DatePipe, CustomSelectComponent, FormsModule, NgApexchartsModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   userState = inject(UserStateService);
+  analyticsService = inject(AnalyticsService);
+  
+  public chartOptions: ChartOptions = {
+    series: [
+      { name: "Booked", data: [] },
+      { name: "Rented", data: [] },
+      { name: "Returned", data: [] }
+    ],
+    chart: {
+      type: "bar",
+      height: 250,
+      toolbar: { show: false },
+      fontFamily: 'Inter, sans-serif'
+    },
+    colors: [
+      'var(--primary)',
+      '#b45309',
+      '#166534'
+    ],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "40%",
+        borderRadius: 4
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ["transparent"]
+    },
+    xaxis: {
+      categories: [],
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          colors: 'var(--on-surface-variant)',
+          fontSize: '11px',
+          fontWeight: 600,
+          fontFamily: 'Inter, sans-serif'
+        }
+      }
+    },
+    yaxis: {
+      show: true,
+      stepSize: 1,
+      forceNiceScale: true,
+      labels: {
+        formatter: function(val) {
+          return val.toFixed(0);
+        },
+        style: {
+          colors: 'var(--on-surface-variant)',
+          fontSize: '11px',
+          fontWeight: 600,
+          fontFamily: 'Inter, sans-serif'
+        }
+      }
+    },
+    fill: {
+      opacity: 1
+    },
+    tooltip: {
+      theme: 'light',
+      y: {
+        formatter: function (val) {
+          return val + " bookings";
+        }
+      }
+    },
+    legend: {
+      show: false // we already have a custom legend in the HTML
+    },
+    grid: {
+      show: true,
+      borderColor: 'rgba(191, 199, 212, 0.3)',
+      strokeDashArray: 0,
+      yaxis: {
+        lines: { show: true }
+      }
+    },
+    markers: {
+      size: 0
+    }
+  };
+
+  public revenueChartOptions: ChartOptions = {
+    series: [
+      {
+        name: "Revenue",
+        data: []
+      }
+    ],
+    chart: {
+      type: "area",
+      height: 250,
+      toolbar: { show: false },
+      fontFamily: 'Inter, sans-serif'
+    },
+    plotOptions: {},
+    colors: ['var(--primary)'],
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 3
+    },
+    markers: {
+      size: 5,
+      colors: ["#fff"],
+      strokeColors: 'var(--primary)',
+      strokeWidth: 2,
+      hover: {
+        size: 7
+      }
+    },
+    xaxis: {
+      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          colors: 'var(--on-surface-variant)',
+          fontSize: '11px',
+          fontWeight: 600,
+          fontFamily: 'Inter, sans-serif'
+        }
+      }
+    },
+    yaxis: {
+      show: true,
+      labels: {
+        formatter: function(val) {
+          if (val === 0) return '₹0';
+          return val >= 1000 ? '₹' + Number((val / 1000).toFixed(1)) + 'k' : '₹' + Math.floor(val);
+        },
+        style: {
+          colors: 'var(--on-surface-variant)',
+          fontSize: '11px',
+          fontWeight: 600,
+          fontFamily: 'Inter, sans-serif'
+        }
+      }
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.4,
+        opacityTo: 0.05,
+        stops: [0, 100]
+      }
+    },
+    tooltip: {
+      theme: 'light',
+      y: {
+        formatter: function (val) {
+          return val >= 1000 ? '₹' + Number((val / 1000).toFixed(1)) + 'k' : '₹' + val;
+        }
+      }
+    },
+    legend: {
+      show: false
+    },
+    grid: {
+      show: true,
+      borderColor: 'rgba(191, 199, 212, 0.3)',
+      strokeDashArray: 0,
+      xaxis: {
+        lines: { show: false }
+      },
+      yaxis: {
+        lines: { show: true }
+      }
+    }
+  };
+
+  
+  revenueYearOptions: { value: string; label: string }[] = [];
+  selectedRevenueYear = '';
+
+  ngOnInit() {
+    // Default to last 10 days up to today
+    const to = new Date();
+    const from = new Date();
+    from.setDate(to.getDate() - 9); // today + 9 days ago = 10 days total
+    this.onDateRangeChange({ from, to });
+
+    const currentYear = new Date().getFullYear();
+    this.selectedRevenueYear = currentYear.toString();
+    for (let i = 0; i < 5; i++) {
+      this.revenueYearOptions.push({
+        value: (currentYear - i).toString(),
+        label: (currentYear - i).toString()
+      });
+    }
+
+    this.fetchMonthlyRevenue(this.selectedRevenueYear);
+    this.fetchDashboardStats();
+  }
+
+  onRevenueYearChange(year: string) {
+    this.selectedRevenueYear = year;
+    this.fetchMonthlyRevenue(year);
+  }
+
+  fetchMonthlyRevenue(year: string) {
+    this.analyticsService.getMonthlyRevenue(year).subscribe({
+      next: (data) => {
+        // Pass the actual raw numbers
+        const seriesData = data.map(d => d.value > 0 ? d.value : 0);
+        
+        const minValue = Math.min(...seriesData);
+        let maxValue = Math.max(...seriesData);
+        
+        // Add 10% padding to max so the peak doesn't touch the top edge
+        maxValue = maxValue > 0 ? Math.ceil(maxValue * 1.1) : 100;
+        
+        this.revenueChartOptions = {
+          ...this.revenueChartOptions,
+          series: [{
+            name: "Revenue",
+            data: seriesData
+          }],
+          yaxis: {
+            ...(this.revenueChartOptions.yaxis as any),
+            min: minValue,
+            max: maxValue,
+            forceNiceScale: true
+          }
+        };
+      },
+      error: (err) => {
+        console.error('Failed to fetch monthly revenue', err);
+      }
+    });
+  }
+
+  fetchDashboardStats() {
+    this.analyticsService.getDashboardStats().subscribe({
+      next: (data) => {
+        this.stats = [
+          {
+            icon: 'checkroom',
+            label: 'Total Cloths',
+            value: data.totalCloths.value.toString(),
+            trendIcon: 'trending_up',
+            trendText: data.totalCloths.trend,
+            color: 'primary',
+            gradient: false,
+          },
+          {
+            icon: 'shopping_bag',
+            label: 'Active Bookings',
+            value: data.activeBookings.value.toString(),
+            trendIcon: 'trending_up',
+            trendText: data.activeBookings.trend,
+            color: 'secondary',
+            gradient: false,
+          },
+          {
+            icon: 'payments',
+            label: 'Pending Payments',
+            value: '₹' + data.pendingPayments.value.toLocaleString('en-IN'),
+            trendIcon: 'warning',
+            trendText: data.pendingPayments.trend,
+            color: 'tertiary',
+            gradient: false,
+          },
+          {
+            icon: 'account_balance_wallet',
+            label: 'Monthly Revenue',
+            value: '₹' + data.monthlyRevenue.value.toLocaleString('en-IN'),
+            trendIcon: data.monthlyRevenue.value > 0 ? 'trending_up' : 'horizontal_rule',
+            trendText: data.monthlyRevenue.trend,
+            color: 'primary',
+            gradient: false,
+          },
+          {
+            icon: 'assignment_return',
+            label: 'Returned (This Month)',
+            value: data.returnedThisMonth.value.toString(),
+            trendIcon: 'horizontal_rule',
+            trendText: data.returnedThisMonth.trend,
+            color: 'neutral',
+            gradient: false,
+          },
+          {
+            icon: 'local_shipping',
+            label: "Today's Returns",
+            value: data.todaysReturns.value.toString(),
+            trendIcon: 'schedule',
+            trendText: data.todaysReturns.trend,
+            color: 'error',
+            gradient: false,
+          }
+        ];
+      },
+      error: (err) => console.error('Failed to fetch dashboard stats', err)
+    });
+  }
+
   stats: StatCard[] = [
     {
       icon: 'checkroom',
@@ -132,96 +465,80 @@ export class DashboardComponent {
   ];
 
   barGroups: BarGroup[] = [
-    { primary: 40, secondary: 30, label: 'Mon' },
-    { primary: 60, secondary: 50, label: 'Tue' },
-    { primary: 80, secondary: 60, label: 'Wed' },
-    { primary: 50, secondary: 40, label: 'Thu' },
-    { primary: 90, secondary: 80, label: 'Fri' },
-    { primary: 70, secondary: 65, label: 'Sat' },
+    { primary: 30, secondary: 20, primaryValue: 3, secondaryValue: 2, label: '' },
+    { primary: 45, secondary: 35, primaryValue: 4, secondaryValue: 3, label: '' },
+    { primary: 60, secondary: 50, primaryValue: 6, secondaryValue: 5, label: '' },
+    { primary: 80, secondary: 60, primaryValue: 8, secondaryValue: 6, label: '' },
+    { primary: 50, secondary: 40, primaryValue: 5, secondaryValue: 4, label: '' },
+    { primary: 90, secondary: 80, primaryValue: 9, secondaryValue: 8, label: '' },
+    { primary: 70, secondary: 65, primaryValue: 7, secondaryValue: 6, label: '' },
+    { primary: 85, secondary: 60, primaryValue: 8, secondaryValue: 6, label: '' },
+    { primary: 40, secondary: 30, primaryValue: 4, secondaryValue: 3, label: '' },
+    { primary: 55, secondary: 45, primaryValue: 5, secondaryValue: 4, label: '' },
   ];
 
-  // ── Monthly Revenue line chart ───────────────────────────
-  private readonly CW = 520; // chart plot width
-  private readonly CH = 175; // chart plot height
-  private readonly CX0 = 52; // left padding (room for y-axis labels)
-  private readonly CYB = 195; // y-coordinate of chart bottom
-  private readonly Y_MIN = 0;
-  private readonly Y_MAX = 280;
+  dateRangeOpen = false;
+  fromDate: Date | null = null;
+  toDate: Date | null = null;
 
-  revenueData = [
-    { month: 'Jan', value: 82 },
-    { month: 'Feb', value: 95 },
-    { month: 'Mar', value: 108 },
-    { month: 'Apr', value: 97 },
-    { month: 'May', value: 128 },
-    { month: 'Jun', value: 147 },
-    { month: 'Jul', value: 133 },
-    { month: 'Aug', value: 162 },
-    { month: 'Sep', value: 175 },
-    { month: 'Oct', value: 168 },
-    { month: 'Nov', value: 195 },
-    { month: 'Dec', value: 245 },
-  ];
+  onDateRangeChange(range: { from: Date | null; to: Date | null }): void {
+    this.fromDate = range.from;
+    this.toDate = range.to;
+    this.dateRangeOpen = false;
+    
+    if (this.fromDate && this.toDate) {
+      this.analyticsService.getBookingStats(this.fromDate, this.toDate).subscribe({
+        next: (data) => {
+          const bookedData = data.map(d => d.booked);
+          const rentedData = data.map(d => d.rented);
+          const returnedData = data.map(d => d.returned);
+          const categories = data.map(d => {
+            const dateObj = new Date(d.date);
+            return dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+          });
 
-  revenueYTicks = [0, 70, 140, 210, 280];
-
-  get revenuePoints(): {
-    x: number;
-    y: number;
-    month: string;
-    value: number;
-  }[] {
-    const n = this.revenueData.length;
-    return this.revenueData.map((d, i) => ({
-      ...d,
-      x: this.CX0 + (i * this.CW) / (n - 1),
-      y:
-        this.CYB -
-        ((d.value - this.Y_MIN) * this.CH) / (this.Y_MAX - this.Y_MIN),
-    }));
-  }
-
-  private smoothPath(pts: { x: number; y: number }[]): string {
-    if (pts.length < 2) return '';
-    let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-    for (let i = 1; i < pts.length; i++) {
-      const p0 = pts[Math.max(0, i - 2)];
-      const p1 = pts[i - 1];
-      const p2 = pts[i];
-      const p3 = pts[Math.min(pts.length - 1, i + 1)];
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-      d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+          this.chartOptions = {
+            ...this.chartOptions,
+            series: [
+              { name: "Booked", data: bookedData },
+              { name: "Rented", data: rentedData },
+              { name: "Returned", data: returnedData }
+            ],
+            xaxis: { 
+              ...this.chartOptions.xaxis, 
+              categories 
+            }
+          };
+        },
+        error: (err) => {
+          console.error('Failed to fetch booking statistics', err);
+          this.barGroups = [];
+        }
+      });
     }
-    return d;
   }
 
-  get revenueLinePath(): string {
-    return this.smoothPath(this.revenuePoints);
+  onDateRangeClear(): void {
+    const to = new Date();
+    const from = new Date();
+    from.setDate(to.getDate() - 9);
+    this.onDateRangeChange({ from, to });
   }
 
-  get revenueAreaPath(): string {
-    const pts = this.revenuePoints;
-    if (pts.length < 2) return '';
-    const last = pts[pts.length - 1];
-    return `${this.revenueLinePath} L ${last.x.toFixed(1)} ${this.CYB} L ${this.CX0} ${this.CYB} Z`;
-  }
-
-  yTickY(value: number): number {
-    return (
-      this.CYB - ((value - this.Y_MIN) * this.CH) / (this.Y_MAX - this.Y_MIN)
-    );
-  }
-
-  yTickLabel(value: number): string {
-    return value === 0 ? '₹0' : `₹${value}k`;
-  }
 
   constructor(private router: Router) {}
 
   goToBookings(): void {
     this.router.navigate(['/bookings']);
+  }
+
+  toggleDateRange(event: MouseEvent): void {
+    event.stopPropagation();
+    this.dateRangeOpen = !this.dateRangeOpen;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.dateRangeOpen = false;
   }
 }

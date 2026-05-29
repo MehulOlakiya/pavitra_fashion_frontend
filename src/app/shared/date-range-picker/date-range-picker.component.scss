@@ -123,6 +123,12 @@
       pointer-events: none;
     }
 
+    &--disabled {
+      color: var(--outline-variant);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
     &--today:not(.drp__day--selected) {
       font-weight: 700;
       color: var(--primary);

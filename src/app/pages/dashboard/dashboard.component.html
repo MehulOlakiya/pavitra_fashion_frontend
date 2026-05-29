@@ -12,31 +12,31 @@
   <!-- ── 6-card bento grid ────────────────────────────────── -->
   <div class="stats-grid">
     @for (s of stats; track s.label) {
-      <div class="stat-card" [class.stat-card--gradient]="s.gradient">
+      <div class="analytics-card" [class.analytics-card--gradient]="s.gradient">
         @if (!s.gradient) {
           <div
-            class="stat-card__bg-circle stat-card__bg-circle--{{ s.color }}"
+            class="analytics-card__bg-circle analytics-card__bg-circle--{{ s.color }}"
           ></div>
         }
-        <div class="stat-card__body">
-          <p class="stat-card__label">{{ s.label }}</p>
-          <h3 class="stat-card__value">{{ s.value }}</h3>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">{{ s.label }}</p>
+          <h3 class="analytics-card__value">{{ s.value }}</h3>
           <div
-            class="stat-card__trend stat-card__trend--{{ s.color }}"
-            [class.stat-card__trend--primary-text]="s.gradient"
+            class="analytics-card__trend analytics-card__trend--{{ s.color }}"
+            [class.analytics-card__trend--primary-text]="s.gradient"
           >
-            <span class="material-symbols-outlined stat-card__trend-icon">{{
+            <span class="material-symbols-outlined analytics-card__trend-icon">{{
               s.trendIcon
             }}</span>
             <span>{{ s.trendText }}</span>
           </div>
         </div>
         <div
-          class="stat-card__icon-wrap"
-          [class.stat-card__icon-wrap--{{ s.color }}]="!s.gradient"
-          [class.stat-card__icon-wrap--gradient]="s.gradient"
+          class="analytics-card__icon-wrap"
+          [class.analytics-card__icon-wrap--{{ s.color }}]="!s.gradient"
+          [class.analytics-card__icon-wrap--gradient]="s.gradient"
         >
-          <span class="material-symbols-outlined stat-card__icon">{{
+          <span class="material-symbols-outlined analytics-card__icon">{{
             s.icon
           }}</span>
         </div>
@@ -50,66 +50,31 @@
     <div class="chart-card">
       <div class="chart-card__header">
         <h3 class="chart-card__title">Monthly Revenue</h3>
-        <button class="icon-btn-sm">
-          <span class="material-symbols-outlined">more_vert</span>
-        </button>
+        <app-custom-select
+          [(ngModel)]="selectedRevenueYear"
+          (ngModelChange)="onRevenueYearChange($event)"
+          [options]="revenueYearOptions"
+        ></app-custom-select>
       </div>
 
-      <!-- SVG Line Chart -->
-      <div class="revenue-chart">
-        <svg
-          class="revenue-svg"
-          viewBox="0 0 580 225"
-          preserveAspectRatio="xMidYMid meet"
-          aria-label="Monthly Revenue Chart"
-        >
-          <defs>
-            <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" class="rev-grad-start" />
-              <stop offset="100%" class="rev-grad-end" />
-            </linearGradient>
-          </defs>
-
-          <!-- Y-axis grid lines + labels -->
-          @for (tick of revenueYTicks; track tick) {
-            <line
-              [attr.x1]="52"
-              [attr.y1]="yTickY(tick)"
-              [attr.x2]="572"
-              [attr.y2]="yTickY(tick)"
-              class="rev-grid-line"
-            />
-            <text
-              [attr.x]="46"
-              [attr.y]="yTickY(tick) + 4"
-              class="rev-axis-label rev-axis-label--y"
-            >
-              {{ yTickLabel(tick) }}
-            </text>
-          }
-
-          <!-- Gradient area fill -->
-          <path [attr.d]="revenueAreaPath" class="rev-area" />
-
-          <!-- Solid line -->
-          <path [attr.d]="revenueLinePath" class="rev-line" />
-
-          <!-- Data point dots -->
-          @for (pt of revenuePoints; track pt.month) {
-            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="3.5" class="rev-dot" />
-          }
-
-          <!-- X-axis labels -->
-          @for (pt of revenuePoints; track pt.month) {
-            <text
-              [attr.x]="pt.x"
-              y="216"
-              class="rev-axis-label rev-axis-label--x"
-            >
-              {{ pt.month }}
-            </text>
-          }
-        </svg>
+      <div class="revenue-chart-container">
+        @if (revenueChartOptions && revenueChartOptions.series) {
+          <apx-chart
+            [series]="revenueChartOptions.series"
+            [chart]="revenueChartOptions.chart"
+            [dataLabels]="revenueChartOptions.dataLabels"
+            [plotOptions]="revenueChartOptions.plotOptions"
+            [yaxis]="revenueChartOptions.yaxis"
+            [xaxis]="revenueChartOptions.xaxis"
+            [legend]="revenueChartOptions.legend"
+            [fill]="revenueChartOptions.fill"
+            [stroke]="revenueChartOptions.stroke"
+            [tooltip]="revenueChartOptions.tooltip"
+            [colors]="revenueChartOptions.colors"
+            [grid]="revenueChartOptions.grid"
+            [markers]="revenueChartOptions.markers"
+          ></apx-chart>
+        }
       </div>
     </div>
 
@@ -117,34 +82,66 @@
     <div class="chart-card">
       <div class="chart-card__header">
         <h3 class="chart-card__title">Booking Statistics</h3>
-        <div class="chart-legend">
-          <span class="chart-legend__item">
-            <span class="chart-legend__dot chart-legend__dot--primary"></span
-            >Rented
-          </span>
-          <span class="chart-legend__item chart-legend__item--secondary">
-            <span class="chart-legend__dot chart-legend__dot--secondary"></span
-            >Returned
-          </span>
+        <div class="chart-card__header-right">
+          <div class="chart-legend">
+            <span class="chart-legend__item" style="color: var(--primary);">
+              <span class="chart-legend__dot" style="background: var(--primary);"></span>Booked
+            </span>
+            <span class="chart-legend__item" style="color: #b45309;">
+              <span class="chart-legend__dot" style="background: #b45309;"></span>Rented
+            </span>
+            <span class="chart-legend__item" style="color: #166534;">
+              <span class="chart-legend__dot" style="background: #166534;"></span>Returned
+            </span>
+          </div>
+
+          <div class="date-range-wrap">
+            <button
+              class="btn-outline"
+              [class.btn-outline--active]="fromDate || toDate"
+              (click)="toggleDateRange($event)"
+            >
+              <span class="material-symbols-outlined btn-icon">calendar_today</span>
+              {{ fromDate && toDate ? (fromDate | date: 'd MMM') + ' - ' + (toDate | date: 'd MMM') : (fromDate ? ('From ' + (fromDate | date: 'd MMM')) : (toDate ? ('To ' + (toDate | date: 'd MMM')) : '10 Days')) }}
+              @if (fromDate || toDate) {
+                <span
+                  class="material-symbols-outlined btn-clear-icon"
+                  (click)="onDateRangeClear(); $event.stopPropagation()"
+                >close</span>
+              }
+            </button>
+
+            @if (dateRangeOpen) {
+              <div class="date-range-dropdown" (click)="$event.stopPropagation()">
+                <app-date-range-picker
+                  [fromDate]="fromDate"
+                  [toDate]="toDate"
+                  [maxDays]="10"
+                  (apply)="onDateRangeChange($event)"
+                  (clear)="onDateRangeClear()"
+                ></app-date-range-picker>
+              </div>
+            }
+          </div>
         </div>
       </div>
-      <div class="bar-chart">
-        <div class="bar-chart__bars">
-          @for (g of barGroups; track g.label) {
-            <div class="bar-group">
-              <div class="bar bar--primary" [style.height.%]="g.primary"></div>
-              <div
-                class="bar bar--secondary"
-                [style.height.%]="g.secondary"
-              ></div>
-            </div>
-          }
-        </div>
-        <div class="bar-chart__x-axis">
-          @for (g of barGroups; track g.label) {
-            <span>{{ g.label }}</span>
-          }
-        </div>
+      <div class="bar-chart-container">
+        @if (chartOptions && chartOptions.series) {
+          <apx-chart
+            [series]="chartOptions.series"
+            [chart]="chartOptions.chart"
+            [dataLabels]="chartOptions.dataLabels"
+            [plotOptions]="chartOptions.plotOptions"
+            [yaxis]="chartOptions.yaxis"
+            [xaxis]="chartOptions.xaxis"
+            [legend]="chartOptions.legend"
+            [fill]="chartOptions.fill"
+            [stroke]="chartOptions.stroke"
+            [tooltip]="chartOptions.tooltip"
+            [colors]="chartOptions.colors"
+            [grid]="chartOptions.grid"
+          ></apx-chart>
+        }
       </div>
     </div>
   </div>

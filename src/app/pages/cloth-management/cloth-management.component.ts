@@ -12,6 +12,7 @@ import {
 import { BookingService } from '../../core/booking.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { forkJoin } from 'rxjs';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 import { ImportProductsComponent } from '../../shared/import-products/import-products.component';
 import { DateRangePickerComponent } from '../../shared/date-range-picker/date-range-picker.component';
@@ -180,21 +181,26 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
     this.deleteHasActiveBookings = false;
     this.deleteChecking = true;
     this.deleteConfirming = false;
-    this.bookingService
-      .search({
+    forkJoin([
+      this.bookingService.search({
         serialNumber: product.serialNumber,
-        status: 'active',
+        status: 'booked',
+        limit: 1,
+      }),
+      this.bookingService.search({
+        serialNumber: product.serialNumber,
+        status: 'rented',
         limit: 1,
       })
-      .subscribe({
-        next: (res) => {
-          this.deleteHasActiveBookings = res.total > 0;
-          this.deleteChecking = false;
-        },
-        error: () => {
-          this.deleteChecking = false;
-        },
-      });
+    ]).subscribe({
+      next: ([resBooked, resRented]) => {
+        this.deleteHasActiveBookings = resBooked.total > 0 || resRented.total > 0;
+        this.deleteChecking = false;
+      },
+      error: () => {
+        this.deleteChecking = false;
+      },
+    });
   }
 
   closeDeleteModal(): void {

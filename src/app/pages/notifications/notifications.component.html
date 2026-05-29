@@ -1,0 +1,107 @@
+<div class="page">
+  <div class="page-heading">
+    <div class="heading-content">
+      <h2 class="page-title">Notifications Center</h2>
+      <p class="page-subtitle">Actionable alerts and metric-driven task management.</p>
+    </div>
+    
+    <div class="view-toggle">
+      <button 
+        class="toggle-btn" 
+        [class.active]="viewMode === 'active'"
+        (click)="setViewMode('active')">
+        Active
+      </button>
+      <button 
+        class="toggle-btn" 
+        [class.active]="viewMode === 'history'"
+        (click)="setViewMode('history')">
+        History
+      </button>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-card__header">
+        <span class="material-symbols-outlined icon-blue">local_mall</span>
+        <span class="metric-card__title icon-blue">Pending Pickups</span>
+      </div>
+      <div class="metric-card__value">{{ pendingPickupsCount }}</div>
+    </div>
+    
+    <div class="metric-card">
+      <div class="metric-card__header">
+        <span class="material-symbols-outlined icon-purple">assignment_return</span>
+        <span class="metric-card__title icon-purple">Expected Returns</span>
+      </div>
+      <div class="metric-card__value">{{ expectedReturnsCount }}</div>
+    </div>
+    
+    <div class="metric-card metric-card--danger">
+      <div class="metric-card__header">
+        <span class="material-symbols-outlined icon-red">warning</span>
+        <span class="metric-card__title icon-red">Pending Returns</span>
+      </div>
+      <div class="metric-card__value">{{ pendingReturnItemsCount }}</div>
+    </div>
+  </div>
+
+  <div class="notifications-container">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="setTab('all')">All Tasks</button>
+      <button class="tab-btn" [class.active]="activeTab === 'pickup'" (click)="setTab('pickup')">Pickups</button>
+      <button class="tab-btn" [class.active]="activeTab === 'return'" (click)="setTab('return')">Returns</button>
+      <button class="tab-btn" [class.active]="activeTab === 'pending_return'" (click)="setTab('pending_return')">
+        Pending Returns <span class="tab-badge" *ngIf="pendingReturnItemsCount > 0">{{ pendingReturnItemsCount }}</span>
+      </button>
+    </div>
+
+    @if (displayedNotifications.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <span class="material-symbols-outlined">{{ viewMode === 'active' ? 'notifications_off' : 'history' }}</span>
+        </div>
+        <h3>{{ viewMode === 'active' ? 'All caught up!' : 'No history found' }}</h3>
+        <p>{{ viewMode === 'active' ? 'There are no pending actions for this category.' : 'You have not dismissed any notifications.' }}</p>
+      </div>
+    } @else {
+      <div class="task-list">
+        @for (notif of displayedNotifications; track notif.id) {
+          <div class="task-row" (click)="openNotification(notif)">
+            <div class="task-col task-col--badge">
+              <span class="status-badge" [ngClass]="'badge-' + notif.type">
+                {{ notif.type === 'pending_return' ? 'PENDING RETURN' : notif.type | uppercase }}
+              </span>
+            </div>
+            
+            <div class="task-col task-col--order">
+              <span class="order-id">{{ notif.orderId }}</span>
+            </div>
+            
+            <div class="task-col task-col--customer">
+              <span class="customer-name">{{ notif.customerName }}</span>
+            </div>
+            
+            <div class="task-col task-col--product">
+              <span class="product-name">{{ notif.productName }}</span>
+            </div>
+            
+            <div class="task-col task-col--action">
+              @if (viewMode === 'active') {
+                <button class="action-btn" [ngClass]="'btn-' + notif.type" (click)="dismissNotification($event, notif)">
+                  {{ notif.type === 'pickup' ? 'Mark Picked Up' : 'Mark Returned' }}
+                </button>
+              } @else {
+                <span class="material-symbols-outlined text-muted">done_all</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <div class="list-footer">
+        Showing {{ displayedNotifications.length }} of {{ viewMode === 'active' ? notifications.length : historyNotifications.length }} pending tasks
+      </div>
+    }
+  </div>
+</div>

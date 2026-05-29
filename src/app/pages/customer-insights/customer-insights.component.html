@@ -3,151 +3,119 @@
   <div class="page-header">
     <div class="page-header__left">
       <div class="breadcrumb">
-        <a routerLink="/inventory" class="breadcrumb__link">Inventory</a>
+        <a routerLink="/customers" class="breadcrumb__link">Customers</a>
         <span class="material-symbols-outlined breadcrumb__sep"
           >chevron_right</span
         >
-        <span class="breadcrumb__current">Product Insights</span>
+        <span class="breadcrumb__current">Customer Details</span>
       </div>
-      <!-- <h2 class="page-title">
-        @if (product) {
-          {{ product.name }}
-        } @else {
-          Product Insights
-        }
-      </h2> -->
     </div>
   </div>
 
   @if (loading) {
     <div class="loading-state">
       <span class="material-symbols-outlined spinning">progress_activity</span>
-      <p>Loading product…</p>
+      <p>Loading customer…</p>
     </div>
-  } @else if (product) {
+  } @else if (customer) {
     <!-- Analytics Cards -->
     <div class="analytics-grid">
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--secondary"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--secondary">
+          <span class="material-symbols-outlined analytics-card__icon">receipt_long</span>
+        </div>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">Total Bookings</p>
+          <h3 class="analytics-card__value">{{ totalBookingsCount }}</h3>
+        </div>
+      </div>
       <div class="analytics-card analytics-card--icon-left">
         <div class="analytics-card__bg-circle analytics-card__bg-circle--primary"></div>
         <div class="analytics-card__icon-wrap analytics-card__icon-wrap--primary">
           <span class="material-symbols-outlined analytics-card__icon">payments</span>
         </div>
         <div class="analytics-card__body">
-          <p class="analytics-card__label">Total Revenue</p>
+          <p class="analytics-card__label">Total Amount</p>
           <h3 class="analytics-card__value">₹{{ totalRevenue | number }}</h3>
         </div>
       </div>
       <div class="analytics-card analytics-card--icon-left">
         <div class="analytics-card__bg-circle analytics-card__bg-circle--tertiary"></div>
         <div class="analytics-card__icon-wrap analytics-card__icon-wrap--tertiary">
-          <span class="material-symbols-outlined analytics-card__icon">account_balance_wallet</span>
+          <span class="material-symbols-outlined analytics-card__icon">pending_actions</span>
         </div>
         <div class="analytics-card__body">
-          <p class="analytics-card__label">Collected</p>
-          <h3 class="analytics-card__value">₹{{ collected | number }}</h3>
-        </div>
-      </div>
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--secondary"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--secondary">
-          <span class="material-symbols-outlined analytics-card__icon">shopping_bag</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">Rental Count</p>
-          <h3 class="analytics-card__value">{{ rentalCount }}</h3>
+          <p class="analytics-card__label">Pending Payment</p>
+          <h3 class="analytics-card__value">₹{{ pendingPayment | number }}</h3>
         </div>
       </div>
     </div>
 
-    <!-- Product Detail Card -->
-    <div class="product-card">
-      <!-- Image -->
-      <div class="product-card__image-wrap">
-        @if (product.imageUrl) {
-          <img
-            [src]="product.imageUrl"
-            [alt]="product.name"
-            class="product-card__image"
-          />
-        } @else {
-          <div class="product-card__image-placeholder">
-            <span class="material-symbols-outlined">checkroom</span>
+    <!-- Customer Detail Card -->
+    <div class="customer-profile-card">
+      <!-- Left Sidebar -->
+      <div class="customer-profile-card__left">
+        <div class="customer-profile-avatar-container">
+          <div class="customer-profile-avatar">
+            {{ initials(customer.name) }}
           </div>
-        }
-        <div
-          class="product-card__status-badge"
-          [class.product-card__status-badge--inactive]="!product.isActive"
-        >
-          <div
-            class="status-dot"
-            [class.status-dot--inactive]="!product.isActive"
-          ></div>
-          <span>{{ product.isActive ? "Active" : "Inactive" }}</span>
+        </div>
+        <h2 class="customer-profile-name">{{ customer.name }}</h2>
+        <div class="customer-profile-badge">
+          <span class="material-symbols-outlined">badge</span>
+          {{ customer.customerId }}
         </div>
       </div>
 
-      <!-- Info -->
-      <div class="product-card__info">
-        <div class="product-card__header">
-          <div>
-            <h2 class="product-card__name">{{ product.name }}</h2>
-            <div class="product-card__meta">
-              <span class="meta-chip">{{ product.category | titlecase }}</span>
-              <span class="meta-sn">SN: {{ product.serialNumber }}</span>
+      <!-- Right Info -->
+      <div class="customer-profile-card__right">
+        <div class="profile-details-grid">
+          <div class="profile-detail-section">
+            <h3 class="profile-detail-title">Primary Contact</h3>
+            <div class="profile-info-box">
+              <div class="profile-info-icon profile-info-icon--blue">
+                <span class="material-symbols-outlined">call</span>
+              </div>
+              <div class="profile-info-text">
+                <span class="profile-info-label">Mobile Number</span>
+                <span class="profile-info-value text-primary"
+                  >+91 {{ customer.mobileNumber }}</span
+                >
+              </div>
             </div>
           </div>
-          <div class="product-card__actions">
-            <a
-              [routerLink]="['/inventory/edit', product._id]"
-              class="action-icon-btn action-icon-btn--edit"
+
+          <div class="profile-detail-section">
+            <h3 class="profile-detail-title">Membership Details</h3>
+            <div class="profile-info-box">
+              <div class="profile-info-icon profile-info-icon--purple">
+                <span class="material-symbols-outlined">calendar_today</span>
+              </div>
+              <div class="profile-info-text">
+                <span class="profile-info-label">Member Since</span>
+                <span class="profile-info-value">{{
+                  formatDate(customer.createdAt || "2026-05-01")
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-secondary-grid">
+          <div class="profile-inline-info">
+            <span class="material-symbols-outlined profile-inline-icon"
+              >location_on</span
             >
-              <span class="material-symbols-outlined">edit</span>
-            </a>
+            <div class="profile-info-text">
+              <span class="profile-info-label">Address</span>
+              <span class="profile-info-value">{{ customer.village }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="price-grid">
-          <div class="price-tile">
-            <p class="price-tile__label">RENT PRICE</p>
-            <p class="price-tile__value price-tile__value--primary">
-              ₹{{ product.rentPrice | number
-              }}<span class="price-tile__unit"> /day</span>
-            </p>
-          </div>
-          <div class="price-tile">
-            <p class="price-tile__label">PURCHASE PRICE</p>
-            <p class="price-tile__value">
-              @if (product.purchasePrice) {
-                ₹{{ product.purchasePrice | number }}
-              } @else {
-                N/A
-              }
-            </p>
-          </div>
-          <div class="price-tile">
-            <p class="price-tile__label">SELLING PRICE</p>
-            <p class="price-tile__value price-tile__value--secondary">
-              @if (product.sellingPrice) {
-                ₹{{ product.sellingPrice | number }}
-              } @else {
-                N/A
-              }
-            </p>
-          </div>
-        </div>
-
-        <div
-          class="product-card__notice"
-          [class.product-card__notice--inactive]="!product.isActive"
-        >
-          <span class="material-symbols-outlined">info</span>
-          <p>
-            @if (product.isActive) {
-              This product is currently active and available for rentals.
-            } @else {
-              This product is inactive and not available for new bookings.
-            }
-          </p>
+        <div class="profile-actions">
+          <button class="btn-profile-primary">Edit Profile</button>
         </div>
       </div>
     </div>
@@ -165,11 +133,10 @@
         <table class="bookings-table">
           <thead>
             <tr>
-              <th>Customer</th>
-              <th>Village</th>
+              <th>Order ID</th>
               <th>Booking Date</th>
               <th>Return Date</th>
-              <th>Advance (₹)</th>
+              <th>Total (₹)</th>
               <th>Remaining (₹)</th>
               <th class="col-status">Status</th>
               <th class="col-actions">Actions</th>
@@ -198,28 +165,29 @@
                     </div>
                     <p class="empty-state__title">No booking history</p>
                     <p class="empty-state__sub">
-                      This product has not been booked yet.
+                      This customer has not made any bookings yet.
                     </p>
                   </div>
                 </td>
               </tr>
             }
-            @for (b of pagedBookings; track b._id; let idx = $index; let count = $count) {
+            @for (b of pagedBookings; track b._id; let i = $index; let count = $count) {
               <tr class="table-row">
                 <td>
-                  <div class="customer-cell">
-                    <div class="avatar" [ngClass]="avatarClass(idx)">
-                      {{ initials(b.customer.name) }}
-                    </div>
-                    <div>
-                      <p class="customer-name">{{ b.customer.name }}</p>
-                      <p class="customer-phone">
-                        {{ b.customer.mobileNumber }}
-                      </p>
-                    </div>
+                  <div style="font-weight: 500; color: var(--primary)">
+                    {{ b.orderId }}
+                  </div>
+                  <div
+                    style="
+                      font-size: 13px;
+                      color: var(--on-surface-variant);
+                      margin-top: 2px;
+                    "
+                  >
+                    {{ b.totalItems }}
+                    {{ b.totalItems === 1 ? "Item" : "Items" }}
                   </div>
                 </td>
-                <td class="cell-text">{{ b.customer.village }}</td>
                 <td
                   class="cell-date"
                   [class.text-strike]="isCancelled(b.status)"
@@ -235,11 +203,11 @@
                 >
                   {{ formatDate(b.returnDate) }}
                 </td>
-                <td class="cell-amount">₹{{ b.advancePayment | number }}</td>
+                <td class="cell-amount">₹{{ b.amount | number }}</td>
                 <td class="cell-remaining">
-                  @if ((b.remainingPayment ?? 0) > 0) {
+                  @if ((b.remaining ?? 0) > 0) {
                     <span class="remaining-amount"
-                      >₹{{ b.remainingPayment | number }}</span
+                      >₹{{ b.remaining | number }}</span
                     >
                   } @else {
                     <span class="remaining-paid">Paid</span>
@@ -262,15 +230,17 @@
                     @if (openMenuId === b._id) {
                       <div
                         class="action-menu"
-                        [class.action-menu--up]="count > 2 && idx >= count - 2"
+                        [class.action-menu--up]="count > 2 && i >= count - 2"
                         (click)="$event.stopPropagation()"
                       >
                         <button
                           class="action-menu__item"
-                          (click)="editBooking(b._id)"
+                          (click)="viewBooking(b._id)"
                         >
-                          <span class="material-symbols-outlined">edit</span>
-                          Edit Booking
+                          <span class="material-symbols-outlined"
+                            >visibility</span
+                          >
+                          View Details
                         </button>
                       </div>
                     }

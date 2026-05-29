@@ -43,10 +43,12 @@
         class="drp__day"
         [class.drp__day--other]="!isCurrentMonth(day)"
         [class.drp__day--today]="isToday(day)"
+        [class.drp__day--disabled]="isFuture(day)"
         [class.drp__day--start]="isStart(day)"
         [class.drp__day--end]="isEnd(day)"
         [class.drp__day--in-range]="isInRange(day)"
         [class.drp__day--selected]="isSelected(day)"
+        [disabled]="isFuture(day)"
         (click)="onDayClick(day)"
         (mouseenter)="onDayHover(day)"
       >

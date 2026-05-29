@@ -52,13 +52,17 @@
   background: var(--surface);
   border: 1px solid rgba(191, 199, 212, 0.5);
   border-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   color: var(--on-surface);
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 
-  &::placeholder { color: var(--outline); }
+  &::placeholder {
+    color: var(--outline);
+  }
 
   &:focus {
     border-color: var(--primary-container);
@@ -96,9 +100,13 @@
   color: var(--outline);
   cursor: pointer;
   padding: 0;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
-  .material-symbols-outlined { font-size: 16px; }
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
 
   &:hover {
     background: rgba(191, 199, 212, 0.2);
@@ -129,7 +137,7 @@
   background: var(--surface);
   border: 1px solid rgba(191, 199, 212, 0.5);
   border-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   color: var(--on-surface);
   cursor: pointer;
@@ -158,7 +166,7 @@
   background: var(--surface-container-lowest);
   border: 1px solid rgba(191, 199, 212, 0.5);
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: var(--on-surface-variant);
@@ -166,7 +174,9 @@
   white-space: nowrap;
   transition: background 0.2s;
 
-  &:hover { background: var(--surface-container); }
+  &:hover {
+    background: var(--surface-container);
+  }
 }
 
 .btn-primary {
@@ -177,17 +187,24 @@
   background: var(--primary);
   border: none;
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: var(--on-primary);
   cursor: pointer;
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.2s, opacity 0.15s;
+  transition:
+    box-shadow 0.2s,
+    opacity 0.15s;
 
-  &:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2); }
-  &:active { opacity: 0.9; transform: scale(0.98); }
+  &:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
 }
 
 .btn-icon {
@@ -228,7 +245,7 @@
 
   th {
     padding: 12px 16px;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -238,7 +255,9 @@
   }
 
   tbody {
-    tr + tr { border-top: 1px solid rgba(191, 199, 212, 0.15); }
+    tr + tr {
+      border-top: 1px solid rgba(191, 199, 212, 0.15);
+    }
   }
 
   td {
@@ -250,14 +269,18 @@
 .table-row {
   transition: background 0.15s;
 
-  &:hover { background: rgba(240, 243, 252, 0.6); }
+  &:hover {
+    background: rgba(240, 243, 252, 0.6);
+  }
 
   &--clickable {
     cursor: pointer;
   }
 }
 
-.col-actions { text-align: right; }
+.col-actions {
+  text-align: right;
+}
 
 // ── Item Cell ─────────────────────────────────────────────
 .item-cell {
@@ -285,11 +308,13 @@
     display: block;
   }
 
-  .material-symbols-outlined { font-size: 24px; }
+  .material-symbols-outlined {
+    font-size: 24px;
+  }
 }
 
 .item-name {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: var(--on-surface);
@@ -298,7 +323,7 @@
 }
 
 .item-sub {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 12px;
   color: var(--on-surface-variant);
   margin: 2px 0 0;
@@ -306,13 +331,13 @@
 
 // ── Table Cells ───────────────────────────────────────────
 .cell-text {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   color: var(--on-surface);
 }
 
 .serial-code {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 14px;
   color: var(--on-surface-variant);
   background: var(--surface-container-low);
@@ -321,7 +346,7 @@
 }
 
 .price-text {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: var(--on-surface);
@@ -339,7 +364,7 @@
   align-items: center;
   padding: 4px 10px;
   border-radius: 9999px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -377,9 +402,13 @@
   cursor: pointer;
   transition: background 0.15s;
 
-  .material-symbols-outlined { font-size: 20px; }
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
 
-  &:hover { background: var(--surface-container-high); }
+  &:hover {
+    background: var(--surface-container-high);
+  }
 }
 
 // ── Action Dropdown ────────────────────────────────────────
@@ -419,7 +448,7 @@
     border: none;
     background: transparent;
     border-radius: 6px;
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 14px;
     font-weight: 500;
     color: var(--on-surface);
@@ -427,7 +456,10 @@
     text-align: left;
     transition: background 0.15s;
 
-    .material-symbols-outlined { font-size: 18px; color: var(--on-surface-variant); }
+    .material-symbols-outlined {
+      font-size: 18px;
+      color: var(--on-surface-variant);
+    }
 
     &:hover {
       background: var(--surface-container);
@@ -436,10 +468,19 @@
     &--danger {
       color: var(--error);
 
-      .material-symbols-outlined { color: var(--error); }
+      .material-symbols-outlined {
+        color: var(--error);
+      }
 
-      &:hover { background: rgba(186, 26, 26, 0.08); }
+      &:hover {
+        background: rgba(186, 26, 26, 0.08);
+      }
     }
+  }
+
+  &--up {
+    top: auto;
+    bottom: calc(100% + 4px);
   }
 }
 
@@ -481,7 +522,7 @@
   }
 
   &__title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 16px;
     font-weight: 500;
     color: var(--on-surface);
@@ -489,7 +530,7 @@
   }
 
   &__sub {
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 14px;
     color: var(--on-surface-variant);
     margin: 0;
@@ -497,7 +538,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spinning {
@@ -533,12 +576,16 @@
     padding: 20px 24px 16px;
     border-bottom: 1px solid rgba(191, 199, 212, 0.2);
 
-    &--danger { background: rgba(186, 26, 26, 0.04); }
-    &--warn   { background: rgba(207, 132, 0, 0.06); }
+    &--danger {
+      background: rgba(186, 26, 26, 0.04);
+    }
+    &--warn {
+      background: rgba(207, 132, 0, 0.06);
+    }
   }
 
   &__title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 17px;
     font-weight: 600;
     color: var(--on-surface);
@@ -575,7 +622,9 @@
   justify-content: center;
   flex-shrink: 0;
 
-  .material-symbols-outlined { font-size: 20px; }
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
 
   &--danger {
     background: rgba(186, 26, 26, 0.12);
@@ -589,13 +638,16 @@
 }
 
 .modal-message {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   color: var(--on-surface-variant);
   line-height: 1.6;
   margin: 0;
 
-  strong { color: var(--on-surface); font-weight: 600; }
+  strong {
+    color: var(--on-surface);
+    font-weight: 600;
+  }
 }
 
 .modal-spinner {
@@ -604,7 +656,7 @@
 }
 
 .modal-checking-text {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   color: var(--on-surface-variant);
   margin: 0;
@@ -615,15 +667,20 @@
   background: transparent;
   border: 1px solid rgba(191, 199, 212, 0.5);
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--on-surface);
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover { background: var(--surface-container); }
-  &:disabled { opacity: 0.5; cursor: default; }
+  &:hover {
+    background: var(--surface-container);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 .btn-modal-danger {
@@ -634,17 +691,24 @@
   background: var(--error);
   border: none;
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: #fff;
   cursor: pointer;
   transition: opacity 0.15s;
 
-  &:hover { opacity: 0.9; }
-  &:disabled { opacity: 0.6; cursor: default; }
+  &:hover {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 
-  .material-symbols-outlined { font-size: 16px; }
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
 }
 
 .btn-modal-primary {
@@ -652,14 +716,16 @@
   background: var(--primary);
   border: none;
   border-radius: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--on-primary);
   cursor: pointer;
   transition: opacity 0.15s;
 
-  &:hover { opacity: 0.9; }
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
 // ── Analytics Grid ────────────────────────────────────────
@@ -670,63 +736,5 @@
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.analytics-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-
-  &__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    .material-symbols-outlined { font-size: 22px; }
-
-    &--primary {
-      background: rgba(0, 97, 166, 0.1);
-      color: var(--primary);
-    }
-
-    &--secondary {
-      background: rgba(113, 42, 226, 0.1);
-      color: var(--secondary);
-    }
-
-    &--tertiary {
-      background: rgba(207, 132, 0, 0.1);
-      color: var(--tertiary);
-    }
-  }
-
-  &__label {
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--on-surface-variant);
-    margin: 0;
-  }
-
-  &__value {
-    font-family: 'Poppins', sans-serif;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--on-surface);
-    line-height: 1.4;
-    margin: 0;
   }
 }

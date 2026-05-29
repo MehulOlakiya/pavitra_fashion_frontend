@@ -90,8 +90,8 @@ export const routes: Routes = [
       {
         path: 'calendar',
         loadComponent: () =>
-          import('./pages/coming-soon/coming-soon.component').then(
-            (m) => m.ComingSoonComponent,
+          import('./pages/rental-calendar/rental-calendar.component').then(
+            (m) => m.RentalCalendarComponent,
           ),
       },
       {
@@ -99,6 +99,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/customer-list/customer-list.component').then(
             (m) => m.CustomerListComponent,
+          ),
+      },
+      {
+        path: 'customers/:id',
+        loadComponent: () =>
+          import('./pages/customer-insights/customer-insights.component').then(
+            (m) => m.CustomerInsightsComponent,
           ),
       },
       {
@@ -118,8 +125,8 @@ export const routes: Routes = [
       {
         path: 'notifications',
         loadComponent: () =>
-          import('./pages/coming-soon/coming-soon.component').then(
-            (m) => m.ComingSoonComponent,
+          import('./pages/notifications/notifications.component').then(
+            (m) => m.NotificationsComponent,
           ),
       },
       {

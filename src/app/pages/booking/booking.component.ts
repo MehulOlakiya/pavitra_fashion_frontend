@@ -155,7 +155,13 @@ export class BookingComponent implements OnInit {
             this.customerSuggestions = [];
             this.customerDropdownVisible = false;
             this.customerSearchLoading = false;
-            return of([]);
+            return of({
+              data: [],
+              total: 0,
+              page: 1,
+              limit: 10,
+              totalPages: 1,
+            });
           }
           this.customerSearchLoading = true;
           return this.customerService.search(q);
@@ -163,10 +169,10 @@ export class BookingComponent implements OnInit {
         takeUntilDestroyed(),
       )
       .subscribe({
-        next: (customers) => {
+        next: (response) => {
           this.customerSearchLoading = false;
-          this.customerSuggestions = customers;
-          this.customerDropdownVisible = customers.length > 0;
+          this.customerSuggestions = response.data;
+          this.customerDropdownVisible = response.data.length > 0;
         },
         error: () => {
           this.customerSearchLoading = false;
@@ -394,7 +400,7 @@ export class BookingComponent implements OnInit {
       createBooking(this.selectedCustomer._id);
     } else {
       // Create a new customer first, then use the returned _id
-      const customerId = `CUST-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const customerId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
       this.customerService
         .create({
           customerId,

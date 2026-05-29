@@ -10,49 +10,64 @@
 
     <!-- Summary Cards -->
     <div class="summary-row">
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--primary">
-          <span class="material-symbols-outlined">receipt_long</span>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--primary"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--primary">
+          <span class="material-symbols-outlined analytics-card__icon">receipt_long</span>
         </div>
-        <div>
-          <p class="summary-card__label">TOTAL</p>
-          <p class="summary-card__value">{{ summary.total }}</p>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--secondary">
-          <span class="material-symbols-outlined">hourglass_empty</span>
-        </div>
-        <div>
-          <p class="summary-card__label">ACTIVE</p>
-          <p class="summary-card__value">{{ summary.active }}</p>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">TOTAL</p>
+          <h3 class="analytics-card__value">{{ summary.total }}</h3>
         </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--tertiary">
-          <span class="material-symbols-outlined">assignment_return</span>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--booked"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--booked">
+          <span class="material-symbols-outlined analytics-card__icon">bookmark_added</span>
         </div>
-        <div>
-          <p class="summary-card__label">PENDING RET.</p>
-          <p class="summary-card__value">{{ summary.pendingReturn }}</p>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--returned">
-          <span class="material-symbols-outlined">check_circle</span>
-        </div>
-        <div>
-          <p class="summary-card__label">RETURNED</p>
-          <p class="summary-card__value">{{ summary.returned }}</p>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">BOOKED</p>
+          <h3 class="analytics-card__value">{{ summary.booked }}</h3>
         </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-card__icon summary-card__icon--cancelled">
-          <span class="material-symbols-outlined">cancel</span>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--rented"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--rented">
+          <span class="material-symbols-outlined analytics-card__icon">shopping_bag</span>
         </div>
-        <div>
-          <p class="summary-card__label">CANCELLED</p>
-          <p class="summary-card__value">{{ summary.cancelled }}</p>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">RENTED</p>
+          <h3 class="analytics-card__value">{{ summary.rented }}</h3>
+        </div>
+      </div>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--tertiary"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--tertiary">
+          <span class="material-symbols-outlined analytics-card__icon">assignment_return</span>
+        </div>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">PENDING RET.</p>
+          <h3 class="analytics-card__value">{{ summary.pendingReturn }}</h3>
+        </div>
+      </div>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--returned"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--returned">
+          <span class="material-symbols-outlined analytics-card__icon">check_circle</span>
+        </div>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">RETURNED</p>
+          <h3 class="analytics-card__value">{{ summary.returned }}</h3>
+        </div>
+      </div>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--cancelled"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--cancelled">
+          <span class="material-symbols-outlined analytics-card__icon">cancel</span>
+        </div>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">CANCELLED</p>
+          <h3 class="analytics-card__value">{{ summary.cancelled }}</h3>
         </div>
       </div>
     </div>
@@ -157,25 +172,66 @@
               </td>
             </tr>
           } @else {
-            @for (b of bookings; track b._id) {
+            @for (b of bookings; track b._id; let i = $index; let count = $count) {
               <tr
                 class="table-row table-row--clickable"
                 (click)="viewBooking(b)"
               >
                 <td class="cell-sn">
-                  <span class="order-id" style="font-weight: 600; color: var(--primary);">{{ b.orderId || 'ORD-' + b._id.substring(b._id.length - 6).toUpperCase() }}</span>
+                  <span
+                    class="order-id"
+                    style="font-weight: 600; color: var(--primary)"
+                    >{{
+                      b.orderId ||
+                        "ORD-" + b._id.substring(b._id.length - 6).toUpperCase()
+                    }}</span
+                  >
                   @if (b.items && b.items.length > 0) {
-                    <div class="multi-sn" style="font-size: 11px; color: var(--on-surface-variant); margin-top: 4px;">{{ b.items.length }} Items</div>
+                    <div
+                      class="multi-sn"
+                      style="
+                        font-size: 11px;
+                        color: var(--on-surface-variant);
+                        margin-top: 4px;
+                      "
+                    >
+                      {{ b.items.length }} Items
+                    </div>
                   } @else if (b.productSerialNumber) {
-                    <div class="multi-sn" style="font-size: 11px; color: var(--on-surface-variant); margin-top: 4px;">SN: {{ b.productSerialNumber }}</div>
+                    <div
+                      class="multi-sn"
+                      style="
+                        font-size: 11px;
+                        color: var(--on-surface-variant);
+                        margin-top: 4px;
+                      "
+                    >
+                      SN: {{ b.productSerialNumber }}
+                    </div>
                   }
                 </td>
                 <td>
                   <div class="item-cell">
                     <div class="item-thumb">
                       @if (b.items && b.items.length > 0) {
-                        <div class="multi-item-icon" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; background:var(--surface-container); color:var(--on-surface-variant); border-radius:6px;">
-                          <span class="material-symbols-outlined" style="font-size:20px;">view_cozy</span>
+                        <div
+                          class="multi-item-icon"
+                          style="
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 100%;
+                            height: 100%;
+                            background: var(--surface-container);
+                            color: var(--on-surface-variant);
+                            border-radius: 6px;
+                          "
+                        >
+                          <span
+                            class="material-symbols-outlined"
+                            style="font-size: 20px"
+                            >view_cozy</span
+                          >
                         </div>
                       } @else if (getProductImage(b.productSerialNumber)) {
                         <img
@@ -201,7 +257,8 @@
                 </td>
                 <td
                   class="cell-date cell-return"
-                  [class.text-active]="b.status === 'active'"
+                  [class.text-booked]="b.status === 'booked'"
+                  [class.text-rented]="b.status === 'rented'"
                   [class.text-pending]="b.status === 'pending_return'"
                   [class.text-strike]="isCancelled(b.status)"
                 >
@@ -240,6 +297,7 @@
                     @if (openMenuId === b._id) {
                       <div
                         class="action-menu"
+                        [class.action-menu--up]="count > 2 && i >= count - 2"
                         (click)="$event.stopPropagation()"
                       >
                         <button
@@ -251,10 +309,12 @@
                         </button>
                         <button
                           class="action-menu__item"
-                          (click)="downloadInvoice(b, $event)"
+                          (click)="generateBill(b, $event)"
                         >
-                          <span class="material-symbols-outlined">download</span>
-                          Download Bill
+                          <span class="material-symbols-outlined"
+                            >receipt_long</span
+                          >
+                          Generate Bill
                         </button>
                         <button
                           class="action-menu__item action-menu__item--whatsapp"
@@ -302,7 +362,6 @@
     }
   </div>
 </div>
-
 
 <!-- Quick-Edit Modal -->
 @if (editingBooking) {

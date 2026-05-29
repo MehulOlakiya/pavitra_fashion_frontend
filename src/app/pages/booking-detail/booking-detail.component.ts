@@ -142,8 +142,10 @@ export class BookingDetailComponent implements OnInit {
 
   statusLabel(status: BookingStatus): string {
     switch (status) {
-      case 'active':
-        return 'Active';
+      case 'booked':
+        return 'Booked';
+      case 'rented':
+        return 'Rented';
       case 'pending_return':
         return 'Pending Return';
       case 'returned':
@@ -157,8 +159,10 @@ export class BookingDetailComponent implements OnInit {
 
   statusClass(status: BookingStatus): string {
     switch (status) {
-      case 'active':
-        return 'badge--active';
+      case 'booked':
+        return 'badge--booked';
+      case 'rented':
+        return 'badge--rented';
       case 'pending_return':
         return 'badge--pending';
       case 'returned':
@@ -243,7 +247,7 @@ export class BookingDetailComponent implements OnInit {
       next: (blob) => {
         this.rawPdfBlob = blob;
         const url = window.URL.createObjectURL(blob);
-        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url + '#navpanes=0&pagemode=none&zoom=80');
+        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
         this.isPreviewLoading = false;
       },
       error: () => {

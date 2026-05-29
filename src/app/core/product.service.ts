@@ -44,7 +44,7 @@ export interface ApiBooking {
   remainingPayment: number;
   bookingDate: string;
   returnDate: string;
-  status: 'active' | 'pending_return' | 'returned' | 'cancelled';
+  status: 'booked' | 'rented' | 'pending_return' | 'returned' | 'cancelled';
 }
 
 export interface InventoryDetail {

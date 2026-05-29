@@ -73,25 +73,29 @@ export class ProductInsightsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id') ?? '';
-    if (!id) {
-      this.router.navigate(['/inventory']);
-      return;
-    }
-    this.productService.getById(id).subscribe({
-      next: (product) => {
-        this.product = product;
-        this.loading = false;
-        this.loadBookings(product.serialNumber);
-      },
-      error: () => {
-        this.toast.show(
-          'error',
-          'Not Found',
-          'Could not load product details.',
-        );
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id') ?? '';
+      if (!id) {
         this.router.navigate(['/inventory']);
-      },
+        return;
+      }
+      
+      this.loading = true;
+      this.productService.getById(id).subscribe({
+        next: (product) => {
+          this.product = product;
+          this.loading = false;
+          this.loadBookings(product.serialNumber);
+        },
+        error: () => {
+          this.toast.show(
+            'error',
+            'Not Found',
+            'Could not load product details.',
+          );
+          this.router.navigate(['/inventory']);
+        },
+      });
     });
   }
 
@@ -130,7 +134,8 @@ export class ProductInsightsComponent implements OnInit {
 
   statusLabel(status: BookingStatus): string {
     const map: Record<BookingStatus, string> = {
-      active: 'Active',
+      booked: 'Booked',
+      rented: 'Rented',
       pending_return: 'Pending Return',
       returned: 'Returned',
       cancelled: 'Cancelled',
@@ -140,7 +145,8 @@ export class ProductInsightsComponent implements OnInit {
 
   statusClass(status: BookingStatus): string {
     const map: Record<BookingStatus, string> = {
-      active: 'badge--active',
+      booked: 'badge--booked',
+      rented: 'badge--rented',
       pending_return: 'badge--pending',
       returned: 'badge--returned',
       cancelled: 'badge--cancelled',

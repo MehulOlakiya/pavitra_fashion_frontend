@@ -18,6 +18,7 @@ import { CommonModule } from '@angular/common';
 export class DateRangePickerComponent implements OnChanges {
   @Input() fromDate: Date | null = null;
   @Input() toDate: Date | null = null;
+  @Input() maxDays?: number;
   @Output() rangeChange = new EventEmitter<{
     from: Date | null;
     to: Date | null;
@@ -112,7 +113,7 @@ export class DateRangePickerComponent implements OnChanges {
   }
 
   onDayClick(day: Date): void {
-    if (!this.isCurrentMonth(day)) return;
+    if (!this.isCurrentMonth(day) || this.isFuture(day)) return;
 
     if (!this.pendingFrom || (this.pendingFrom && this.pendingTo)) {
       // Start fresh selection
@@ -126,12 +127,32 @@ export class DateRangePickerComponent implements OnChanges {
       } else {
         this.pendingTo = day;
       }
+      
+      if (this.maxDays) {
+        const diffTime = Math.abs(this.pendingTo.getTime() - this.pendingFrom.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        if (diffDays > this.maxDays) {
+          this.pendingTo = new Date(this.pendingFrom);
+          this.pendingTo.setDate(this.pendingFrom.getDate() + this.maxDays - 1);
+        }
+      }
     }
     this.hoverDate = null;
   }
 
   onDayHover(day: Date): void {
     if (this.pendingFrom && !this.pendingTo) {
+      if (this.maxDays) {
+        const diffTime = Math.abs(day.getTime() - this.pendingFrom.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        if (diffDays > this.maxDays) {
+          const sign = day > this.pendingFrom ? 1 : -1;
+          const limitDate = new Date(this.pendingFrom);
+          limitDate.setDate(this.pendingFrom.getDate() + sign * (this.maxDays - 1));
+          this.hoverDate = limitDate;
+          return;
+        }
+      }
       this.hoverDate = day;
     }
   }
@@ -157,6 +178,12 @@ export class DateRangePickerComponent implements OnChanges {
 
   isToday(day: Date): boolean {
     return this.sameDay(day, this.today);
+  }
+
+  isFuture(day: Date): boolean {
+    const todayEnd = new Date(this.today);
+    todayEnd.setHours(23, 59, 59, 999);
+    return day > todayEnd;
   }
 
   isStart(day: Date): boolean {

@@ -1,31 +1,34 @@
 <div class="page">
   <!-- Analytics Quick View -->
   <div class="analytics-grid">
-    <div class="analytics-card">
-      <div class="analytics-card__icon analytics-card__icon--primary">
-        <span class="material-symbols-outlined">inventory_2</span>
+    <div class="analytics-card analytics-card--icon-left">
+      <div class="analytics-card__bg-circle analytics-card__bg-circle--primary"></div>
+      <div class="analytics-card__icon-wrap analytics-card__icon-wrap--primary">
+        <span class="material-symbols-outlined analytics-card__icon">inventory_2</span>
       </div>
-      <div>
+      <div class="analytics-card__body">
         <p class="analytics-card__label">Total Items</p>
-        <p class="analytics-card__value">{{ total }}</p>
+        <h3 class="analytics-card__value">{{ total }}</h3>
       </div>
     </div>
-    <div class="analytics-card">
-      <div class="analytics-card__icon analytics-card__icon--secondary">
-        <span class="material-symbols-outlined">calendar_today</span>
+    <div class="analytics-card analytics-card--icon-left">
+      <div class="analytics-card__bg-circle analytics-card__bg-circle--secondary"></div>
+      <div class="analytics-card__icon-wrap analytics-card__icon-wrap--secondary">
+        <span class="material-symbols-outlined analytics-card__icon">calendar_today</span>
       </div>
-      <div>
+      <div class="analytics-card__body">
         <p class="analytics-card__label">Active Items</p>
-        <p class="analytics-card__value">{{ activeCount }}</p>
+        <h3 class="analytics-card__value">{{ activeCount }}</h3>
       </div>
     </div>
-    <div class="analytics-card">
-      <div class="analytics-card__icon analytics-card__icon--tertiary">
-        <span class="material-symbols-outlined">engineering</span>
+    <div class="analytics-card analytics-card--icon-left">
+      <div class="analytics-card__bg-circle analytics-card__bg-circle--tertiary"></div>
+      <div class="analytics-card__icon-wrap analytics-card__icon-wrap--tertiary">
+        <span class="material-symbols-outlined analytics-card__icon">engineering</span>
       </div>
-      <div>
+      <div class="analytics-card__body">
         <p class="analytics-card__label">Inactive</p>
-        <p class="analytics-card__value">{{ inactiveCount }}</p>
+        <h3 class="analytics-card__value">{{ inactiveCount }}</h3>
       </div>
     </div>
   </div>
@@ -156,7 +159,7 @@
               </td>
             </tr>
           } @else {
-            @for (product of displayedProducts; track product._id) {
+            @for (product of displayedProducts; track product._id; let i = $index; let count = $count) {
               <tr
                 class="table-row table-row--clickable"
                 (click)="onViewInsights(product)"
@@ -223,7 +226,7 @@
                     </button>
 
                     @if (openMenuId === product._id) {
-                      <div class="action-dropdown">
+                      <div class="action-dropdown" [class.action-dropdown--up]="count > 2 && i >= count - 2">
                         <button
                           class="action-dropdown__item"
                           (click)="onEdit(product); closeMenu()"

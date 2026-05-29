@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DecimalPipe } from '@angular/common';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Subject, Subscription, forkJoin, of } from 'rxjs';
+import { DomSanitizer, SafeUrl, SafeResourceUrl } from '@angular/platform-browser';
+import { Subject, Subscription, forkJoin, of, from } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError, map } from 'rxjs/operators';
 import {
   Booking,
@@ -42,9 +42,16 @@ export class BookingListComponent implements OnInit, OnDestroy {
   pendingBillBooking: Booking | null = null;
   billResendModalOpen = false;
   private waBookingProduct: Product | null = null;
-  /** Which modal triggered the send-bill ('detail' | 'edit' | null) */
   private billSourceModal: 'detail' | 'edit' | null = null;
   private waSseSub: Subscription | null = null;
+
+  // Preview Modal
+  isPreviewModalOpen = false;
+  isPreviewLoading = false;
+  pdfBlobUrl: SafeResourceUrl | null = null;
+  rawPdfBlob: Blob | null = null;
+  tempPdfBlob: Blob | null = null;
+  previewBooking: Booking | null = null;
 
   get waQrSafeUrl(): SafeUrl | null {
     const qr = this.waStatus.qr;
@@ -81,7 +88,8 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   summary = {
     total: 0,
-    active: 0,
+    booked: 0,
+    rented: 0,
     pendingReturn: 0,
     returned: 0,
     cancelled: 0,
@@ -90,7 +98,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
   // Quick-edit modal
   editingBooking: Booking | null = null;
   editForm = {
-    status: 'active' as BookingStatus,
+    status: 'booked' as BookingStatus,
     fullPayment: false,
     amountReceived: null as number | null,
   };
@@ -103,14 +111,16 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   readonly statusFilterOptions = [
     { value: '', label: 'Status: All' },
-    { value: 'active', label: 'Active' },
+    { value: 'booked', label: 'Booked' },
+    { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
     { value: 'cancelled', label: 'Cancelled' },
   ];
 
   readonly statusEditOptions = [
-    { value: 'active', label: 'Active' },
+    { value: 'booked', label: 'Booked' },
+    { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
     { value: 'cancelled', label: 'Cancelled' },
@@ -319,7 +329,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
     const obs = hasFilter
       ? this.bookingService.search({
           customerName: q,
-          serialNumber: q,
+          orderId: q,
           customerPhone: q,
           status: (this.statusFilter as BookingStatus) || undefined,
           fromDate: this.fromDate ? this.toISODate(this.fromDate) : undefined,
@@ -375,7 +385,8 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.bookingService.getAnalytics(params).subscribe({
       next: (analytics: BookingAnalytics) => {
         this.summary.total = analytics.total;
-        this.summary.active = analytics.active;
+        this.summary.booked = analytics.booked;
+        this.summary.rented = analytics.rented;
         this.summary.pendingReturn = analytics.pending_return;
         this.summary.returned = analytics.returned;
         this.summary.cancelled = analytics.cancelled;
@@ -385,8 +396,10 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   statusClass(status: string): string {
     switch (status) {
-      case 'active':
-        return 'badge--active';
+      case 'booked':
+        return 'badge--booked';
+      case 'rented':
+        return 'badge--rented';
       case 'pending_return':
         return 'badge--pending';
       case 'returned':
@@ -400,8 +413,10 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   statusLabel(status: string): string {
     switch (status) {
-      case 'active':
-        return 'Active';
+      case 'booked':
+        return 'Booked';
+      case 'rented':
+        return 'Rented';
       case 'pending_return':
         return 'Pending Return';
       case 'returned':
@@ -435,25 +450,74 @@ export class BookingListComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ── Download Bill ─────────────────────────────────────────────────
-  downloadInvoice(booking: Booking, event?: MouseEvent): void {
+  // ── Download/Generate Bill ─────────────────────────────────────────────────
+  generateBill(booking: Booking, event?: MouseEvent): void {
     event?.stopPropagation();
     this.openMenuId = null;
+    this.previewBooking = booking;
     
-    this.toastService.show('success', 'Downloading', 'Invoice download started...');
+    this.isPreviewModalOpen = true;
+    this.isPreviewLoading = true;
+    this.pdfBlobUrl = null;
+    this.rawPdfBlob = null;
+    
     this.bookingService.downloadInvoice(booking._id).subscribe({
       next: (blob) => {
+        this.rawPdfBlob = blob;
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
+        this.isPreviewLoading = false;
       },
       error: () => {
-        this.toastService.show('error', 'Download Failed', 'Failed to download invoice PDF.');
+        this.isPreviewLoading = false;
+        this.toastService.show('error', 'Preview Failed', 'Failed to generate invoice preview.');
       }
     });
+  }
+
+  closePreview(): void {
+    this.isPreviewModalOpen = false;
+    this.pdfBlobUrl = null;
+    this.rawPdfBlob = null;
+    this.previewBooking = null;
+  }
+
+  downloadFromPreview(): void {
+    if (!this.rawPdfBlob || !this.previewBooking) return;
+    const url = window.URL.createObjectURL(this.rawPdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Invoice-${this.previewBooking._id.slice(-6).toUpperCase()}.pdf`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    this.toastService.show('success', 'Download Complete', 'Invoice downloaded successfully.');
+    this.closePreview();
+  }
+
+  printFromPreview(): void {
+    if (!this.rawPdfBlob) return;
+    const url = window.URL.createObjectURL(this.rawPdfBlob);
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.contentWindow?.print();
+      }, 500);
+    };
+    this.closePreview();
+  }
+
+  sendBillFromPreview(): void {
+    if (!this.previewBooking) return;
+
+    if (this.rawPdfBlob) {
+      this.tempPdfBlob = this.rawPdfBlob;
+    }
+
+    this.closePreview();
+    this.sendBillWhatsApp(this.previewBooking, undefined, 'detail');
   }
 
   // ── WhatsApp Bill ─────────────────────────────────────────────────
@@ -564,6 +628,19 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.waStatus = { state: 'idle', qr: null };
   }
 
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
   private doSendBill(booking: Booking): void {
     const phone = (booking.customer?.mobileNumber || '').replace(/\D/g, '');
     const message = this.buildBillMessage(booking);
@@ -576,9 +653,26 @@ export class BookingListComponent implements OnInit, OnDestroy {
       : undefined;
 
     this.sendingBill = true;
-    this.whatsappService
-      .sendMessage({ mobileNumber: phone, message, imageUrl })
-      .subscribe({
+    
+    const blobToSend = this.tempPdfBlob;
+    this.tempPdfBlob = null; // Clear it
+
+    let obs;
+    if (blobToSend) {
+      obs = from(this.blobToBase64(blobToSend).then(base64 => {
+         return this.whatsappService.sendPdf({
+           mobileNumber: phone,
+           message,
+           fileBase64: base64,
+           filename: `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`,
+           mimetype: 'application/pdf'
+         }).toPromise();
+      }));
+    } else {
+      obs = this.whatsappService.sendMessage({ mobileNumber: phone, message, imageUrl });
+    }
+
+    obs.subscribe({
         next: () => {
           this.sendingBill = false;
           // Mark isBillSend = true on backend (best-effort)
