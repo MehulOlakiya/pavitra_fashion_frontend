@@ -30,14 +30,16 @@
 }
 
 .topbar {
-  height: 80px;
+  height: 72px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
-  background: transparent;
-  border-bottom: none;
+  padding: 0 40px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0px 10px 30px rgba(15, 23, 42, 0.04);
   gap: 24px;
 
   @media (max-width: 768px) {
@@ -65,19 +67,17 @@
   position: relative;
   align-items: center;
   flex: 1;
-  max-width: 480px;
-  height: 44px;
+  max-width: 512px;
+  height: 40px;
   border-radius: 9999px;
-  background: white;
-  border: 1px solid transparent;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  background: var(--surface-container);
+  border: 1px solid rgba(191, 199, 212, 0.5);
+  transition: border-color 0.2s, box-shadow 0.2s;
   overflow: hidden;
 
   &:focus-within {
-    background: white;
-    border-color: rgba(191, 199, 212, 0.5);
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-color: var(--primary-fixed-dim);
+    box-shadow: 0 0 0 2px rgba(33, 152, 250, 0.2);
   }
 }
 
@@ -87,8 +87,8 @@
 
 .search-icon {
   position: absolute;
-  left: 16px;
-  font-size: 20px;
+  left: 12px;
+  font-size: 22px;
   color: var(--on-surface-variant);
   pointer-events: none;
   transition: color 0.2s;
@@ -103,11 +103,11 @@
   border: none;
   background: transparent;
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--on-surface);
   outline: none;
 
-  &::placeholder { color: rgba(64, 71, 82, 0.5); font-size: 14px; }
+  &::placeholder { color: rgba(64, 71, 82, 0.5); }
 }
 
 .search-clear {
@@ -275,7 +275,11 @@
   border: 1.5px solid white;
 }
 
-
+.divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(191, 199, 212, 0.3);
+}
 
 // ── Profile button ─────────────────────────────────────────
 .profile-wrap {
@@ -286,27 +290,28 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px 6px 6px;
-  border: 1px solid rgba(191, 199, 212, 0.3);
-  border-radius: 9999px;
-  background: white;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: none;
+  background: transparent;
   cursor: pointer;
   color: var(--on-surface);
-  transition: box-shadow 0.2s;
+  transition: color 0.2s;
 
   &:hover,
   &--open {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: var(--primary);
+
+    .avatar { border-color: var(--primary); }
+    .profile-arrow { color: var(--primary); }
   }
 }
 
 .avatar {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
-  border: none;
+  border: 1px solid rgba(191, 199, 212, 0.5);
+  transition: border-color 0.2s;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   display: flex;
@@ -327,9 +332,8 @@
 
 .profile-name {
   font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--on-surface);
+  font-size: 15px;
+  font-weight: 500;
   letter-spacing: 0.01em;
   display: none;
 
@@ -337,7 +341,7 @@
 }
 
 .profile-arrow {
-  font-size: 20px;
+  font-size: 24px;
   color: var(--on-surface-variant);
   display: none;
   transition: color 0.2s;
@@ -473,9 +477,8 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: white;
-  border: 1px solid rgba(191, 199, 212, 0.2);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: none;
+  background: transparent;
   border-radius: 50%;
   color: var(--on-surface-variant);
   cursor: pointer;
@@ -494,13 +497,17 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  background-color: #d32f2f;
-  width: 10px;
-  height: 10px;
+  background-color: var(--error);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 2px solid var(--background, #f4f7fb);
-  font-size: 0;
-  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
 }
 
 .notification-menu {

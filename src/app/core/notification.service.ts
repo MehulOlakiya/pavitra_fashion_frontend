@@ -1,7 +1,8 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { io, Socket } from 'socket.io-client';
 
 export interface NotificationDto {
   id: string;
@@ -18,67 +19,22 @@ export interface NotificationDto {
 @Injectable({
   providedIn: 'root'
 })
-export class NotificationService {
+export class NotificationService implements OnDestroy {
   private http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/notifications`;
-  
-  private dummyData: NotificationDto[] = [
-    {
-      id: 'dummy_1',
-      type: 'pending_return',
-      title: 'Pending Return Items',
-      message: 'Items are pending for return.',
-      bookingId: 'dummy_id_1',
-      orderId: '#RR-2024-077',
-      customerName: 'Rohan Mehta',
-      productName: 'Ivory Silk Embroidered Sherwani',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'dummy_2',
-      type: 'pickup',
-      title: 'Order Pickup Today',
-      message: 'Items are scheduled for pickup.',
-      bookingId: 'dummy_id_2',
-      orderId: '#RR-2024-089',
-      customerName: 'Priya Deshmukh',
-      productName: 'Banarasi Zari Silk Saree',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'dummy_3',
-      type: 'return',
-      title: 'Order Return Due',
-      message: 'Items are due for return.',
-      bookingId: 'dummy_id_3',
-      orderId: '#RR-2024-095',
-      customerName: 'Sana Khan',
-      productName: 'Peach Designer Georgette Gown',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'dummy_4',
-      type: 'pickup',
-      title: 'Order Pickup Today',
-      message: 'Items are scheduled for pickup.',
-      bookingId: 'dummy_id_4',
-      orderId: '#RR-2024-112',
-      customerName: 'Ananya Kapoor',
-      productName: 'Emerald Velvet Bridal Lehenga',
-      createdAt: new Date().toISOString()
-    }
-  ];
+
+  private socket: Socket;
 
   private notificationsSubject = new BehaviorSubject<NotificationDto[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
-  
+
   private historySubject = new BehaviorSubject<NotificationDto[]>([]);
   public history$ = this.historySubject.asObservable();
-  
+
   private dismissedIds = new Set<string>();
 
   constructor() {
-    // Load dismissed IDs from local storage
+    // Load dismissed IDs from localStorage
     const stored = localStorage.getItem('dismissed_notifications');
     if (stored) {
       try {
@@ -90,32 +46,72 @@ export class NotificationService {
         console.error('Failed to parse dismissed notifications', e);
       }
     }
-    this.updateSubjects();
+
+    // Connect to Socket.IO namespace
+    const socketUrl = environment.apiUrl.replace('/api', '');
+    this.socket = io(`${socketUrl}/notifications`, {
+      transports: ['websocket', 'polling'],
+    });
+
+    this.socket.on('connect', () => {
+      console.log('[NotificationService] Socket connected:', this.socket.id);
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log('[NotificationService] Socket disconnected');
+    });
+
+    // Listen for individual real-time notifications pushed by cron
+    this.socket.on('notification', (notif: NotificationDto) => {
+      if (!this.dismissedIds.has(notif.id)) {
+        const current = this.notificationsSubject.value;
+        const exists = current.some((n) => n.id === notif.id);
+        if (!exists) {
+          this.notificationsSubject.next([notif, ...current]);
+        }
+      }
+    });
+
+    // Listen for full refresh signal (cron finished sending batch)
+    this.socket.on('notifications:refresh', () => {
+      this.fetchNotifications().subscribe();
+    });
   }
 
-  private updateSubjects(): void {
-    // Current notifications are those not dismissed
-    this.notificationsSubject.next(this.dummyData.filter(n => !this.dismissedIds.has(n.id)));
-    // History notifications are those that are dismissed
-    this.historySubject.next(this.dummyData.filter(n => this.dismissedIds.has(n.id)));
+  ngOnDestroy() {
+    this.socket.disconnect();
   }
 
+  /** Fetch fresh notifications from backend REST API */
   fetchNotifications(): Observable<NotificationDto[]> {
-    // Commented out actual API call to show dummy data
-    // return this.http.get<NotificationDto[]>(this.baseUrl).pipe(
-    //   map(notifications => notifications.filter(n => !this.dismissedIds.has(n.id))),
-    //   tap(notifications => this.notificationsSubject.next(notifications))
-    // );
-    return this.notifications$;
+    return this.http.get<NotificationDto[]>(this.baseUrl).pipe(
+      tap((notifications) => {
+        const active = notifications.filter((n) => !this.dismissedIds.has(n.id));
+        const history = notifications.filter((n) => this.dismissedIds.has(n.id));
+        this.notificationsSubject.next(active);
+        this.historySubject.next(history);
+      }),
+    );
   }
 
   dismissNotification(id: string): void {
     this.dismissedIds.add(id);
-    localStorage.setItem('dismissed_notifications', JSON.stringify(Array.from(this.dismissedIds)));
-    this.updateSubjects();
+    localStorage.setItem(
+      'dismissed_notifications',
+      JSON.stringify(Array.from(this.dismissedIds)),
+    );
+    const all = [...this.notificationsSubject.value, ...this.historySubject.value];
+    const active = all.filter((n) => !this.dismissedIds.has(n.id));
+    const history = all.filter((n) => this.dismissedIds.has(n.id));
+    this.notificationsSubject.next(active);
+    this.historySubject.next(history);
   }
 
   get currentNotifications(): NotificationDto[] {
     return this.notificationsSubject.value;
+  }
+
+  get notificationCount(): number {
+    return this.notificationsSubject.value.length;
   }
 }

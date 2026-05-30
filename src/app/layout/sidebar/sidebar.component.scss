@@ -32,64 +32,34 @@
   display: flex;
   flex-direction: column;
   width: 280px;
-  height: calc(100vh - 32px); // fills full viewport minus margin
-  position: fixed;
-  top: 16px;
-  bottom: 16px;
-  left: 16px;
+  height: 100vh;       // fills full viewport height
   overflow-y: auto;    // sidebar itself can scroll if nav is very long
-  background: white;
-  border: 1px solid rgba(191, 199, 212, 0.2);
-  border-radius: 1.5rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(191, 199, 212, 0.3);
+  box-shadow: 4px 0 16px rgba(15, 23, 42, 0.06);
   z-index: 40;
   flex-shrink: 0;
 }
 
 // ── Brand ──────────────────────────────────────────────────
 .sidebar-brand {
-  padding: 32px 24px;
-  flex-shrink: 0;
-}
-
-.brand-logo-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.75rem;
-  background: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 20px;
+  padding: 10px 32px;
   flex-shrink: 0;
 }
 
 .brand-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 900;
-  line-height: 1.2;
-  
-  .brand-primary {
-    color: var(--primary);
-  }
-  
-  .brand-dark {
-    color: var(--on-surface, #0f172a);
-  }
+  line-height: 1.4;
+  color: var(--primary);
 }
 
 .brand-sub {
   font-family: 'Inter', sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -129,19 +99,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 16px 8px 0;
+  gap: 2px;
+  padding: 8px;
   overflow-y: auto;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px 12px 32px;
-  border-radius: 0 2rem 2rem 0;
+  gap: 16px;
+  padding: 8px 24px;
+  border-radius: 0.5rem;
   font-family: 'Poppins', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--on-surface-variant);
@@ -156,22 +126,13 @@
 }
 
 .nav-item--active {
-  background: #e8f0fe;
+  background: rgba(33, 152, 250, 0.1);
   color: var(--primary);
-  font-weight: 700;
-  position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 32px;
-    background: var(--primary);
-    border-radius: 0 9999px 9999px 0;
-  }
+  font-weight: 600;
+  border-left: 4px solid var(--primary);
+  padding-left: 20px;                         // compensate border width
+  border-radius: 0 0.5rem 0.5rem 0;
+  box-shadow: 0 0 15px rgba(33, 152, 250, 0.2);
 }
 
 .nav-icon {
@@ -181,21 +142,6 @@
 
 .nav-label {
   white-space: nowrap;
-  flex: 1;
-}
-
-.nav-badge {
-  background: #d32f2f;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  line-height: 1;
 }
 
 // ── Footer ─────────────────────────────────────────────────

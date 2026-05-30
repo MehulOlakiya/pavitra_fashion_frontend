@@ -31,6 +31,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.historySub = this.notificationService.history$.subscribe(history => {
       this.historyNotifications = history;
     });
+    // Fetch from backend REST API (also updates the BehaviorSubjects)
     this.notificationService.fetchNotifications().subscribe();
   }
 
