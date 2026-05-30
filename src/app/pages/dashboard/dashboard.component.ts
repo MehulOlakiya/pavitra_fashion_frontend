@@ -36,8 +36,12 @@ interface BarGroup {
 
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 import { AnalyticsService } from '../../core/analytics.service';
+import { BookingService } from '../../core/booking.service';
+import { ProductService } from '../../core/product.service';
+import { CustomerService } from '../../core/customer.service';
 import { NgApexchartsModule, ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexPlotOptions, ApexYAxis, ApexLegend, ApexStroke, ApexXAxis, ApexFill, ApexTooltip, ApexGrid, ApexMarkers } from "ng-apexcharts";
 
 export type ChartOptions = {
@@ -65,10 +69,33 @@ export type ChartOptions = {
 export class DashboardComponent implements OnInit {
   userState = inject(UserStateService);
   analyticsService = inject(AnalyticsService);
-  
+  bookingService = inject(BookingService);
+  productService = inject(ProductService);
+  customerService = inject(CustomerService);
+
+  // Analytics states
+  bookingStats: any = null;
+  inventoryStats: any = null;
+  customerStats: any = null;
+
+  // Date states
+  chartDateRangeOpen = false;
+  chartFromDate: Date | null = null;
+  chartToDate: Date | null = null;
+
+  bookingDateRangeOpen = false;
+  bookingFromDate: Date | null = null;
+  bookingToDate: Date | null = null;
+
+  inventoryDateRangeOpen = false;
+  inventoryFromDate: Date | null = null;
+  inventoryToDate: Date | null = null;
+
+  customerDateRangeOpen = false;
+  customerFromDate: Date | null = null;
+  customerToDate: Date | null = null;
   public chartOptions: ChartOptions = {
     series: [
-      { name: "Booked", data: [] },
       { name: "Rented", data: [] },
       { name: "Returned", data: [] }
     ],
@@ -79,7 +106,6 @@ export class DashboardComponent implements OnInit {
       fontFamily: 'Inter, sans-serif'
     },
     colors: [
-      'var(--primary)',
       '#b45309',
       '#166534'
     ],
@@ -255,7 +281,12 @@ export class DashboardComponent implements OnInit {
     const to = new Date();
     const from = new Date();
     from.setDate(to.getDate() - 9); // today + 9 days ago = 10 days total
-    this.onDateRangeChange({ from, to });
+    
+    // Initialize date ranges
+    this.onChartDateRangeChange({ from, to });
+    this.onBookingDateRangeChange({ from: null, to: null });
+    this.onInventoryDateRangeChange({ from: null, to: null });
+    this.onCustomerDateRangeChange({ from: null, to: null });
 
     const currentYear = new Date().getFullYear();
     this.selectedRevenueYear = currentYear.toString();
@@ -428,6 +459,36 @@ export class DashboardComponent implements OnInit {
     },
   ];
 
+  fetchBookingsAnalytics() {
+    const params: { fromDate?: string; toDate?: string } = {};
+    if (this.bookingFromDate) params.fromDate = this.bookingFromDate.toISOString();
+    if (this.bookingToDate) params.toDate = this.bookingToDate.toISOString();
+    this.bookingService.getAnalytics(params).subscribe({
+      next: (res) => this.bookingStats = res,
+      error: (err) => console.error('Failed to fetch booking analytics', err)
+    });
+  }
+
+  fetchInventoryAnalytics() {
+    const params: { fromDate?: string; toDate?: string } = {};
+    if (this.inventoryFromDate) params.fromDate = this.inventoryFromDate.toISOString();
+    if (this.inventoryToDate) params.toDate = this.inventoryToDate.toISOString();
+    this.productService.getAnalytics(params).subscribe({
+      next: (res) => this.inventoryStats = res,
+      error: (err) => console.error('Failed to fetch inventory analytics', err)
+    });
+  }
+
+  fetchCustomerAnalytics() {
+    const params: { fromDate?: string; toDate?: string } = {};
+    if (this.customerFromDate) params.fromDate = this.customerFromDate.toISOString();
+    if (this.customerToDate) params.toDate = this.customerToDate.toISOString();
+    this.customerService.getListAnalytics(params).subscribe({
+      next: (res) => this.customerStats = res,
+      error: (err) => console.error('Failed to fetch customer analytics', err)
+    });
+  }
+
   recentBookings: Booking[] = [
     {
       sn: '#1042',
@@ -477,17 +538,13 @@ export class DashboardComponent implements OnInit {
     { primary: 55, secondary: 45, primaryValue: 5, secondaryValue: 4, label: '' },
   ];
 
-  dateRangeOpen = false;
-  fromDate: Date | null = null;
-  toDate: Date | null = null;
-
-  onDateRangeChange(range: { from: Date | null; to: Date | null }): void {
-    this.fromDate = range.from;
-    this.toDate = range.to;
-    this.dateRangeOpen = false;
+  onChartDateRangeChange(range: { from: Date | null; to: Date | null }): void {
+    this.chartFromDate = range.from;
+    this.chartToDate = range.to;
+    this.chartDateRangeOpen = false;
     
-    if (this.fromDate && this.toDate) {
-      this.analyticsService.getBookingStats(this.fromDate, this.toDate).subscribe({
+    if (this.chartFromDate && this.chartToDate) {
+      this.analyticsService.getBookingStats(this.chartFromDate, this.chartToDate).subscribe({
         next: (data) => {
           const bookedData = data.map(d => d.booked);
           const rentedData = data.map(d => d.rented);
@@ -500,7 +557,6 @@ export class DashboardComponent implements OnInit {
           this.chartOptions = {
             ...this.chartOptions,
             series: [
-              { name: "Booked", data: bookedData },
               { name: "Rented", data: rentedData },
               { name: "Returned", data: returnedData }
             ],
@@ -518,11 +574,44 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  onDateRangeClear(): void {
+  onChartDateRangeClear(): void {
     const to = new Date();
     const from = new Date();
     from.setDate(to.getDate() - 9);
-    this.onDateRangeChange({ from, to });
+    this.onChartDateRangeChange({ from, to });
+  }
+
+  onBookingDateRangeChange(range: { from: Date | null; to: Date | null }): void {
+    this.bookingFromDate = range.from;
+    this.bookingToDate = range.to;
+    this.bookingDateRangeOpen = false;
+    this.fetchBookingsAnalytics();
+  }
+
+  onBookingDateRangeClear(): void {
+    this.onBookingDateRangeChange({ from: null, to: null });
+  }
+
+  onInventoryDateRangeChange(range: { from: Date | null; to: Date | null }): void {
+    this.inventoryFromDate = range.from;
+    this.inventoryToDate = range.to;
+    this.inventoryDateRangeOpen = false;
+    this.fetchInventoryAnalytics();
+  }
+
+  onInventoryDateRangeClear(): void {
+    this.onInventoryDateRangeChange({ from: null, to: null });
+  }
+
+  onCustomerDateRangeChange(range: { from: Date | null; to: Date | null }): void {
+    this.customerFromDate = range.from;
+    this.customerToDate = range.to;
+    this.customerDateRangeOpen = false;
+    this.fetchCustomerAnalytics();
+  }
+
+  onCustomerDateRangeClear(): void {
+    this.onCustomerDateRangeChange({ from: null, to: null });
   }
 
 
@@ -532,13 +621,31 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/bookings']);
   }
 
-  toggleDateRange(event: MouseEvent): void {
+  toggleChartDateRange(event: MouseEvent): void {
     event.stopPropagation();
-    this.dateRangeOpen = !this.dateRangeOpen;
+    this.chartDateRangeOpen = !this.chartDateRangeOpen;
+  }
+
+  toggleBookingDateRange(event: MouseEvent): void {
+    event.stopPropagation();
+    this.bookingDateRangeOpen = !this.bookingDateRangeOpen;
+  }
+
+  toggleInventoryDateRange(event: MouseEvent): void {
+    event.stopPropagation();
+    this.inventoryDateRangeOpen = !this.inventoryDateRangeOpen;
+  }
+
+  toggleCustomerDateRange(event: MouseEvent): void {
+    event.stopPropagation();
+    this.customerDateRangeOpen = !this.customerDateRangeOpen;
   }
 
   @HostListener('document:click')
   onDocumentClick(): void {
-    this.dateRangeOpen = false;
+    this.chartDateRangeOpen = false;
+    this.bookingDateRangeOpen = false;
+    this.inventoryDateRangeOpen = false;
+    this.customerDateRangeOpen = false;
   }
 }

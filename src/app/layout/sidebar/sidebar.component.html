@@ -2,9 +2,12 @@
   <!-- Brand -->
   <div class="sidebar-brand">
     <div class="brand-header">
-      <div>
-        <h1 class="brand-title">Pavitra Fashion</h1>
-        <p class="brand-sub">Premium Management</p>
+      <div class="brand-logo-wrap">
+        <div class="brand-icon">P</div>
+        <div>
+          <h1 class="brand-title"><span class="brand-primary">Pavitra</span> <span class="brand-dark">Fashion</span></h1>
+          <p class="brand-sub">Premium Management</p>
+        </div>
       </div>
       <button
         class="sidebar-close-btn"
@@ -24,8 +27,11 @@
         routerLinkActive="nav-item--active"
         class="nav-item"
       >
-        <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>
+        <span class="material-symbols-outlined nav-icon" [class.icon-fill]="router.url.includes(item.route)">{{ item.icon }}</span>
         <span class="nav-label">{{ item.label }}</span>
+        @if (item.label === 'Notifications') {
+          <span class="nav-badge">4</span>
+        }
       </a>
     }
   </nav>

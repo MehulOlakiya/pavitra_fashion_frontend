@@ -143,7 +143,7 @@ export class BookingDetailComponent implements OnInit {
   statusLabel(status: BookingStatus): string {
     switch (status) {
       case 'booked':
-        return 'Booked';
+        return 'Pending Pickup';
       case 'rented':
         return 'Rented';
       case 'pending_return':

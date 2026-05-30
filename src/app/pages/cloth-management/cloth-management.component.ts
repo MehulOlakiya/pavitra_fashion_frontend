@@ -48,20 +48,7 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
   availabilityLoading = false;
   dateFilteredProducts: Product[] | null = null;
 
-  // Analytics (from dedicated API)
-  analytics: ProductAnalytics = {
-    total: 0,
-    active: 0,
-    inactive: 0,
-    categories: [],
-  };
 
-  get activeCount(): number {
-    return this.analytics.active;
-  }
-  get inactiveCount(): number {
-    return this.analytics.inactive;
-  }
 
   get categoryOptions(): { value: string; label: string }[] {
     const fmt = (s: string) =>
@@ -163,7 +150,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           product.isActive = updated.isActive;
-          this.loadAnalytics();
           this.toastService.show(
             'success',
             'Status Updated',
@@ -223,7 +209,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
         );
         this.closeDeleteModal();
         this.load();
-        this.loadAnalytics();
       },
       error: () => {
         this.toastService.show('error', 'Error', 'Failed to delete product.');
@@ -262,7 +247,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.productService.getAnalytics().subscribe({
         next: (a) => {
-          this.analytics = a;
           this.categories = a.categories.slice().sort();
         },
       }),

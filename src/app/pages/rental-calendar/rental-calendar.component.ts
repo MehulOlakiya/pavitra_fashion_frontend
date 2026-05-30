@@ -361,7 +361,7 @@ export class RentalCalendarComponent implements OnInit {
   }
 
   getLabel(type: EventType): string {
-    if (type === 'booked') return 'BOOKED';
+    if (type === 'booked') return 'PENDING PICKUP';
     if (type === 'rented') return 'RENTED';
     if (type === 'pending_return') return 'PENDING RETURN';
     if (type === 'returned') return 'RETURNED';

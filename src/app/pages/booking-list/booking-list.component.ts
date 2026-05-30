@@ -86,14 +86,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
   }
 
-  summary = {
-    total: 0,
-    booked: 0,
-    rented: 0,
-    pendingReturn: 0,
-    returned: 0,
-    cancelled: 0,
-  };
+
 
   // Quick-edit modal
   editingBooking: Booking | null = null;
@@ -111,7 +104,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   readonly statusFilterOptions = [
     { value: '', label: 'Status: All' },
-    { value: 'booked', label: 'Booked' },
+    { value: 'booked', label: 'Pending Pickup' },
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
@@ -119,7 +112,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
   ];
 
   readonly statusEditOptions = [
-    { value: 'booked', label: 'Booked' },
+    { value: 'booked', label: 'Pending Pickup' },
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
@@ -346,7 +339,6 @@ export class BookingListComponent implements OnInit, OnDestroy {
           this.total = res.total;
           this.totalPages = res.totalPages;
           this.loading = false;
-          this.loadSummary();
         },
         error: () => {
           this.loading = false;
@@ -378,21 +370,6 @@ export class BookingListComponent implements OnInit, OnDestroy {
     return total;
   }
 
-  private loadSummary(): void {
-    const params: { fromDate?: string; toDate?: string } = {};
-    if (this.fromDate) params.fromDate = this.toISODate(this.fromDate);
-    if (this.toDate) params.toDate = this.toISODate(this.toDate);
-    this.bookingService.getAnalytics(params).subscribe({
-      next: (analytics: BookingAnalytics) => {
-        this.summary.total = analytics.total;
-        this.summary.booked = analytics.booked;
-        this.summary.rented = analytics.rented;
-        this.summary.pendingReturn = analytics.pending_return;
-        this.summary.returned = analytics.returned;
-        this.summary.cancelled = analytics.cancelled;
-      },
-    });
-  }
 
   statusClass(status: string): string {
     switch (status) {
@@ -414,7 +391,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
   statusLabel(status: string): string {
     switch (status) {
       case 'booked':
-        return 'Booked';
+        return 'Pending Pickup';
       case 'rented':
         return 'Rented';
       case 'pending_return':

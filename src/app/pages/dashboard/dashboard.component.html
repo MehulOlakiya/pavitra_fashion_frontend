@@ -15,7 +15,9 @@
       <div class="analytics-card" [class.analytics-card--gradient]="s.gradient">
         @if (!s.gradient) {
           <div
-            class="analytics-card__bg-circle analytics-card__bg-circle--{{ s.color }}"
+            class="analytics-card__bg-circle analytics-card__bg-circle--{{
+              s.color
+            }}"
           ></div>
         }
         <div class="analytics-card__body">
@@ -25,9 +27,10 @@
             class="analytics-card__trend analytics-card__trend--{{ s.color }}"
             [class.analytics-card__trend--primary-text]="s.gradient"
           >
-            <span class="material-symbols-outlined analytics-card__trend-icon">{{
-              s.trendIcon
-            }}</span>
+            <span
+              class="material-symbols-outlined analytics-card__trend-icon"
+              >{{ s.trendIcon }}</span
+            >
             <span>{{ s.trendText }}</span>
           </div>
         </div>
@@ -84,41 +87,56 @@
         <h3 class="chart-card__title">Booking Statistics</h3>
         <div class="chart-card__header-right">
           <div class="chart-legend">
-            <span class="chart-legend__item" style="color: var(--primary);">
-              <span class="chart-legend__dot" style="background: var(--primary);"></span>Booked
+            <span class="chart-legend__item" style="color: #b45309">
+              <span class="chart-legend__dot" style="background: #b45309"></span
+              >Rented
             </span>
-            <span class="chart-legend__item" style="color: #b45309;">
-              <span class="chart-legend__dot" style="background: #b45309;"></span>Rented
-            </span>
-            <span class="chart-legend__item" style="color: #166534;">
-              <span class="chart-legend__dot" style="background: #166534;"></span>Returned
+            <span class="chart-legend__item" style="color: #166534">
+              <span class="chart-legend__dot" style="background: #166534"></span
+              >Returned
             </span>
           </div>
 
           <div class="date-range-wrap">
             <button
               class="btn-outline"
-              [class.btn-outline--active]="fromDate || toDate"
-              (click)="toggleDateRange($event)"
+              [class.btn-outline--active]="chartFromDate || chartToDate"
+              (click)="toggleChartDateRange($event)"
             >
-              <span class="material-symbols-outlined btn-icon">calendar_today</span>
-              {{ fromDate && toDate ? (fromDate | date: 'd MMM') + ' - ' + (toDate | date: 'd MMM') : (fromDate ? ('From ' + (fromDate | date: 'd MMM')) : (toDate ? ('To ' + (toDate | date: 'd MMM')) : '10 Days')) }}
-              @if (fromDate || toDate) {
+              <span class="material-symbols-outlined btn-icon"
+                >calendar_today</span
+              >
+              {{
+                chartFromDate && chartToDate
+                  ? (chartFromDate | date: "d MMM") +
+                    " - " +
+                    (chartToDate | date: "d MMM")
+                  : chartFromDate
+                    ? "From " + (chartFromDate | date: "d MMM")
+                    : chartToDate
+                      ? "To " + (chartToDate | date: "d MMM")
+                      : "10 Days"
+              }}
+              @if (chartFromDate || chartToDate) {
                 <span
                   class="material-symbols-outlined btn-clear-icon"
-                  (click)="onDateRangeClear(); $event.stopPropagation()"
-                >close</span>
+                  (click)="onChartDateRangeClear(); $event.stopPropagation()"
+                  >close</span
+                >
               }
             </button>
 
-            @if (dateRangeOpen) {
-              <div class="date-range-dropdown" (click)="$event.stopPropagation()">
+            @if (chartDateRangeOpen) {
+              <div
+                class="date-range-dropdown"
+                (click)="$event.stopPropagation()"
+              >
                 <app-date-range-picker
-                  [fromDate]="fromDate"
-                  [toDate]="toDate"
+                  [fromDate]="chartFromDate"
+                  [toDate]="chartToDate"
                   [maxDays]="10"
-                  (apply)="onDateRangeChange($event)"
-                  (clear)="onDateRangeClear()"
+                  (apply)="onChartDateRangeChange($event)"
+                  (clear)="onChartDateRangeClear()"
                 ></app-date-range-picker>
               </div>
             }
@@ -144,6 +162,272 @@
         }
       </div>
     </div>
+  </div>
+
+  <!-- ── Detailed Analytics Modules ───────────────────────── -->
+  <!-- Bookings Analytics (Full Width Horizontal Scroll) -->
+  @if (bookingStats) {
+    <div class="chart-card" style="height: auto">
+      <div class="chart-card__header" style="margin-bottom: 16px">
+        <h3 class="chart-card__title">Bookings Analytics</h3>
+
+        <div class="date-range-wrap" style="position: relative">
+          <button
+            class="btn-outline"
+            [class.btn-outline--active]="bookingFromDate || bookingToDate"
+            (click)="toggleBookingDateRange($event)"
+          >
+            <span class="material-symbols-outlined btn-icon"
+              >calendar_today</span
+            >
+            {{
+              bookingFromDate && bookingToDate
+                ? (bookingFromDate | date: "d MMM") +
+                  " - " +
+                  (bookingToDate | date: "d MMM")
+                : bookingFromDate
+                  ? "From " + (bookingFromDate | date: "d MMM")
+                  : bookingToDate
+                    ? "To " + (bookingToDate | date: "d MMM")
+                    : "All Time"
+            }}
+            @if (bookingFromDate || bookingToDate) {
+              <span
+                class="material-symbols-outlined btn-clear-icon"
+                (click)="onBookingDateRangeClear(); $event.stopPropagation()"
+                >close</span
+              >
+            }
+          </button>
+
+          @if (bookingDateRangeOpen) {
+            <div
+              class="date-range-dropdown"
+              style="
+                position: absolute;
+                right: 0;
+                top: 100%;
+                z-index: 10;
+                margin-top: 8px;
+              "
+              (click)="$event.stopPropagation()"
+            >
+              <app-date-range-picker
+                [fromDate]="bookingFromDate"
+                [toDate]="bookingToDate"
+                [maxDays]="0"
+                (apply)="onBookingDateRangeChange($event)"
+                (clear)="onBookingDateRangeClear()"
+              ></app-date-range-picker>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="stats-horizontal-scroll">
+        <div class="metric-card-mini">
+          <div
+            class="metric-card-mini__icon-wrap metric-card-mini__icon-wrap--primary"
+          >
+            <span class="material-symbols-outlined metric-card-mini__icon"
+              >receipt_long</span
+            >
+          </div>
+          <p class="metric-card-mini__label">TOTAL<br />BOOKINGS</p>
+          <h3 class="metric-card-mini__value">{{ bookingStats.total }}</h3>
+        </div>
+
+        <div class="metric-card-mini">
+          <div
+            class="metric-card-mini__icon-wrap metric-card-mini__icon-wrap--booked"
+          >
+            <span class="material-symbols-outlined metric-card-mini__icon"
+              >bookmark_added</span
+            >
+          </div>
+          <p class="metric-card-mini__label">PENDING<br />PICKUP</p>
+          <h3 class="metric-card-mini__value">{{ bookingStats.booked }}</h3>
+        </div>
+
+        <div class="metric-card-mini">
+          <div
+            class="metric-card-mini__icon-wrap metric-card-mini__icon-wrap--rented"
+          >
+            <span class="material-symbols-outlined metric-card-mini__icon"
+              >shopping_bag</span
+            >
+          </div>
+          <p class="metric-card-mini__label">ACTIVE<br />RENTALS</p>
+          <h3 class="metric-card-mini__value">{{ bookingStats.rented }}</h3>
+        </div>
+
+        <div class="metric-card-mini">
+          <div
+            class="metric-card-mini__icon-wrap metric-card-mini__icon-wrap--tertiary"
+          >
+            <span class="material-symbols-outlined metric-card-mini__icon"
+              >assignment_return</span
+            >
+          </div>
+          <p class="metric-card-mini__label">PENDING<br />RETURN</p>
+          <h3 class="metric-card-mini__value">
+            {{ bookingStats.pending_return }}
+          </h3>
+        </div>
+
+        <div class="metric-card-mini">
+          <div
+            class="metric-card-mini__icon-wrap metric-card-mini__icon-wrap--returned"
+          >
+            <span class="material-symbols-outlined metric-card-mini__icon"
+              >check_circle</span
+            >
+          </div>
+          <p class="metric-card-mini__label">SUCCESSFULLY<br />RETURNED</p>
+          <h3 class="metric-card-mini__value">{{ bookingStats.returned }}</h3>
+        </div>
+
+        <div class="metric-card-mini metric-card-mini--danger">
+          <div
+            class="metric-card-mini__icon-wrap metric-card-mini__icon-wrap--cancelled"
+          >
+            <span class="material-symbols-outlined metric-card-mini__icon"
+              >cancel</span
+            >
+          </div>
+          <p class="metric-card-mini__label" style="color: var(--error)">
+            CANCELLED<br />BOOKINGS
+          </p>
+          <h3 class="metric-card-mini__value" style="color: var(--error)">
+            {{ bookingStats.cancelled }}
+          </h3>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="modules-grid">
+    <!-- Inventory Analytics -->
+    @if (inventoryStats) {
+      <div class="chart-card">
+        <div class="chart-card__header">
+          <h3 class="chart-card__title">Inventory Analytics</h3>
+        </div>
+        <div class="stats-vertical-list">
+          <div class="analytics-card analytics-card--icon-left">
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--primary"
+            ></div>
+            <div
+              class="analytics-card__icon-wrap analytics-card__icon-wrap--primary"
+            >
+              <span class="material-symbols-outlined analytics-card__icon"
+                >inventory_2</span
+              >
+            </div>
+            <div class="analytics-card__body">
+              <p class="analytics-card__label">TOTAL ITEMS</p>
+              <h3 class="analytics-card__value">{{ inventoryStats.total }}</h3>
+            </div>
+          </div>
+          <div class="analytics-card analytics-card--icon-left">
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--secondary"
+            ></div>
+            <div
+              class="analytics-card__icon-wrap analytics-card__icon-wrap--secondary"
+            >
+              <span class="material-symbols-outlined analytics-card__icon"
+                >check_circle</span
+              >
+            </div>
+            <div class="analytics-card__body">
+              <p class="analytics-card__label">ACTIVE ITEMS</p>
+              <h3 class="analytics-card__value">{{ inventoryStats.active }}</h3>
+            </div>
+          </div>
+          <div class="analytics-card analytics-card--icon-left">
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--error"
+            ></div>
+            <div
+              class="analytics-card__icon-wrap analytics-card__icon-wrap--error"
+            >
+              <span class="material-symbols-outlined analytics-card__icon"
+                >block</span
+              >
+            </div>
+            <div class="analytics-card__body">
+              <p class="analytics-card__label">INACTIVE ITEMS</p>
+              <h3 class="analytics-card__value">
+                {{ inventoryStats.inactive }}
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Customer Analytics -->
+    @if (customerStats) {
+      <div class="chart-card">
+        <div class="chart-card__header">
+          <h3 class="chart-card__title">Customer Analytics</h3>
+        </div>
+        <div class="stats-vertical-list">
+          <div class="analytics-card analytics-card--icon-left">
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--primary"
+            ></div>
+            <div
+              class="analytics-card__icon-wrap analytics-card__icon-wrap--primary"
+            >
+              <span class="material-symbols-outlined analytics-card__icon"
+                >group</span
+              >
+            </div>
+            <div class="analytics-card__body">
+              <p class="analytics-card__label">TOTAL CUSTOMERS</p>
+              <h3 class="analytics-card__value">{{ customerStats.total }}</h3>
+            </div>
+          </div>
+          <div class="analytics-card analytics-card--icon-left">
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--secondary"
+            ></div>
+            <div
+              class="analytics-card__icon-wrap analytics-card__icon-wrap--secondary"
+            >
+              <span class="material-symbols-outlined analytics-card__icon"
+                >shopping_bag</span
+              >
+            </div>
+            <div class="analytics-card__body">
+              <p class="analytics-card__label">ACTIVE RENTALS</p>
+              <h3 class="analytics-card__value">{{ customerStats.active }}</h3>
+            </div>
+          </div>
+          <div class="analytics-card analytics-card--icon-left">
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--tertiary"
+            ></div>
+            <div
+              class="analytics-card__icon-wrap analytics-card__icon-wrap--tertiary"
+            >
+              <span class="material-symbols-outlined analytics-card__icon"
+                >person_add</span
+              >
+            </div>
+            <div class="analytics-card__body">
+              <p class="analytics-card__label">NEW IN MONTH</p>
+              <h3 class="analytics-card__value">
+                {{ customerStats.newThisMonth }}
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 
   <!-- ── Recent Bookings table ────────────────────────────── -->

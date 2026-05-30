@@ -134,7 +134,7 @@ export class ProductInsightsComponent implements OnInit {
 
   statusLabel(status: BookingStatus): string {
     const map: Record<BookingStatus, string> = {
-      booked: 'Booked',
+      booked: 'Pending Pickup',
       rented: 'Rented',
       pending_return: 'Pending Return',
       returned: 'Returned',

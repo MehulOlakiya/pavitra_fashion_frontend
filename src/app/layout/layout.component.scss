@@ -8,6 +8,7 @@
   display: flex;
   height: 100vh;
   overflow: hidden;   // prevents the whole page from scrolling
+  background-color: var(--background, #f4f7fb);
 }
 
 // ── Right side: stacks header + content ─────────────────
@@ -17,13 +18,17 @@
   flex: 1;
   min-width: 0;       // flex child shrink fix
   overflow: hidden;
+
+  @media (min-width: 768px) {
+    padding-left: 312px; // 280 sidebar + 16 gap + 16 gap
+  }
 }
 
 // ── Scrollable content area only ─────────────────────────
 .layout-content {
   flex: 1;
   overflow-y: auto;   // only this scrolls
-  background: var(--background);
+  background: transparent;
 }
 
 // ── Mobile sidebar backdrop ───────────────────────────────

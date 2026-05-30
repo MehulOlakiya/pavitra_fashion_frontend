@@ -27,7 +27,7 @@ export class SidebarComponent {
 
   userState = inject(UserStateService);
 
-  constructor(private router: Router) {
+  constructor(public router: Router) {
     router.events.subscribe((e) => {
       if (e instanceof NavigationStart) this.closed.emit();
     });

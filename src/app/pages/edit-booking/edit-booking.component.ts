@@ -45,7 +45,7 @@ export class EditBookingComponent implements OnInit {
   };
 
   readonly statusOptions: { value: BookingStatus; label: string }[] = [
-    { value: 'booked', label: 'Booked' },
+    { value: 'booked', label: 'Pending Pickup' },
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },

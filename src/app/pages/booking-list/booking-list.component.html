@@ -1,78 +1,4 @@
 <div class="page">
-  <!-- Page Header + Summary Cards (side by side) -->
-  <div class="header-analytics-row">
-    <!-- <div class="page-header">
-      <h2 class="page-title">Bookings</h2>
-      <p class="page-subtitle">
-        Manage and track all your rental reservations.
-      </p>
-    </div> -->
-
-    <!-- Summary Cards -->
-    <div class="summary-row">
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--primary"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--primary">
-          <span class="material-symbols-outlined analytics-card__icon">receipt_long</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">TOTAL</p>
-          <h3 class="analytics-card__value">{{ summary.total }}</h3>
-        </div>
-      </div>
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--booked"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--booked">
-          <span class="material-symbols-outlined analytics-card__icon">bookmark_added</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">BOOKED</p>
-          <h3 class="analytics-card__value">{{ summary.booked }}</h3>
-        </div>
-      </div>
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--rented"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--rented">
-          <span class="material-symbols-outlined analytics-card__icon">shopping_bag</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">RENTED</p>
-          <h3 class="analytics-card__value">{{ summary.rented }}</h3>
-        </div>
-      </div>
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--tertiary"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--tertiary">
-          <span class="material-symbols-outlined analytics-card__icon">assignment_return</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">PENDING RET.</p>
-          <h3 class="analytics-card__value">{{ summary.pendingReturn }}</h3>
-        </div>
-      </div>
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--returned"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--returned">
-          <span class="material-symbols-outlined analytics-card__icon">check_circle</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">RETURNED</p>
-          <h3 class="analytics-card__value">{{ summary.returned }}</h3>
-        </div>
-      </div>
-      <div class="analytics-card analytics-card--icon-left">
-        <div class="analytics-card__bg-circle analytics-card__bg-circle--cancelled"></div>
-        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--cancelled">
-          <span class="material-symbols-outlined analytics-card__icon">cancel</span>
-        </div>
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">CANCELLED</p>
-          <h3 class="analytics-card__value">{{ summary.cancelled }}</h3>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Filters -->
   <div class="filters-wrap">
     <div class="filters-bar">
@@ -81,7 +7,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="Search by customer, cloth name or SN..."
+          placeholder="Search by customer, cloth name or OrderID..."
           [(ngModel)]="searchQuery"
           (ngModelChange)="onSearchChange()"
         />
@@ -172,7 +98,12 @@
               </td>
             </tr>
           } @else {
-            @for (b of bookings; track b._id; let i = $index; let count = $count) {
+            @for (
+              b of bookings;
+              track b._id;
+              let i = $index;
+              let count = $count
+            ) {
               <tr
                 class="table-row table-row--clickable"
                 (click)="viewBooking(b)"

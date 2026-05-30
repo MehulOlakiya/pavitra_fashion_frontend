@@ -84,8 +84,11 @@ export class ProductService {
     return this.http.get<PaginatedProducts>(this.base, { params: httpParams });
   }
 
-  getAnalytics(): Observable<ProductAnalytics> {
-    return this.http.get<ProductAnalytics>(`${this.base}/analytics`);
+  getAnalytics(params?: { fromDate?: string; toDate?: string }): Observable<ProductAnalytics> {
+    let httpParams = new HttpParams();
+    if (params?.fromDate) httpParams = httpParams.set('fromDate', params.fromDate);
+    if (params?.toDate) httpParams = httpParams.set('toDate', params.toDate);
+    return this.http.get<ProductAnalytics>(`${this.base}/analytics`, { params: httpParams });
   }
 
   getById(id: string): Observable<Product> {

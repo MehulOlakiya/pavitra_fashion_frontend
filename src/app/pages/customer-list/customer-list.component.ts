@@ -25,12 +25,6 @@ export class CustomerListComponent implements OnInit {
   customers: Customer[] = [];
   filteredCustomers: Customer[] = [];
 
-  // Analytics
-  analytics = {
-    total: 0,
-    active: 0,
-    newThisMonth: 0,
-  };
 
   isAddingCustomer = false;
   saving = false;
@@ -47,19 +41,8 @@ export class CustomerListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomers();
-    this.loadAnalytics();
   }
 
-  loadAnalytics(): void {
-    this.customerService.getListAnalytics().subscribe({
-      next: (data) => {
-        this.analytics = data;
-      },
-      error: (err) => {
-        console.error('Error fetching analytics', err);
-      },
-    });
-  }
 
   loadCustomers(): void {
     this.loading = true;

@@ -132,8 +132,8 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () =>
-          import('./pages/coming-soon/coming-soon.component').then(
-            (m) => m.ComingSoonComponent,
+          import('./pages/settings/settings.component').then(
+            (m) => m.SettingsComponent,
           ),
       },
       {

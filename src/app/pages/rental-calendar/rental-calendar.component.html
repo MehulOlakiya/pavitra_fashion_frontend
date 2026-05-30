@@ -45,7 +45,7 @@
       <!-- Legend -->
       <div class="legend">
         <span class="legend__dot legend__dot--booked"></span>
-        <span class="legend__text">Booked</span>
+        <span class="legend__text">Pending Pickup</span>
         <span class="legend__dot legend__dot--rented"></span>
         <span class="legend__text">Rented</span>
         <span class="legend__dot legend__dot--pending_return"></span>
@@ -77,7 +77,7 @@
         <p class="cal-stat__value">
           @if (isLoading()) { <span class="skeleton-val"></span> } @else { {{ bookedCount() }} }
         </p>
-        <p class="cal-stat__label">Booked</p>
+        <p class="cal-stat__label">Pending Pickup</p>
       </div>
     </div>
     <div class="cal-stat cal-stat--rented" (click)="setTypeFilter('rented')">
@@ -140,7 +140,7 @@
       [class.type-btn--active-booked]="activeTypeFilter() === 'booked'"
       (click)="setTypeFilter('booked')"
     >
-      <span class="material-symbols-outlined">event_available</span> Booked
+      <span class="material-symbols-outlined">event_available</span> Pending Pickup
     </button>
     <button
       class="type-btn type-btn--rented"

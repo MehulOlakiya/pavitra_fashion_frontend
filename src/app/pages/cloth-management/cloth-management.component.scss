@@ -236,7 +236,7 @@
   text-align: left;
 
   thead tr {
-    background: var(--surface-container-low);
+    background: var(--surface-container);
     border-bottom: 1px solid rgba(191, 199, 212, 0.3);
     position: sticky;
     top: 0;
@@ -249,7 +249,7 @@
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
-    color: var(--on-surface-variant);
+    color: var(--on-surface);
     white-space: nowrap;
     text-transform: uppercase;
   }

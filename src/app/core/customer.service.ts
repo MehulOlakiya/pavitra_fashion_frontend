@@ -49,8 +49,11 @@ export class CustomerService {
     return this.http.get<PaginatedCustomers>(this.base, { params });
   }
 
-  getListAnalytics(): Observable<{ total: number, active: number, newThisMonth: number }> {
-    return this.http.get<{ total: number, active: number, newThisMonth: number }>(`${this.base}/analytics`);
+  getListAnalytics(params?: { fromDate?: string; toDate?: string }): Observable<{ total: number, active: number, newThisMonth: number }> {
+    let httpParams = new HttpParams();
+    if (params?.fromDate) httpParams = httpParams.set('fromDate', params.fromDate);
+    if (params?.toDate) httpParams = httpParams.set('toDate', params.toDate);
+    return this.http.get<{ total: number, active: number, newThisMonth: number }>(`${this.base}/analytics`, { params: httpParams });
   }
 
   getById(id: string): Observable<Customer> {

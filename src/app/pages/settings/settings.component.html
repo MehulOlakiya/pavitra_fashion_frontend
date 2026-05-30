@@ -1,0 +1,119 @@
+<div class="page">
+  <div class="page-header">
+    <div class="page-header__left">
+      <h2 class="page-title">Settings</h2>
+    </div>
+  </div>
+
+  <div class="settings-container">
+    <!-- Profile Information -->
+    <div class="card settings-card">
+      <h3 class="card__title">Profile Information</h3>
+      <div class="card__body profile-body">
+        
+        <div class="profile-avatar-section">
+          <div class="avatar-circle">
+            <img [src]="profile.profileImage" alt="Profile" (error)="onImgError()" [style.display]="imageLoadError ? 'none' : 'block'" />
+            <span class="material-symbols-outlined fallback-icon" [style.display]="imageLoadError ? 'block' : 'none'">account_circle</span>
+          </div>
+          <button class="btn-text-primary" *ngIf="isEditing" (click)="fileInput.click()" [disabled]="isUploading">
+            {{ isUploading ? 'Uploading...' : 'Change Picture' }}
+          </button>
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/webp" style="display: none;">
+        </div>
+
+        <div class="profile-fields-section">
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label">Full Name</label>
+              <input type="text" class="field__input" [(ngModel)]="profile.fullName" [disabled]="!isEditing" />
+            </div>
+            <div class="field">
+              <label class="field__label">Email Address</label>
+              <input type="email" class="field__input" [(ngModel)]="profile.email" [disabled]="!isEditing" />
+            </div>
+          </div>
+          <div class="field-row single-col">
+            <div class="field">
+              <label class="field__label">Mobile Number</label>
+              <input type="text" class="field__input" [(ngModel)]="profile.mobile" [disabled]="!isEditing" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Notification Preferences -->
+    <div class="card settings-card">
+      <h3 class="card__title">Notification Preferences</h3>
+      <div class="card__body">
+        <div class="field-row">
+          <div class="field">
+            <label class="field__label">Return Time Notification</label>
+            <div class="time-select-group">
+              <div class="input-with-icon inline-select">
+                <select class="field__input time-select" [(ngModel)]="notifications.returnTime.hour" [disabled]="!isEditing">
+                  <option *ngFor="let h of hoursOptions" [value]="h">{{h}}</option>
+                </select>
+                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              </div>
+              <span class="time-separator">:</span>
+              <div class="input-with-icon inline-select">
+                <select class="field__input time-select" [(ngModel)]="notifications.returnTime.minute" [disabled]="!isEditing">
+                  <option *ngFor="let m of minutesOptions" [value]="m">{{m}}</option>
+                </select>
+                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              </div>
+              <div class="input-with-icon inline-select ampm-wrapper">
+                <select class="field__input ampm-select" [(ngModel)]="notifications.returnTime.ampm" [disabled]="!isEditing">
+                  <option *ngFor="let a of ampmOptions" [value]="a">{{a}}</option>
+                </select>
+                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              </div>
+            </div>
+            <p class="field__hint">Alert sent to manager before a rental item is due back.</p>
+          </div>
+          
+          <div class="field">
+            <label class="field__label">Pickup Time Notification</label>
+            <div class="time-select-group">
+              <div class="input-with-icon inline-select">
+                <select class="field__input time-select" [(ngModel)]="notifications.pickupTime.hour" [disabled]="!isEditing">
+                  <option *ngFor="let h of hoursOptions" [value]="h">{{h}}</option>
+                </select>
+                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              </div>
+              <span class="time-separator">:</span>
+              <div class="input-with-icon inline-select">
+                <select class="field__input time-select" [(ngModel)]="notifications.pickupTime.minute" [disabled]="!isEditing">
+                  <option *ngFor="let m of minutesOptions" [value]="m">{{m}}</option>
+                </select>
+                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              </div>
+              <div class="input-with-icon inline-select ampm-wrapper">
+                <select class="field__input ampm-select" [(ngModel)]="notifications.pickupTime.ampm" [disabled]="!isEditing">
+                  <option *ngFor="let a of ampmOptions" [value]="a">{{a}}</option>
+                </select>
+                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              </div>
+            </div>
+            <p class="field__hint">Daily summary alert for all pickups scheduled today.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-actions">
+      <ng-container *ngIf="!isEditing">
+        <button type="button" class="btn-save" (click)="toggleEdit()">Edit Profile</button>
+      </ng-container>
+      <ng-container *ngIf="isEditing">
+        <button type="button" class="btn-cancel" (click)="cancelEdit()" [disabled]="isSaving">Cancel</button>
+        <button type="button" class="btn-save" (click)="saveChanges()" [disabled]="isSaving || isUploading">
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>
