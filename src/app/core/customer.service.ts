@@ -10,8 +10,9 @@ export interface Customer {
   name: string;
   mobileNumber: string;
   village: string;
-  totalBooking?: number; // Optional for UI display
-  createdAt?: string | Date; // Added for UI display
+  totalBooking?: number;
+  pendingPayment?: number;
+  createdAt?: string | Date;
   bookings?: Booking[];
 }
 

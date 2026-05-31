@@ -431,8 +431,13 @@
     color: var(--secondary);
   }
   &--pending {
-    background: rgba(207, 132, 0, 0.1);
-    color: var(--tertiary-container);
+    background: rgba(186, 26, 26, 0.1);
+    color: #ba1a1a;
+    font-weight: 700;
+  }
+  &--cleared {
+    background: rgba(22, 101, 52, 0.1);
+    color: #166534;
   }
   &--returned {
     background: rgba(0, 97, 166, 0.1);

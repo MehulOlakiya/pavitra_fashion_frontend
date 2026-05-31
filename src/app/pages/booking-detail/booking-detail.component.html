@@ -449,7 +449,7 @@
             <p>Generating PDF preview…</p>
           </div>
         } @else if (pdfBlobUrl) {
-          <iframe [src]="pdfBlobUrl" width="100%" height="100%" frameborder="0" id="pdf-frame"></iframe>
+          <iframe [src]="pdfBlobUrl" width="100%" height="100%" frameborder="0" scrolling="no" id="pdf-frame"></iframe>
         }
       </div>
 

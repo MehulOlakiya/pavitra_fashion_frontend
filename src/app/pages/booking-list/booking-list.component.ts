@@ -2,9 +2,18 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DecimalPipe } from '@angular/common';
-import { DomSanitizer, SafeUrl, SafeResourceUrl } from '@angular/platform-browser';
+import {
+  DomSanitizer,
+  SafeUrl,
+  SafeResourceUrl,
+} from '@angular/platform-browser';
 import { Subject, Subscription, forkJoin, of, from } from 'rxjs';
-import { debounceTime, distinctUntilChanged, catchError, map } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  catchError,
+  map,
+} from 'rxjs/operators';
 import {
   Booking,
   BookingService,
@@ -59,6 +68,10 @@ export class BookingListComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustUrl(qr);
   }
 
+  // Cancel Modal
+  cancelModalOpen = false;
+  bookingToCancel: Booking | null = null;
+
   searchQuery = '';
   statusFilter = '';
   loading = false;
@@ -85,8 +98,6 @@ export class BookingListComponent implements OnInit, OnDestroy {
   private fmt(d: Date): string {
     return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
   }
-
-
 
   // Quick-edit modal
   editingBooking: Booking | null = null;
@@ -196,6 +207,10 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   toggleMenu(id: string, event: MouseEvent): void {
+    const booking = this.bookings.find((booking) => id === booking._id);
+    if (booking?.status === 'cancelled') {
+      return;
+    }
     event.stopPropagation();
     this.openMenuId = this.openMenuId === id ? null : id;
   }
@@ -287,24 +302,38 @@ export class BookingListComponent implements OnInit, OnDestroy {
   cancelBooking(booking: Booking, event: MouseEvent): void {
     event.stopPropagation();
     this.openMenuId = null;
-    this.bookingService.updateStatus(booking._id, 'cancelled').subscribe({
-      next: (updated) => {
-        const idx = this.bookings.findIndex((b) => b._id === updated._id);
-        if (idx !== -1) this.bookings[idx] = updated;
-        this.toastService.show(
-          'success',
-          'Booking Cancelled',
-          'The booking has been cancelled.',
-        );
-      },
-      error: () => {
-        this.toastService.show(
-          'error',
-          'Update Failed',
-          'Could not cancel the booking.',
-        );
-      },
-    });
+    this.bookingToCancel = booking;
+    this.cancelModalOpen = true;
+  }
+
+  confirmCancelBooking(): void {
+    if (!this.bookingToCancel) return;
+    this.bookingService
+      .updateStatus(this.bookingToCancel._id, 'cancelled')
+      .subscribe({
+        next: (updated) => {
+          const idx = this.bookings.findIndex((b) => b._id === updated._id);
+          if (idx !== -1) this.bookings[idx] = updated;
+          this.toastService.show(
+            'success',
+            'Booking Cancelled',
+            'The booking has been cancelled.',
+          );
+          this.closeCancelModal();
+        },
+        error: () => {
+          this.toastService.show(
+            'error',
+            'Update Failed',
+            'Could not cancel the booking.',
+          );
+        },
+      });
+  }
+
+  closeCancelModal(): void {
+    this.cancelModalOpen = false;
+    this.bookingToCancel = null;
   }
 
   private toISODate(d: Date): string {
@@ -359,17 +388,19 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   getTotalRent(booking: Booking): number {
     let total = 0;
-    const items = booking.items && booking.items.length > 0
-      ? booking.items
-      : (booking.productSerialNumber ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }] : []);
-      
-    items.forEach(i => {
+    const items =
+      booking.items && booking.items.length > 0
+        ? booking.items
+        : booking.productSerialNumber
+          ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }]
+          : [];
+
+    items.forEach((i) => {
       const rent = this.getProductRent(i.serialNumber) || 0;
       total += rent * i.quantity;
     });
     return total;
   }
-
 
   statusClass(status: string): string {
     switch (status) {
@@ -432,23 +463,29 @@ export class BookingListComponent implements OnInit, OnDestroy {
     event?.stopPropagation();
     this.openMenuId = null;
     this.previewBooking = booking;
-    
+
     this.isPreviewModalOpen = true;
     this.isPreviewLoading = true;
     this.pdfBlobUrl = null;
     this.rawPdfBlob = null;
-    
+
     this.bookingService.downloadInvoice(booking._id).subscribe({
       next: (blob) => {
         this.rawPdfBlob = blob;
         const url = window.URL.createObjectURL(blob);
-        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
+        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+          url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH',
+        );
         this.isPreviewLoading = false;
       },
       error: () => {
         this.isPreviewLoading = false;
-        this.toastService.show('error', 'Preview Failed', 'Failed to generate invoice preview.');
-      }
+        this.toastService.show(
+          'error',
+          'Preview Failed',
+          'Failed to generate invoice preview.',
+        );
+      },
     });
   }
 
@@ -467,7 +504,11 @@ export class BookingListComponent implements OnInit, OnDestroy {
     a.download = `Invoice-${this.previewBooking._id.slice(-6).toUpperCase()}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
-    this.toastService.show('success', 'Download Complete', 'Invoice downloaded successfully.');
+    this.toastService.show(
+      'success',
+      'Download Complete',
+      'Invoice downloaded successfully.',
+    );
     this.closePreview();
   }
 
@@ -621,69 +662,78 @@ export class BookingListComponent implements OnInit, OnDestroy {
   private doSendBill(booking: Booking): void {
     const phone = (booking.customer?.mobileNumber || '').replace(/\D/g, '');
     const message = this.buildBillMessage(booking);
-    const firstImageSn = booking.items && booking.items.length > 0
-      ? booking.items[0].serialNumber
-      : booking.productSerialNumber;
+    const firstImageSn =
+      booking.items && booking.items.length > 0
+        ? booking.items[0].serialNumber
+        : booking.productSerialNumber;
 
-    const imageUrl = firstImageSn 
-      ? this.productImageMap.get(firstImageSn.trim().toLowerCase()) 
+    const imageUrl = firstImageSn
+      ? this.productImageMap.get(firstImageSn.trim().toLowerCase())
       : undefined;
 
     this.sendingBill = true;
-    
+
     const blobToSend = this.tempPdfBlob;
     this.tempPdfBlob = null; // Clear it
 
     let obs;
     if (blobToSend) {
-      obs = from(this.blobToBase64(blobToSend).then(base64 => {
-         return this.whatsappService.sendPdf({
-           mobileNumber: phone,
-           message,
-           fileBase64: base64,
-           filename: `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`,
-           mimetype: 'application/pdf'
-         }).toPromise();
-      }));
+      obs = from(
+        this.blobToBase64(blobToSend).then((base64) => {
+          return this.whatsappService
+            .sendPdf({
+              mobileNumber: phone,
+              message,
+              fileBase64: base64,
+              filename: `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`,
+              mimetype: 'application/pdf',
+            })
+            .toPromise();
+        }),
+      );
     } else {
-      obs = this.whatsappService.sendMessage({ mobileNumber: phone, message, imageUrl });
+      obs = this.whatsappService.sendMessage({
+        mobileNumber: phone,
+        message,
+        imageUrl,
+      });
     }
 
     obs.subscribe({
-        next: () => {
-          this.sendingBill = false;
-          // Mark isBillSend = true on backend (best-effort)
-          this.bookingService.markBillSent(booking._id).subscribe({
-            next: (updated) => {
-              // Update the booking in the local list so the flag is reflected
-              const idx = this.bookings.findIndex((b) => b._id === booking._id);
-              if (idx !== -1) this.bookings[idx] = updated;
-            },
-            error: (e) => console.error('markBillSent failed', e),
-          });
-          this.pendingBillBooking = null;
-          // Close the modal that triggered the send
-          if (this.billSourceModal === 'detail') {
-            this.closeDetail();
-          } else if (this.billSourceModal === 'edit') {
-            this.closeEdit();
-          }
-          this.billSourceModal = null;
-          this.toastService.show(
-            'success',
-            'Bill Sent',
-            'Booking bill sent on WhatsApp.',
-          );
-        },
-        error: (err) => {
-          this.sendingBill = false;
-          this.toastService.show(
-            'error',
-            'Send Failed',
-            err?.error?.message ?? 'Could not send bill on WhatsApp.',
-          );
-        },
-      });
+      next: () => {
+        this.sendingBill = false;
+        // Mark isBillSend = true on backend (best-effort)
+        this.bookingService.markBillSent(booking._id).subscribe({
+          next: (updated) => {
+            // Update the booking in the local list so the flag is reflected
+            const idx = this.bookings.findIndex((b) => b._id === booking._id);
+            if (idx !== -1) this.bookings[idx] = updated;
+          },
+          error: (e) => console.error('markBillSent failed', e),
+        });
+        this.pendingBillBooking = null;
+        // Close the modal that triggered the send
+        if (this.billSourceModal === 'detail') {
+          this.closeDetail();
+        } else if (this.billSourceModal === 'edit') {
+          this.closeEdit();
+        }
+        this.billSourceModal = null;
+        this.toastService.show(
+          'success',
+          'Bill Sent',
+          'Booking bill sent on WhatsApp.',
+        );
+      },
+      error: (err) => {
+        this.sendingBill = false;
+        this.toastService.show(
+          'error',
+          'Send Failed',
+          err?.error?.message ?? 'Could not send bill on WhatsApp.',
+        );
+      },
+    });
   }
 
   private buildBillMessage(booking: Booking): string {
@@ -691,15 +741,18 @@ export class BookingListComponent implements OnInit, OnDestroy {
     lines.push('🧾 *Pavitra Fashion – Booking Bill*');
     lines.push('');
     // List items
-    const items = booking.items && booking.items.length > 0
-      ? booking.items
-      : (booking.productSerialNumber ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }] : []);
-    
+    const items =
+      booking.items && booking.items.length > 0
+        ? booking.items
+        : booking.productSerialNumber
+          ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }]
+          : [];
+
     let totalRent = 0;
-    items.forEach(i => {
-       const rent = this.getProductRent(i.serialNumber) || 0;
-       totalRent += rent * i.quantity;
-       lines.push(`👗 *Item:* #${i.serialNumber} (Qty: ${i.quantity})`);
+    items.forEach((i) => {
+      const rent = this.getProductRent(i.serialNumber) || 0;
+      totalRent += rent * i.quantity;
+      lines.push(`👗 *Item:* #${i.serialNumber} (Qty: ${i.quantity})`);
     });
 
     if (totalRent > 0) {

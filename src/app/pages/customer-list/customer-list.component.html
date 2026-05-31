@@ -34,13 +34,14 @@
             <th>Phone Number</th>
             <th>Village / City</th>
             <th>Total Bookings</th>
+            <th>Pending Payment</th>
             <th class="col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
           @if (loading) {
             <tr>
-              <td colspan="6" class="cell-state">
+              <td colspan="7" class="cell-state">
                 <div class="empty-state">
                   <span class="material-symbols-outlined spinning"
                     >progress_activity</span
@@ -51,7 +52,7 @@
             </tr>
           } @else if (filteredCustomers.length === 0) {
             <tr>
-              <td colspan="6" class="cell-state">
+              <td colspan="7" class="cell-state">
                 <div class="empty-state">
                   <div class="empty-state__icon-wrap">
                     <span class="material-symbols-outlined">group</span>
@@ -84,6 +85,13 @@
                   <span class="badge badge--active"
                     >{{ c.totalBooking || 0 }} Bookings</span
                   >
+                </td>
+                <td>
+                  @if ((c.pendingPayment || 0) > 0) {
+                    <span class="badge badge--pending">₹{{ c.pendingPayment | number }}</span>
+                  } @else {
+                    <span class="badge badge--cleared">Cleared</span>
+                  }
                 </td>
                 <td class="col-actions">
                   <button class="action-btn" title="View Customer" (click)="viewCustomer(c._id); $event.stopPropagation()">
