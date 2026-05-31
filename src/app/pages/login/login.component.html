@@ -1,150 +1,118 @@
 <section class="login-page">
-  <!-- Left Side: Fashion Banner (hidden on mobile) -->
-  <div class="hero-panel">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <div class="brand">
-        <!-- <span class="material-symbols-outlined brand-icon">checkroom</span> -->
-        <span class="brand-name">Pavitra Fashion</span>
-      </div>
-      <p class="brand-tagline">
-        Curate premium wardrobes with seamless elegance.
-      </p>
-      <p class="brand-description">
-        The modern standard for high-end ethnic wear rental management and
-        inventory operations.
-      </p>
-    </div>
-  </div>
+  <div class="login-card">
+    
+    <!-- Left Side: Login Form -->
+    <div class="form-panel">
+      <div class="form-content">
+        <div class="brand">
+          <span class="brand-name">Pavitra Fashion</span>
+        </div>
 
-  <!-- Right Side: Login Form -->
-  <div class="form-panel">
-    <div class="form-card">
-      <!-- Mobile-only brand header -->
-      <div class="mobile-brand">
-        <span class="material-symbols-outlined mobile-brand-icon"
-          >checkroom</span
-        >
-        <span class="mobile-brand-name">Pavitra Fashion</span>
-      </div>
+        <div class="form-header">
+          <h1 class="form-title">Welcome Back</h1>
+          <p class="form-subtitle">
+            Please enter your details to sign in to your workspace.
+          </p>
+        </div>
 
-      <div class="form-header">
-        <h1 class="form-title">Welcome Back</h1>
-        <p class="form-subtitle">
-          Please enter your details to sign in to your workspace.
+        <form (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Email Input -->
+          <div class="field">
+            <label class="field-label" for="email">Email Address</label>
+            <div
+              class="input-wrapper"
+              [class.input-wrapper--error]="errors.email.length"
+            >
+              <span class="material-symbols-outlined input-icon">mail</span>
+              <input
+                id="email"
+                type="email"
+                placeholder="manager&#64;regalrent.com"
+                [(ngModel)]="email"
+                name="email"
+                required
+                autocomplete="email"
+                (blur)="onEmailBlur()"
+              />
+            </div>
+            @if (errors.email.length) {
+              <p class="field-error">
+                <span class="material-symbols-outlined field-error-icon"
+                  >error</span
+                >
+                {{ errors.email[0] }}
+              </p>
+            }
+          </div>
+
+          <!-- Password Input -->
+          <div class="field">
+            <div class="field-header">
+              <label class="field-label" for="password">Password</label>
+            </div>
+            <div
+              class="input-wrapper"
+              [class.input-wrapper--error]="errors.password.length"
+            >
+              <span class="material-symbols-outlined input-icon">lock</span>
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="••••••••"
+                [(ngModel)]="password"
+                name="password"
+                required
+                autocomplete="current-password"
+                (blur)="onPasswordBlur()"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="showPassword = !showPassword"
+                [attr.aria-label]="
+                  showPassword ? 'Hide password' : 'Show password'
+                "
+              >
+                <span class="material-symbols-outlined">
+                  {{ showPassword ? "visibility_off" : "visibility" }}
+                </span>
+              </button>
+            </div>
+            @if (errors.password.length) {
+              <ul class="field-error-list">
+                @for (e of errors.password; track e) {
+                  <li class="field-error">
+                    <span class="material-symbols-outlined field-error-icon"
+                      >error</span
+                    >
+                    {{ e }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+
+          <!-- Primary Action -->
+          <button type="submit" class="btn-primary" [disabled]="loading">
+            {{ loading ? "Signing in…" : "Sign In" }}
+            <span
+              class="material-symbols-outlined btn-arrow"
+              [class.spinning]="loading"
+            >
+              {{ loading ? "progress_activity" : "arrow_forward" }}
+            </span>
+          </button>
+        </form>
+
+        <p class="form-footer">
+          Don't have an account?
+          <a class="contact-link">Contact Sales</a>
         </p>
       </div>
-
-      <form (ngSubmit)="onSubmit()" class="login-form">
-        <!-- Email Input -->
-        <div class="field">
-          <label class="field-label" for="email">Email Address</label>
-          <div
-            class="input-wrapper"
-            [class.input-wrapper--error]="errors.email.length"
-          >
-            <span class="material-symbols-outlined input-icon">mail</span>
-            <input
-              id="email"
-              type="email"
-              placeholder="manager&#64;regalrent.com"
-              [(ngModel)]="email"
-              name="email"
-              required
-              autocomplete="email"
-              (blur)="onEmailBlur()"
-            />
-          </div>
-          @if (errors.email.length) {
-            <p class="field-error">
-              <span class="material-symbols-outlined field-error-icon"
-                >error</span
-              >
-              {{ errors.email[0] }}
-            </p>
-          }
-        </div>
-
-        <!-- Password Input -->
-        <div class="field">
-          <div class="field-header">
-            <label class="field-label" for="password">Password</label>
-            <a class="forgot-link">Forgot password?</a>
-          </div>
-          <div
-            class="input-wrapper"
-            [class.input-wrapper--error]="errors.password.length"
-          >
-            <span class="material-symbols-outlined input-icon">lock</span>
-            <input
-              id="password"
-              [type]="showPassword ? 'text' : 'password'"
-              placeholder="••••••••"
-              [(ngModel)]="password"
-              name="password"
-              required
-              autocomplete="current-password"
-              (blur)="onPasswordBlur()"
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              (click)="showPassword = !showPassword"
-              [attr.aria-label]="
-                showPassword ? 'Hide password' : 'Show password'
-              "
-            >
-              <span class="material-symbols-outlined">
-                {{ showPassword ? "visibility_off" : "visibility" }}
-              </span>
-            </button>
-          </div>
-          @if (errors.password.length) {
-            <ul class="field-error-list">
-              @for (e of errors.password; track e) {
-                <li class="field-error">
-                  <span class="material-symbols-outlined field-error-icon"
-                    >error</span
-                  >
-                  {{ e }}
-                </li>
-              }
-            </ul>
-          }
-        </div>
-
-        <!-- Options Row -->
-        <!-- <div class="options-row">
-          <label class="remember-row">
-            <div class="checkbox-wrapper">
-              <input
-                type="checkbox"
-                [(ngModel)]="rememberMe"
-                name="rememberMe"
-                class="checkbox-input"
-              />
-              <span class="material-symbols-outlined check-icon">check</span>
-            </div>
-            <span class="remember-text">Remember me for 30 days</span>
-          </label>
-        </div> -->
-
-        <!-- Primary Action -->
-        <button type="submit" class="btn-primary" [disabled]="loading">
-          {{ loading ? "Signing in…" : "Sign In" }}
-          <span
-            class="material-symbols-outlined btn-arrow"
-            [class.spinning]="loading"
-          >
-            {{ loading ? "progress_activity" : "arrow_forward" }}
-          </span>
-        </button>
-      </form>
-
-      <p class="form-footer">
-        Don't have an account?
-        <a class="contact-link">Contact Sales</a>
-      </p>
     </div>
+
+    <!-- Right Side: Fashion Banner -->
+    <div class="image-panel"></div>
+
   </div>
 </section>

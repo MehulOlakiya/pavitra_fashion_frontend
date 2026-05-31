@@ -1,4 +1,5 @@
-// ── Login Page ─────────────────────────────────────────────
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap");
+
 :host {
   display: block;
   height: 100%;
@@ -6,221 +7,112 @@
 
 .login-page {
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--background);
-  font-family: 'Inter', sans-serif;
-  color: var(--on-surface);
-}
-
-@media (min-width: 768px) {
-  .login-page {
-    flex-direction: row;
-  }
-}
-
-// ── Hero Panel (Left Side) ─────────────────────────────────
-.hero-panel {
-  display: none;
-  position: relative;
-  flex-direction: column;
-  justify-content: flex-end;
-  background-color: var(--surface-variant);
-  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuChzDtkuP2ByqmzXeBE9kJRoRB8bDjtmD4IBpQwjITccL-QoQWZ0PwFuIw_WGK6WkgKw39di6qjrJL7mI2WwZgz_6Kkp_FyGybsdLvsgEY-TDSycgATr91tNuxDpYdQKk19TbuA6FoBKYNk_AjJC_tjQiKG7n7gLVHhKv5gSKyCQ3dQ2kjaN1T3YGqA0aX3Y6OJEUKoDHQNTFMlV9oea5A8BLiSFq49K3Gg9S_sR5EvADMS3ARmvZ7djSDMUkH11IJfILAYCy_K7IY');
-  background-size: cover;
-  background-position: center;
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .hero-panel {
-    display: flex;
-    width: 50%;
-  }
-}
-
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(44, 49, 55, 0.8) 0%,
-    rgba(44, 49, 55, 0.2) 40%,
-    transparent 100%
-  );
-}
-
-.hero-content {
-  position: relative;
-  z-index: 10;
-  padding: 40px;
-  padding-bottom: 32px;
-  color: var(--on-primary);
-}
-
-.brand {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
+  justify-content: center;
+  min-height: 100vh;
+  /* Radial gradient background using primary color */
+  background: radial-gradient(
+    circle at center,
+    var(--primary-fixed) 0%,
+    var(--primary) 100%
+  );
+  font-family: "Inter", sans-serif;
+  color: var(--on-surface);
+  padding: 24px;
 }
 
-.brand-icon {
-  font-size: 32px;
-}
-
-.brand-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 48px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.brand-tagline {
-  font-family: 'Poppins', sans-serif;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  max-width: 28rem;
-}
-
-.brand-description {
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.6;
-  opacity: 0.8;
-  max-width: 28rem;
-}
-
-// ── Form Panel (Right Side) ───────────────────────────────
-.form-panel {
+.login-card {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  max-width: 1000px;
+  background: var(--surface-container-lowest);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .login-card {
+    flex-direction: row;
+    height: 650px;
+  }
+}
+
+/* Left Side: Form Panel */
+.form-panel {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: var(--background);
+  background: var(--surface);
+  padding: 40px 24px;
 }
 
 @media (min-width: 768px) {
   .form-panel {
-    width: 50%;
-    padding: 40px;
+    padding: 60px 80px;
   }
 }
 
-// ── Form Card ──────────────────────────────────────────────
-.form-card {
+.form-content {
   width: 100%;
-  max-width: 28rem;
-  background: var(--surface-container-lowest);
-  padding: 32px;
-  border-radius: 0.75rem;
-  box-shadow: 0px 10px 30px rgba(15, 23, 42, 0.04);
-  border: 1px solid rgba(191, 199, 212, 0.2);
+  max-width: 380px;
 }
 
-// ── Mobile Brand ───────────────────────────────────────────
-.mobile-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
+.brand {
+  margin-bottom: 40px;
+}
+
+.brand-name {
+  font-family: "Poppins", sans-serif;
+  font-size: 28px;
+  font-weight: 700;
   color: var(--primary);
 }
 
-@media (min-width: 768px) {
-  .mobile-brand {
-    display: none;
-  }
-}
-
-.mobile-brand-icon {
-  font-size: 28px;
-}
-
-.mobile-brand-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.5;
-  letter-spacing: -0.01em;
-}
-
-// ── Form Header ────────────────────────────────────────────
 .form-header {
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-@media (min-width: 768px) {
-  .form-header {
-    text-align: left;
-  }
+  margin-bottom: 32px;
 }
 
 .form-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 24px;
+  font-family: "Poppins", sans-serif;
+  font-size: 32px;
   font-weight: 600;
-  line-height: 1.4;
   color: var(--on-surface);
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .form-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.6;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
   color: var(--on-surface-variant);
 }
 
-// ── Form Fields ────────────────────────────────────────────
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .field-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
 .field-label {
-  display: block;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  line-height: 1.2;
-  color: var(--on-surface-variant);
-  text-transform: uppercase;
-}
-
-.forgot-link {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   font-weight: 500;
-  line-height: 1.5;
-  color: var(--primary);
-  transition: color 0.2s;
-
-  &:hover {
-    color: var(--primary-container);
-  }
+  color: var(--on-surface-variant);
+  margin-left: 16px;
 }
 
 .input-wrapper {
@@ -231,286 +123,170 @@
 
 .input-icon {
   position: absolute;
-  left: 8px;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 22px;
+  font-size: 20px;
   color: var(--outline);
-  pointer-events: none;
 }
 
 .input-wrapper input {
   width: 100%;
-  padding: 10px 16px 10px 40px;
-  background: var(--surface);
-  border: 1px solid rgba(191, 199, 212, 0.5);
-  border-radius: 0.5rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  padding: 16px 20px 16px 52px;
+  background: var(--surface-container-high);
+  border: 1px solid transparent;
+  border-radius: 24px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
   color: var(--on-surface);
-  transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+  transition: all 0.2s;
 
   &::placeholder {
-    color: var(--outline-variant);
+    color: var(--outline);
   }
 
   &:focus {
-    border-color: var(--primary-container);
-    box-shadow: 0 0 0 4px var(--surface-container-low);
+    border-color: var(--primary);
+    background: var(--surface-container-lowest);
+  }
+
+  &:focus + .input-icon,
+  &:focus ~ .input-icon {
+    color: var(--primary);
   }
 }
 
-// ── Error state ────────────────────────────────────────────
-.input-wrapper--error {
-  input {
-    border-color: var(--error) !important;
-    box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.1);
-  }
+.input-wrapper--error input {
+  border-color: var(--error);
+  background: var(--error-container);
+}
 
-  .input-icon { color: var(--error); }
+.input-wrapper--error .input-icon {
+  color: var(--error);
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--error);
+  margin-left: 16px;
+  margin-top: 4px;
 }
 
 .field-error-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.field-error {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--error);
-  margin-top: 4px;
-}
-
-.field-error-icon {
-  font-size: 14px;
-  flex-shrink: 0;
 }
 
 .toggle-password {
   position: absolute;
-  right: 10px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
-  align-items: center;
+  background: transparent;
+  border: none;
   color: var(--outline);
+  cursor: pointer;
   padding: 4px;
-  transition: color 0.2s;
-
-  span {
-    font-size: 20px;
-  }
 
   &:hover {
-    color: var(--on-surface-variant);
-  }
-}
-
-// ── Options Row ────────────────────────────────────────────
-.options-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 8px;
-  padding-bottom: 16px;
-}
-
-.remember-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.checkbox-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-}
-
-.checkbox-input {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--outline-variant);
-  border-radius: 0.25rem;
-  background: var(--surface);
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-  outline: none;
-
-  &:checked {
-    background: var(--primary);
-    border-color: var(--primary);
-  }
-
-  &:focus {
-    box-shadow: 0 0 0 2px var(--surface-container-low);
-    outline-offset: 1px;
-  }
-}
-
-.check-icon {
-  position: absolute;
-  font-size: 16px;
-  color: var(--on-primary);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.checkbox-input:checked ~ .check-icon {
-  opacity: 1;
-}
-
-.remember-text {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--on-surface-variant);
-  transition: color 0.2s;
-
-  .remember-row:hover & {
     color: var(--on-surface);
   }
 }
 
-// ── Primary Button ─────────────────────────────────────────
 .btn-primary {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 24px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
-  padding: 12px 24px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  color: var(--on-primary);
-  background:var(--primary);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s, transform 0.15s;
+  transition: background 0.2s;
 
-  &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  // &:hover {
+  //   background: var(--on-primary-container);
+  //   color: var(--on-primary);
+  // }
 
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
   }
 }
 
 .btn-arrow {
-  font-size: 18px;
-
+  font-size: 20px;
   &.spinning {
     animation: spin 0.8s linear infinite;
   }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-// ── Divider ────────────────────────────────────────────────
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-  margin-bottom: 16px;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1px;
-  background: rgba(191, 199, 212, 0.3);
-}
-
-.divider-text {
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  line-height: 1.2;
-  color: var(--on-surface-variant);
-  text-transform: uppercase;
-}
-
-// ── Google / SSO Button ────────────────────────────────────
-.btn-google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 24px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  color: var(--on-surface);
-  border: 1px solid rgba(191, 199, 212, 0.5);
-  border-radius: 0.5rem;
-  background: var(--surface-container-lowest);
-  transition: background 0.2s;
-
-  &:hover {
-    background: var(--surface);
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.google-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-// ── Footer ─────────────────────────────────────────────────
 .form-footer {
   text-align: center;
   margin-top: 24px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
   color: var(--on-surface-variant);
 }
 
 .contact-link {
-  font-weight: 500;
   color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+/* Right Side: Image Panel */
+.image-panel {
+  flex: 1;
+  background-image: url("/login.png");
+  background-size: cover;
+  background-position: center;
+  display: none;
+  position: relative;
+}
+
+.image-panel::after {
+  content: "";
+  position: absolute;
+
+  inset: 0;
+  /* Overlay with secondary color slightly to tie into theme */
+  background: linear-gradient(
+    to top right,
+    rgba(113, 42, 226, 0.2),
+    rgba(0, 97, 166, 0.1)
+  );
+}
+
+@media (min-width: 768px) {
+  .image-panel {
+    display: block;
   }
 }
