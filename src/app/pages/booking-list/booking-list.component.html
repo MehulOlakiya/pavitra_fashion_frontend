@@ -47,6 +47,7 @@
         <app-date-range-picker
           [fromDate]="fromDate"
           [toDate]="toDate"
+          [allowFuture]="true"
           (apply)="applyDateRange($event)"
           (clear)="clearDateRange()"
         />
@@ -176,9 +177,9 @@
                   </div>
                 </td>
                 <td>
-                  <p class="customer-name">{{ b.customer?.name || 'Unknown' }}</p>
-                  <p class="customer-phone">{{ b.customer?.mobileNumber || 'N/A' }}</p>
-                  <p class="customer-village">{{ b.customer?.village || '' }}</p>
+                  <p class="customer-name">{{ b.customer.name || 'Unknown' }}</p>
+                  <p class="customer-phone">{{ b.customer.mobileNumber || 'N/A' }}</p>
+                  <p class="customer-village">{{ b.customer.village || '' }}</p>
                 </td>
                 <td
                   [class.text-strike]="isCancelled(b.status)"

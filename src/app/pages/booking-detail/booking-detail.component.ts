@@ -10,7 +10,11 @@ import {
 import { forkJoin, of, from } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-import { DomSanitizer, SafeUrl, SafeResourceUrl } from '@angular/platform-browser';
+import {
+  DomSanitizer,
+  SafeUrl,
+  SafeResourceUrl,
+} from '@angular/platform-browser';
 import { Product, ProductService } from '../../core/product.service';
 import { WhatsappService, WhatsAppStatus } from '../../core/whatsapp.service';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -184,11 +188,14 @@ export class BookingDetailComponent implements OnInit {
 
   get totalPayment(): number {
     if (!this.booking) return 0;
-    if (this.booking.totalPayment !== undefined && this.booking.totalPayment !== null) {
+    if (
+      this.booking.totalPayment !== undefined &&
+      this.booking.totalPayment !== null
+    ) {
       return this.booking.totalPayment;
     }
     let total = 0;
-    this.products.forEach(p => {
+    this.products.forEach((p) => {
       total += (p.product.rentPrice || 0) * p.quantity;
       if (p.freshPiece && p.freshPieceCost) {
         total += p.freshPieceCost;
@@ -257,18 +264,24 @@ export class BookingDetailComponent implements OnInit {
     this.isPreviewLoading = true;
     this.pdfBlobUrl = null;
     this.rawPdfBlob = null;
-    
+
     this.bookingService.downloadInvoice(this.booking._id).subscribe({
       next: (blob) => {
         this.rawPdfBlob = blob;
         const url = window.URL.createObjectURL(blob);
-        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
+        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+          url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH',
+        );
         this.isPreviewLoading = false;
       },
       error: () => {
         this.isPreviewLoading = false;
-        this.toastService.show('error', 'Preview Failed', 'Failed to generate invoice preview.');
-      }
+        this.toastService.show(
+          'error',
+          'Preview Failed',
+          'Failed to generate invoice preview.',
+        );
+      },
     });
   }
 
@@ -283,10 +296,14 @@ export class BookingDetailComponent implements OnInit {
     const url = window.URL.createObjectURL(this.rawPdfBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Invoice-${this.booking._id.slice(-6).toUpperCase()}.pdf`;
+    a.download = `Invoice-${this.booking.orderId?.split('-')[1]}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
-    this.toastService.show('success', 'Download Complete', 'Invoice downloaded successfully.');
+    this.toastService.show(
+      'success',
+      'Download Complete',
+      'Invoice downloaded successfully.',
+    );
     this.closePreview();
   }
 
@@ -375,7 +392,11 @@ export class BookingDetailComponent implements OnInit {
     this.waSseSub = this.whatsappService.streamStatus(token).subscribe({
       next: (status) => {
         this.waStatus = status;
-        if (status.state === 'connected' && this.pendingBillBooking && this.waModalOpen) {
+        if (
+          status.state === 'connected' &&
+          this.pendingBillBooking &&
+          this.waModalOpen
+        ) {
           this.waSseSub?.unsubscribe();
           this.waSseSub = null;
           this.waModalOpen = false;
@@ -396,7 +417,7 @@ export class BookingDetailComponent implements OnInit {
   private doSendBill(booking: Booking): void {
     const phone = (booking.customer?.mobileNumber || '').replace(/\D/g, '');
     const message = this.buildBillMessage();
-    
+
     this.sendingBill = true;
 
     const blobToSend = this.tempPdfBlob;
@@ -405,39 +426,44 @@ export class BookingDetailComponent implements OnInit {
     const requests = [];
 
     if (blobToSend) {
-      const pdfPromise = this.blobToBase64(blobToSend).then(base64 => {
-        return this.whatsappService.sendPdf({
-          mobileNumber: phone,
-          message,
-          fileBase64: base64,
-          filename: `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`,
-          mimetype: 'application/pdf'
-        }).toPromise();
+      const pdfPromise = this.blobToBase64(blobToSend).then((base64) => {
+        return this.whatsappService
+          .sendPdf({
+            mobileNumber: phone,
+            message,
+            fileBase64: base64,
+            filename: `Invoice-${booking.orderId?.split('-')[1]}.pdf`,
+            mimetype: 'application/pdf',
+          })
+          .toPromise();
       });
       requests.push(from(pdfPromise));
     } else {
-      requests.push(this.whatsappService.sendMessage({ mobileNumber: phone, message }));
+      requests.push(
+        this.whatsappService.sendMessage({ mobileNumber: phone, message }),
+      );
     }
 
     // Append requests for each product image
-    this.products.forEach(p => {
+    this.products.forEach((p) => {
       if (p.product.imageUrl) {
-        const beltStr = p.beltType === 'BF' ? 'BF' : (p.beltType === 'HF' ? 'HF' : 'No Belt');
+        const beltStr =
+          p.beltType === 'BF' ? 'BF' : p.beltType === 'HF' ? 'HF' : 'No Belt';
         const freshStr = p.freshPiece ? 'Yes' : 'No';
-        
+
         requests.push(
           this.whatsappService.sendMessage({
             mobileNumber: phone,
             message: `${p.product.name}\nQty: ${p.quantity} | Belt: ${beltStr} | Fresh: ${freshStr}`,
-            imageUrl: p.product.imageUrl
-          })
+            imageUrl: p.product.imageUrl,
+          }),
         );
       }
     });
 
     forkJoin(requests).subscribe({
       next: () => this.handleSendSuccess(booking),
-      error: () => this.handleSendError()
+      error: () => this.handleSendError(),
     });
   }
 
@@ -452,12 +478,20 @@ export class BookingDetailComponent implements OnInit {
       error: (e) => console.error('markBillSent failed', e),
     });
     this.pendingBillBooking = null;
-    this.toastService.show('success', 'Bill Sent', 'The bill was successfully sent via WhatsApp.');
+    this.toastService.show(
+      'success',
+      'Bill Sent',
+      'The bill was successfully sent via WhatsApp.',
+    );
   }
 
   private handleSendError(): void {
     this.sendingBill = false;
-    this.toastService.show('error', 'Send Failed', 'Failed to send WhatsApp message. Ensure the number is correct.');
+    this.toastService.show(
+      'error',
+      'Send Failed',
+      'Failed to send WhatsApp message. Ensure the number is correct.',
+    );
   }
 
   private blobToBase64(blob: Blob): Promise<string> {

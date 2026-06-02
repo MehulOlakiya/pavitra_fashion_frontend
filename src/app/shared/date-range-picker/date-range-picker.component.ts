@@ -19,6 +19,7 @@ export class DateRangePickerComponent implements OnChanges {
   @Input() fromDate: Date | null = null;
   @Input() toDate: Date | null = null;
   @Input() maxDays?: number;
+  @Input() allowFuture = false;
   @Output() rangeChange = new EventEmitter<{
     from: Date | null;
     to: Date | null;
@@ -113,7 +114,7 @@ export class DateRangePickerComponent implements OnChanges {
   }
 
   onDayClick(day: Date): void {
-    if (!this.isCurrentMonth(day) || this.isFuture(day)) return;
+    if (!this.isCurrentMonth(day) || this.isDisabled(day)) return;
 
     if (!this.pendingFrom || (this.pendingFrom && this.pendingTo)) {
       // Start fresh selection
@@ -184,6 +185,11 @@ export class DateRangePickerComponent implements OnChanges {
     const todayEnd = new Date(this.today);
     todayEnd.setHours(23, 59, 59, 999);
     return day > todayEnd;
+  }
+
+  isDisabled(day: Date): boolean {
+    if (this.allowFuture) return false;
+    return this.isFuture(day);
   }
 
   isStart(day: Date): boolean {

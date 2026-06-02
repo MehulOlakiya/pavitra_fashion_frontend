@@ -525,6 +525,14 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
 
+  &--booked {
+    background: rgba(2, 136, 209, 0.1);
+    color: #0288d1;
+  }
+  &--rented {
+    background: rgba(113, 42, 226, 0.1);
+    color: var(--secondary);
+  }
   &--active {
     background: rgba(113, 42, 226, 0.1);
     color: var(--secondary);

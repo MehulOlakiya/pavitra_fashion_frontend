@@ -404,10 +404,19 @@ export class BookingListComponent implements OnInit, OnDestroy {
   private loadMissingProducts(bookings: Booking[]): void {
     const missingSerials = new Set<string>();
     bookings.forEach((b) => {
-      const items = b.items && b.items.length > 0 ? b.items : (b.productSerialNumber ? [{serialNumber: b.productSerialNumber}] : []);
+      const items =
+        b.items && b.items.length > 0
+          ? b.items
+          : b.productSerialNumber
+            ? [{ serialNumber: b.productSerialNumber }]
+            : [];
       items.forEach((i: any) => {
         const sn = String(i.serialNumber).trim().toLowerCase();
-        if (sn && !this.productImageMap.has(sn) && !this.productRentMap.has(sn)) {
+        if (
+          sn &&
+          !this.productImageMap.has(sn) &&
+          !this.productRentMap.has(sn)
+        ) {
           missingSerials.add(sn);
         }
       });
@@ -415,25 +424,31 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
     if (missingSerials.size === 0) return;
 
-    this.productService.getBySerialNumbers(Array.from(missingSerials)).subscribe({
-      next: (products) => {
-        products.forEach((p) => {
-          const sn = p.serialNumber.trim().toLowerCase();
-          if (p.imageUrl) this.productImageMap.set(sn, p.imageUrl);
-          this.productRentMap.set(sn, p.rentPrice);
-        });
-      }
-    });
+    this.productService
+      .getBySerialNumbers(Array.from(missingSerials))
+      .subscribe({
+        next: (products) => {
+          products.forEach((p) => {
+            const sn = p.serialNumber.trim().toLowerCase();
+            if (p.imageUrl) this.productImageMap.set(sn, p.imageUrl);
+            this.productRentMap.set(sn, p.rentPrice);
+          });
+        },
+      });
   }
 
   getProductImage(serialNumber: any): string {
     if (!serialNumber) return '';
-    return this.productImageMap.get(String(serialNumber).trim().toLowerCase()) ?? '';
+    return (
+      this.productImageMap.get(String(serialNumber).trim().toLowerCase()) ?? ''
+    );
   }
 
   getProductRent(serialNumber: any): number | null {
     if (!serialNumber) return null;
-    return this.productRentMap.get(String(serialNumber).trim().toLowerCase()) ?? null;
+    return (
+      this.productRentMap.get(String(serialNumber).trim().toLowerCase()) ?? null
+    );
   }
 
   getTotalPayment(booking: Booking): number {
@@ -564,7 +579,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
     const url = window.URL.createObjectURL(this.rawPdfBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Invoice-${this.previewBooking._id.slice(-6).toUpperCase()}.pdf`;
+    a.download = `Invoice-${this.previewBooking.orderId?.split('-')[1]}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
     this.toastService.show(
@@ -748,7 +763,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
               mobileNumber: phone,
               message,
               fileBase64: base64,
-              filename: `Invoice-${booking._id.slice(-6).toUpperCase()}.pdf`,
+              filename: `Invoice-${booking.orderId?.split('-')[1]}.pdf`,
               mimetype: 'application/pdf',
             })
             .toPromise();
