@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
@@ -61,6 +61,16 @@ export class ProductService {
     // High-limit fetch for places that need all products (image maps, dropdowns)
     let params = new HttpParams().set('page', '1').set('limit', '500');
     if (category) params = params.set('category', category);
+    return this.http
+      .get<PaginatedProducts>(this.base, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  getBySerialNumbers(serialNumbers: string[]): Observable<Product[]> {
+    if (!serialNumbers || serialNumbers.length === 0) return of([]);
+    const params = new HttpParams()
+      .set('serialNumbers', serialNumbers.join(','))
+      .set('limit', '500'); // fetch all matches
     return this.http
       .get<PaginatedProducts>(this.base, { params })
       .pipe(map((res) => res.data));

@@ -158,14 +158,6 @@ export class BookingListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.productService.getAll().subscribe({
-      next: (products) => {
-        products.forEach((p) => {
-          if (p.imageUrl) this.productImageMap.set(p.serialNumber, p.imageUrl);
-          this.productRentMap.set(p.serialNumber, p.rentPrice);
-        });
-      },
-    });
     this.load();
 
     this.sub.add(
@@ -400,12 +392,38 @@ export class BookingListComponent implements OnInit, OnDestroy {
           this.total = res.total;
           this.totalPages = res.totalPages;
           this.loading = false;
+          this.loadMissingProducts(res.data);
         },
         error: () => {
           this.loading = false;
         },
       }),
     );
+  }
+
+  private loadMissingProducts(bookings: Booking[]): void {
+    const missingSerials = new Set<string>();
+    bookings.forEach((b) => {
+      const items = b.items && b.items.length > 0 ? b.items : (b.productSerialNumber ? [{serialNumber: b.productSerialNumber}] : []);
+      items.forEach((i: any) => {
+        const sn = String(i.serialNumber).trim().toLowerCase();
+        if (sn && !this.productImageMap.has(sn) && !this.productRentMap.has(sn)) {
+          missingSerials.add(sn);
+        }
+      });
+    });
+
+    if (missingSerials.size === 0) return;
+
+    this.productService.getBySerialNumbers(Array.from(missingSerials)).subscribe({
+      next: (products) => {
+        products.forEach((p) => {
+          const sn = p.serialNumber.trim().toLowerCase();
+          if (p.imageUrl) this.productImageMap.set(sn, p.imageUrl);
+          this.productRentMap.set(sn, p.rentPrice);
+        });
+      }
+    });
   }
 
   getProductImage(serialNumber: any): string {
