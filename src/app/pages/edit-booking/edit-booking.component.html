@@ -118,13 +118,13 @@
           <div class="card__body">
             @if (items.length > 0) {
               <div class="items-readonly-list" style="display: flex; flex-direction: column; gap: 8px;">
-                @for (item of items; track item.serialNumber) {
+                @for (item of items; track $index) {
                   <div class="field">
                     <label class="field__label">ITEM</label>
                     <input
                       class="field__input field__input--readonly"
                       type="text"
-                      [value]="'SN: ' + item.serialNumber + ' (Qty: ' + item.quantity + ')'"
+                      [value]="'SN: ' + (item.serialNumber || 'N/A') + ' (Qty: ' + (item.quantity || 1) + ')'"
                       readonly
                     />
                   </div>

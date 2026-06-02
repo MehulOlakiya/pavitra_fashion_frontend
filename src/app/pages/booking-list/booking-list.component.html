@@ -635,7 +635,7 @@
       </div>
       <div class="modal__body" style="max-height: 400px; overflow-y: auto;">
         <div style="display: flex; flex-direction: column; gap: 16px;">
-          @for (item of modalItems; track item.serialNumber) {
+          @for (item of modalItems; track $index) {
             <div style="display: flex; gap: 16px; align-items: center; padding: 12px; background: var(--surface-container); border-radius: 8px;">
               @if (getProductImage(item.serialNumber)) {
                 <img [src]="getProductImage(item.serialNumber)" alt="item" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" />
@@ -645,8 +645,8 @@
                 </div>
               }
               <div>
-                <p style="margin: 0; font-weight: 600;">SN: {{ item.serialNumber }}</p>
-                <p style="margin: 4px 0 0; font-size: 14px; color: var(--on-surface-variant);">Quantity: {{ item.quantity }}</p>
+                <p style="margin: 0; font-weight: 600;">SN: {{ item.serialNumber || 'N/A' }}</p>
+                <p style="margin: 4px 0 0; font-size: 14px; color: var(--on-surface-variant);">Quantity: {{ item.quantity || 1 }}</p>
               </div>
             </div>
           }

@@ -213,11 +213,12 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   openItemModal(booking: Booking): void {
     this.selectedBookingForItems = booking;
-    this.modalItems = booking.items && booking.items.length > 0
-      ? booking.items
-      : booking.productSerialNumber
-        ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }]
-        : [];
+    this.modalItems =
+      booking.items && booking.items.length > 0
+        ? booking.items
+        : booking.productSerialNumber
+          ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }]
+          : [];
     this.itemsModalOpen = true;
   }
 
@@ -407,14 +408,14 @@ export class BookingListComponent implements OnInit, OnDestroy {
     );
   }
 
-  getProductImage(serialNumber: string | undefined): string {
+  getProductImage(serialNumber: any): string {
     if (!serialNumber) return '';
-    return this.productImageMap.get(serialNumber.trim().toLowerCase()) ?? '';
+    return this.productImageMap.get(String(serialNumber).trim().toLowerCase()) ?? '';
   }
 
-  getProductRent(serialNumber: string | undefined): number | null {
+  getProductRent(serialNumber: any): number | null {
     if (!serialNumber) return null;
-    return this.productRentMap.get(serialNumber.trim().toLowerCase()) ?? null;
+    return this.productRentMap.get(String(serialNumber).trim().toLowerCase()) ?? null;
   }
 
   getTotalPayment(booking: Booking): number {
@@ -426,7 +427,14 @@ export class BookingListComponent implements OnInit, OnDestroy {
       booking.items && booking.items.length > 0
         ? booking.items
         : booking.productSerialNumber
-          ? [{ serialNumber: booking.productSerialNumber, quantity: 1, freshPiece: booking.freshPiece, freshPieceCost: booking.freshPieceCost }]
+          ? [
+              {
+                serialNumber: booking.productSerialNumber,
+                quantity: 1,
+                freshPiece: booking.freshPiece,
+                freshPieceCost: booking.freshPieceCost,
+              },
+            ]
           : [];
 
     items.forEach((i: any) => {
