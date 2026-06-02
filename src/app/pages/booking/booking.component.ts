@@ -233,6 +233,10 @@ export class BookingComponent implements OnInit {
     this.form.villageCity = '';
   }
 
+  closeCustomerDropdown(): void {
+    this.customerDropdownVisible = false;
+  }
+
   selectProduct(product: Product): void {
     const existing = this.selectedItems.find(
       (i) => i.product.serialNumber === product.serialNumber,
@@ -369,8 +373,9 @@ export class BookingComponent implements OnInit {
         .create({
           items: itemsPayload,
           customer: customerId,
-          advancePayment: this.form.advancePayment ?? undefined,
-          remainingPayment: this.form.remainingPayment ?? undefined,
+          advancePayment: this.form.advancePayment ?? 0,
+          remainingPayment: this.form.remainingPayment ?? 0,
+          totalPayment: this.grandTotal,
           bookingDate: this.toISTDate(this.bookingDate!),
           returnDate: this.toISTDate(this.returnDate!),
           note: this.form.note || undefined,
@@ -399,27 +404,46 @@ export class BookingComponent implements OnInit {
     if (this.selectedCustomer) {
       createBooking(this.selectedCustomer._id);
     } else {
-      // Create a new customer first, then use the returned _id
-      const customerId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
-      this.customerService
-        .create({
-          customerId,
-          name: this.form.customerName || 'Unknown',
-          mobileNumber: this.form.mobileNumber.toString(),
-          village: this.form.villageCity,
-        })
-        .subscribe({
-          next: (newCustomer) => {
-            createBooking(newCustomer._id);
-          },
-          error: (err) => {
-            this.loading = false;
-            const message: string =
-              err?.error?.message ??
-              'Could not create customer. Please try again.';
-            this.toast.show('error', 'Customer Creation Failed', message);
-          },
-        });
+      // Check for exact customer match before creating a new one
+      this.customerService.search(this.form.mobileNumber.toString(), 1, 50).subscribe({
+        next: (res) => {
+          const exactMatch = res.data.find(c => 
+            c.name.trim().toLowerCase() === this.form.customerName.trim().toLowerCase() &&
+            c.mobileNumber === this.form.mobileNumber.toString() &&
+            c.village.trim().toLowerCase() === this.form.villageCity.trim().toLowerCase()
+          );
+
+          if (exactMatch) {
+            createBooking(exactMatch._id);
+          } else {
+            // Create a new customer first, then use the returned _id
+            const customerId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+            this.customerService
+              .create({
+                customerId,
+                name: this.form.customerName || 'Unknown',
+                mobileNumber: this.form.mobileNumber.toString(),
+                village: this.form.villageCity,
+              })
+              .subscribe({
+                next: (newCustomer) => {
+                  createBooking(newCustomer._id);
+                },
+                error: (err) => {
+                  this.loading = false;
+                  const message: string =
+                    err?.error?.message ??
+                    'Could not create customer. Please try again.';
+                  this.toast.show('error', 'Customer Creation Failed', message);
+                },
+              });
+          }
+        },
+        error: () => {
+          this.loading = false;
+          this.toast.show('error', 'Customer Check Failed', 'Could not verify customer existence.');
+        }
+      });
     }
   }
 

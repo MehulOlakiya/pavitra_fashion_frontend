@@ -62,6 +62,11 @@ export class BookingListComponent implements OnInit, OnDestroy {
   tempPdfBlob: Blob | null = null;
   previewBooking: Booking | null = null;
 
+  // Items Modal
+  itemsModalOpen = false;
+  selectedBookingForItems: Booking | null = null;
+  modalItems: any[] = [];
+
   get waQrSafeUrl(): SafeUrl | null {
     const qr = this.waStatus.qr;
     if (!qr) return null;
@@ -206,6 +211,22 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.viewingProducts = [];
   }
 
+  openItemModal(booking: Booking): void {
+    this.selectedBookingForItems = booking;
+    this.modalItems = booking.items && booking.items.length > 0
+      ? booking.items
+      : booking.productSerialNumber
+        ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }]
+        : [];
+    this.itemsModalOpen = true;
+  }
+
+  closeItemModal(): void {
+    this.itemsModalOpen = false;
+    this.selectedBookingForItems = null;
+    this.modalItems = [];
+  }
+
   toggleMenu(id: string, event: MouseEvent): void {
     const booking = this.bookings.find((booking) => id === booking._id);
     if (booking?.status === 'cancelled') {
@@ -299,6 +320,16 @@ export class BookingListComponent implements OnInit, OnDestroy {
     });
   }
 
+  markAsRented(): void {
+    this.editForm.status = 'rented' as any;
+    this.saveEdit();
+  }
+
+  markAsReturned(): void {
+    this.editForm.status = 'returned' as any;
+    this.saveEdit();
+  }
+
   cancelBooking(booking: Booking, event: MouseEvent): void {
     event.stopPropagation();
     this.openMenuId = null;
@@ -386,18 +417,24 @@ export class BookingListComponent implements OnInit, OnDestroy {
     return this.productRentMap.get(serialNumber.trim().toLowerCase()) ?? null;
   }
 
-  getTotalRent(booking: Booking): number {
+  getTotalPayment(booking: Booking): number {
+    if (booking.totalPayment !== undefined && booking.totalPayment !== null) {
+      return booking.totalPayment;
+    }
     let total = 0;
     const items =
       booking.items && booking.items.length > 0
         ? booking.items
         : booking.productSerialNumber
-          ? [{ serialNumber: booking.productSerialNumber, quantity: 1 }]
+          ? [{ serialNumber: booking.productSerialNumber, quantity: 1, freshPiece: booking.freshPiece, freshPieceCost: booking.freshPieceCost }]
           : [];
 
-    items.forEach((i) => {
+    items.forEach((i: any) => {
       const rent = this.getProductRent(i.serialNumber) || 0;
       total += rent * i.quantity;
+      if (i.freshPiece && i.freshPieceCost) {
+        total += i.freshPieceCost;
+      }
     });
     return total;
   }

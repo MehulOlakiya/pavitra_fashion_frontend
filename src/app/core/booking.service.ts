@@ -18,6 +18,7 @@ export interface CreateBookingPayload {
   customer: string; // Customer ObjectId
   advancePayment?: number;
   remainingPayment?: number;
+  totalPayment?: number;
   bookingDate: string; // ISO date string
   returnDate: string; // ISO date string
   status?: BookingStatus;
@@ -43,6 +44,7 @@ export interface Booking {
   customer: BookingCustomer;
   advancePayment?: number;
   remainingPayment?: number;
+  totalPayment?: number;
   bookingDate: string;
   returnDate: string;
   status: BookingStatus;

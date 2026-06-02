@@ -43,6 +43,7 @@ import { BookingService } from '../../core/booking.service';
 import { ProductService } from '../../core/product.service';
 import { CustomerService } from '../../core/customer.service';
 import { NgApexchartsModule, ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexPlotOptions, ApexYAxis, ApexLegend, ApexStroke, ApexXAxis, ApexFill, ApexTooltip, ApexGrid, ApexMarkers } from "ng-apexcharts";
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -62,7 +63,7 @@ export type ChartOptions = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, DateRangePickerComponent, DatePipe, CustomSelectComponent, FormsModule, NgApexchartsModule],
+  imports: [CommonModule, DateRangePickerComponent, DatePipe, CustomSelectComponent, FormsModule, NgApexchartsModule, NgxSkeletonLoaderModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -338,7 +339,10 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  isLoadingStats = true;
+
   fetchDashboardStats() {
+    this.isLoadingStats = true;
     this.analyticsService.getDashboardStats().subscribe({
       next: (data) => {
         this.stats = [
@@ -397,67 +401,16 @@ export class DashboardComponent implements OnInit {
             gradient: false,
           }
         ];
+        this.isLoadingStats = false;
       },
-      error: (err) => console.error('Failed to fetch dashboard stats', err)
+      error: (err) => {
+        console.error('Failed to fetch dashboard stats', err);
+        this.isLoadingStats = false;
+      }
     });
   }
 
-  stats: StatCard[] = [
-    {
-      icon: 'checkroom',
-      label: 'Total Cloths',
-      value: '1,248',
-      trendIcon: 'trending_up',
-      trendText: '+12 this week',
-      color: 'primary',
-      gradient: false,
-    },
-    {
-      icon: 'shopping_bag',
-      label: 'Active Bookings',
-      value: '84',
-      trendIcon: 'trending_up',
-      trendText: '+5 since yesterday',
-      color: 'secondary',
-      gradient: false,
-    },
-    {
-      icon: 'payments',
-      label: 'Pending Payments',
-      value: '₹15,400',
-      trendIcon: 'warning',
-      trendText: '12 invoices due',
-      color: 'tertiary',
-      gradient: false,
-    },
-    {
-      icon: 'account_balance_wallet',
-      label: 'Monthly Revenue',
-      value: '₹2,45,000',
-      trendIcon: 'trending_up',
-      trendText: '+18% vs last month',
-      color: 'primary',
-      gradient: false,
-    },
-    {
-      icon: 'assignment_return',
-      label: 'Returned (This Month)',
-      value: '112',
-      trendIcon: 'horizontal_rule',
-      trendText: 'Stable',
-      color: 'neutral',
-      gradient: false,
-    },
-    {
-      icon: 'local_shipping',
-      label: "Today's Returns",
-      value: '8',
-      trendIcon: 'schedule',
-      trendText: '3 pending inspection',
-      color: 'tertiary',
-      gradient: false,
-    },
-  ];
+  stats: StatCard[] = [];
 
   fetchBookingsAnalytics() {
     const params: { fromDate?: string; toDate?: string } = {};

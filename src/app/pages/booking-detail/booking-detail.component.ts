@@ -182,6 +182,21 @@ export class BookingDetailComponent implements OnInit {
     }
   }
 
+  get totalPayment(): number {
+    if (!this.booking) return 0;
+    if (this.booking.totalPayment !== undefined && this.booking.totalPayment !== null) {
+      return this.booking.totalPayment;
+    }
+    let total = 0;
+    this.products.forEach(p => {
+      total += (p.product.rentPrice || 0) * p.quantity;
+      if (p.freshPiece && p.freshPieceCost) {
+        total += p.freshPieceCost;
+      }
+    });
+    return total;
+  }
+
   discardChanges(): void {
     if (this.booking) {
       this.editStatus = this.booking.status;

@@ -75,6 +75,33 @@
   margin: 0;
 }
 
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 24px;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--on-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s;
+  text-decoration: none;
+
+  &:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.btn-icon {
+  font-size: 18px;
+}
+
 // ── Analytics Grid ────────────────────────────────────────
 .analytics-grid {
   display: grid;

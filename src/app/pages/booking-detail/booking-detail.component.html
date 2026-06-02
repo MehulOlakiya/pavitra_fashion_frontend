@@ -169,6 +169,15 @@
             <h3 class="section-title">Payment Management</h3>
           </div>
           <div class="section-body manage-card">
+            <!-- TOTAL PAYMENT -->
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label class="form-label">TOTAL PAYMENT</label>
+              <div class="readonly-box">
+                <span class="readonly-box__label">Total Amount:</span>
+                <span class="readonly-box__value" style="color: var(--primary);">₹{{ totalPayment | number }}</span>
+              </div>
+            </div>
+
             <!-- REMAINING PAYMENT -->
             <div class="form-group">
               <label class="form-label">REMAINING PAYMENT</label>

@@ -28,6 +28,7 @@
     "jquery": "^4.0.0",
     "moment": "^2.30.1",
     "ng-apexcharts": "^1.15.0",
+    "ngx-skeleton-loader": "^12.0.0",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.8.3",
     "tslib": "^2.3.0",

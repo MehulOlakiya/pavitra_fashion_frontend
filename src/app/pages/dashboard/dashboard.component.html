@@ -11,39 +11,54 @@
 
   <!-- ── 6-card bento grid ────────────────────────────────── -->
   <div class="stats-grid">
-    @for (s of stats; track s.label) {
-      <div class="analytics-card" [class.analytics-card--gradient]="s.gradient">
-        @if (!s.gradient) {
-          <div
-            class="analytics-card__bg-circle analytics-card__bg-circle--{{
-              s.color
-            }}"
-          ></div>
-        }
-        <div class="analytics-card__body">
-          <p class="analytics-card__label">{{ s.label }}</p>
-          <h3 class="analytics-card__value">{{ s.value }}</h3>
-          <div
-            class="analytics-card__trend analytics-card__trend--{{ s.color }}"
-            [class.analytics-card__trend--primary-text]="s.gradient"
-          >
-            <span
-              class="material-symbols-outlined analytics-card__trend-icon"
-              >{{ s.trendIcon }}</span
-            >
-            <span>{{ s.trendText }}</span>
+    @if (isLoadingStats) {
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="analytics-card" style="pointer-events: none; padding: 20px;">
+          <div class="analytics-card__body" style="display: flex; flex-direction: column; gap: 0;">
+            <ngx-skeleton-loader count="1" [theme]="{ width: '40%', height: '12px', 'margin-bottom': '8px', 'border-radius': '6px', 'background-color': 'rgba(191, 199, 212, 0.2)' }"></ngx-skeleton-loader>
+            <ngx-skeleton-loader count="1" [theme]="{ width: '60%', height: '24px', 'margin-bottom': '12px', 'border-radius': '8px', 'background-color': 'rgba(191, 199, 212, 0.2)' }"></ngx-skeleton-loader>
+            <ngx-skeleton-loader count="1" [theme]="{ width: '50%', height: '16px', 'margin-bottom': '0', 'border-radius': '6px', 'background-color': 'rgba(191, 199, 212, 0.2)' }"></ngx-skeleton-loader>
+          </div>
+          <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+            <ngx-skeleton-loader count="1" appearance="circle" [theme]="{ width: '48px', height: '48px', margin: '0', 'background-color': 'rgba(191, 199, 212, 0.2)' }"></ngx-skeleton-loader>
           </div>
         </div>
-        <div
-          class="analytics-card__icon-wrap"
-          [class.analytics-card__icon-wrap--{{ s.color }}]="!s.gradient"
-          [class.analytics-card__icon-wrap--gradient]="s.gradient"
-        >
-          <span class="material-symbols-outlined analytics-card__icon">{{
-            s.icon
-          }}</span>
+      }
+    } @else {
+      @for (s of stats; track s.label) {
+        <div class="analytics-card" [class.analytics-card--gradient]="s.gradient">
+          @if (!s.gradient) {
+            <div
+              class="analytics-card__bg-circle analytics-card__bg-circle--{{
+                s.color
+              }}"
+            ></div>
+          }
+          <div class="analytics-card__body">
+            <p class="analytics-card__label">{{ s.label }}</p>
+            <h3 class="analytics-card__value">{{ s.value }}</h3>
+            <div
+              class="analytics-card__trend analytics-card__trend--{{ s.color }}"
+              [class.analytics-card__trend--primary-text]="s.gradient"
+            >
+              <span
+                class="material-symbols-outlined analytics-card__trend-icon"
+                >{{ s.trendIcon }}</span
+              >
+              <span>{{ s.trendText }}</span>
+            </div>
+          </div>
+          <div
+            class="analytics-card__icon-wrap"
+            [class.analytics-card__icon-wrap--{{ s.color }}]="!s.gradient"
+            [class.analytics-card__icon-wrap--gradient]="s.gradient"
+          >
+            <span class="material-symbols-outlined analytics-card__icon">{{
+              s.icon
+            }}</span>
+          </div>
         </div>
-      </div>
+      }
     }
   </div>
 
