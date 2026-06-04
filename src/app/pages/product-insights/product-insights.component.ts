@@ -73,13 +73,13 @@ export class ProductInsightsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id') ?? '';
       if (!id) {
         this.router.navigate(['/inventory']);
         return;
       }
-      
+
       this.loading = true;
       this.productService.getById(id).subscribe({
         next: (product) => {
@@ -134,7 +134,7 @@ export class ProductInsightsComponent implements OnInit {
 
   statusLabel(status: BookingStatus): string {
     const map: Record<BookingStatus, string> = {
-      booked: 'Pending Pickup',
+      booked: 'Booked',
       rented: 'Rented',
       pending_return: 'Pending Return',
       returned: 'Returned',

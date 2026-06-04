@@ -118,8 +118,8 @@ export const routes: Routes = [
       {
         path: 'reports',
         loadComponent: () =>
-          import('./pages/coming-soon/coming-soon.component').then(
-            (m) => m.ComingSoonComponent,
+          import('./pages/reports/reports.component').then(
+            (m) => m.ReportsComponent,
           ),
       },
       {

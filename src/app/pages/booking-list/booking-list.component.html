@@ -105,81 +105,44 @@
               let i = $index;
               let count = $count
             ) {
-              <tr
-                class="table-row"
-              >
+              <tr class="table-row">
                 <td class="cell-sn">
                   <span
                     class="order-id"
-                    style="font-weight: 600; color: var(--primary); cursor: pointer; text-decoration: underline;"
+                    style="
+                      font-weight: 600;
+                      color: var(--primary);
+                      cursor: pointer;
+                      text-decoration: underline;
+                    "
                     (click)="viewBooking(b)"
                     >{{
                       b.orderId ||
                         "ORD-" + b._id.substring(b._id.length - 6).toUpperCase()
                     }}</span
                   >
-                  @if (b.items && b.items.length > 0) {
-                    <div
-                      class="multi-sn"
-                      style="
-                        font-size: 11px;
-                        color: var(--on-surface-variant);
-                        margin-top: 4px;
-                      "
-                    >
-                      {{ b.items.length }} Items
-                    </div>
-                  } @else if (b.productSerialNumber) {
-                    <div
-                      class="multi-sn"
-                      style="
-                        font-size: 11px;
-                        color: var(--on-surface-variant);
-                        margin-top: 4px;
-                      "
-                    >
-                      SN: {{ b.productSerialNumber }}
-                    </div>
-                  }
                 </td>
-                <td (click)="openItemModal(b)" style="cursor: pointer;">
-                  <div class="item-cell">
-                    <div class="item-thumb">
-                      @if (b.items && b.items.length > 0) {
-                        <div
-                          class="multi-item-icon"
-                          style="
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            width: 100%;
-                            height: 100%;
-                            background: var(--surface-container);
-                            color: var(--on-surface-variant);
-                            border-radius: 6px;
-                          "
-                        >
-                          <span
-                            class="material-symbols-outlined"
-                            style="font-size: 20px"
-                            >view_cozy</span
-                          >
-                        </div>
-                      } @else if (getProductImage(b.productSerialNumber)) {
-                        <img
-                          [src]="getProductImage(b.productSerialNumber)"
-                          [alt]="b.productSerialNumber"
-                        />
-                      } @else {
-                        <span class="material-symbols-outlined">checkroom</span>
-                      }
-                    </div>
-                  </div>
+                <td
+                  (click)="openItemModal(b)"
+                  style="
+                    font-weight: 600;
+                    color: var(--primary);
+                    cursor: pointer;
+                    text-decoration: underline;
+                  "
+                >
+                  {{ b.items.length }}
                 </td>
                 <td>
-                  <p class="customer-name">{{ b.customer?.name || 'Unknown' }}</p>
-                  <p class="customer-phone">{{ b.customer?.mobileNumber || 'N/A' }}</p>
-                  <p class="customer-village">{{ b.customer?.village || '' }}</p>
+                  <p class="customer-name">
+                    {{ b.customer?.name || "Unknown" }}
+                  </p>
+                  <p class="customer-phone">
+                    {{ b.customer?.mobileNumber || "N/A" }}
+                  </p>
+                  <p class="customer-village">
+                    {{ b.customer?.village || "" }}
+                  </p>
                 </td>
                 <td
                   [class.text-strike]="isCancelled(b.status)"
@@ -212,67 +175,28 @@
                     <span class="remaining-paid">Paid</span>
                   }
                 </td>
-                <td class="col-status">
-                  <span class="badge" [ngClass]="statusClass(b.status)">{{
-                    statusLabel(b.status)
-                  }}</span>
+                <td class="col-status" style="overflow: visible;">
+                  @if (b.status === 'returned' || b.status === 'cancelled') {
+                    <span class="badge" [ngClass]="statusClass(b.status)">{{
+                      statusLabel(b.status)
+                    }}</span>
+                  } @else {
+                    <app-custom-select
+                      [ngModel]="b.status"
+                      (ngModelChange)="onRowStatusChange(b, $event)"
+                      [options]="getAvailableStatusOptions(b.status)"
+                    />
+                  }
                 </td>
                 <td class="col-actions">
                   <div class="action-menu-wrap">
                     <button
                       class="action-btn"
-                      title="Actions"
-                      (click)="toggleMenu(b._id, $event)"
+                      title="Quick Edit"
+                      (click)="openEdit(b, $event)"
                     >
                       <span class="material-symbols-outlined">more_vert</span>
                     </button>
-                    @if (openMenuId === b._id) {
-                      <div
-                        class="action-menu"
-                        [class.action-menu--up]="count > 2 && i >= count - 2"
-                        (click)="$event.stopPropagation()"
-                      >
-                        <button
-                          class="action-menu__item"
-                          (click)="openEdit(b, $event)"
-                        >
-                          <span class="material-symbols-outlined">edit</span>
-                          Edit
-                        </button>
-                        <button
-                          class="action-menu__item"
-                          (click)="generateBill(b, $event)"
-                        >
-                          <span class="material-symbols-outlined"
-                            >receipt_long</span
-                          >
-                          Generate Bill
-                        </button>
-                        <button
-                          class="action-menu__item action-menu__item--whatsapp"
-                          (click)="sendBillWhatsApp(b, $event)"
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                          >
-                            <path
-                              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
-                            />
-                          </svg>
-                          Send Bill
-                        </button>
-                        <button
-                          class="action-menu__item action-menu__item--danger"
-                          (click)="cancelBooking(b, $event)"
-                        >
-                          <span class="material-symbols-outlined">cancel</span>
-                          Cancel Booking
-                        </button>
-                      </div>
-                    }
                   </div>
                 </td>
               </tr>
@@ -300,105 +224,194 @@
   <div class="modal-backdrop" (click)="closeEdit()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
-        <h3 class="modal__title">Edit Booking</h3>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          @if (quickEditView !== 'menu') {
+            <button class="modal__back" (click)="backToMenu()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; color: var(--on-surface); padding: 4px; margin-left: -4px;">
+              <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+          }
+          <h3 class="modal__title">
+            @if (quickEditView === 'menu') { Actions for {{ editingBooking.orderId }} }
+            @else if (quickEditView === 'status') { Change Status }
+            @else if (quickEditView === 'settlement') { Settlement }
+            @else if (quickEditView === 'delete') { Delete Booking }
+          </h3>
+        </div>
         <button class="modal__close" (click)="closeEdit()">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
       <div class="modal__body">
-        @if (editingBooking!.status === 'booked') {
-          <!-- Status Action for Booked -->
-          <div class="modal-field">
-             <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface-variant); margin: 0; line-height: 1.5;">This booking is currently pending pickup. Mark it as rented when the customer picks up the items.</p>
+        @if (quickEditView === 'menu') {
+          <div class="action-grid">
+            <button class="action-grid__btn" (click)="goToStatus()">
+              <span class="material-symbols-outlined">published_with_changes</span>
+              Change Status
+            </button>
+            <button class="action-grid__btn action-grid__btn--edit" (click)="viewBooking(editingBooking); closeEdit()">
+              <span class="material-symbols-outlined">edit_square</span>
+              Update
+            </button>
+            <button class="action-grid__btn" (click)="printBill(editingBooking)">
+              <span class="material-symbols-outlined">print</span>
+              Print
+            </button>
+            <button class="action-grid__btn" (click)="downloadBill(editingBooking)">
+              <span class="material-symbols-outlined">download</span>
+              Download
+            </button>
+            <button class="action-grid__btn action-grid__btn--whatsapp" (click)="sendBillWhatsApp(editingBooking, undefined, 'edit')">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Send Bill
+            </button>
+            <button class="action-grid__btn" (click)="goToSettlement()">
+              <span class="material-symbols-outlined">payments</span>
+              Settlement
+            </button>
+            <button class="action-grid__btn action-grid__btn--danger" (click)="goToDelete()">
+              <span class="material-symbols-outlined">delete</span>
+              Delete
+            </button>
           </div>
-        } @else if (editingBooking!.status === 'rented' || editingBooking!.status === 'pending_return') {
-          <div class="modal-field">
-             <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface-variant); margin: 0 0 16px; line-height: 1.5;">This booking is currently rented. Mark it as returned and update the payment below.</p>
-          </div>
-
-          <!-- Payment -->
-          <div class="modal-field">
-            <label class="modal-field__label">REMAINING PAYMENT</label>
-            <div class="modal-remaining-info">
-              <span class="modal-remaining-info__label">Current Remaining:</span>
-              <span
-                class="modal-remaining-info__value"
-                [class.modal-remaining-info__value--zero]="
-                  editingBooking!.remainingPayment === 0
-                "
-              >
-                ₹{{ editingBooking!.remainingPayment | number }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Full payment toggle -->
-          @if ((editingBooking!.remainingPayment ?? 0) > 0) {
+        } @else if (quickEditView === 'status') {
+          @if (editingBooking!.status === "booked") {
+            <!-- Status Action for Booked -->
             <div class="modal-field">
-              <label class="toggle-row">
-                <input
-                  type="checkbox"
-                  class="toggle-row__checkbox"
-                  [(ngModel)]="editForm.fullPayment"
-                  name="editFullPayment"
-                />
-                <span class="toggle-row__track"></span>
-                <span class="toggle-row__label">Full Payment Received</span>
-              </label>
+              <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface-variant); margin: 0; line-height: 1.5;">
+                This booking is currently booked. Mark it as rented when the customer picks up the items.
+              </p>
             </div>
-          }
-
-          <!-- Amount received (only when not full payment) -->
-          @if (
-            !editForm.fullPayment && (editingBooking!.remainingPayment ?? 0) > 0
-          ) {
+          } @else if (editingBooking!.status === "rented" || editingBooking!.status === "pending_return") {
             <div class="modal-field">
-              <label class="modal-field__label">AMOUNT RECEIVED NOW</label>
-              <div class="modal-amount-wrap">
-                <span class="modal-amount-symbol">₹</span>
-                <input
-                  type="number"
-                  min="0"
-                  [max]="editingBooking!.remainingPayment ?? null"
-                  class="modal-field__input"
-                  placeholder="0"
-                  [(ngModel)]="editForm.amountReceived"
-                  name="editAmountReceived"
-                />
+              <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface-variant); margin: 0 0 16px; line-height: 1.5;">
+                This booking is currently rented. Mark it as returned and update the payment below.
+              </p>
+            </div>
+            <!-- Payment -->
+            <div class="modal-field">
+              <label class="modal-field__label">REMAINING PAYMENT</label>
+              <div class="modal-remaining-info">
+                <span class="modal-remaining-info__label">Current Remaining:</span>
+                <span class="modal-remaining-info__value" [class.modal-remaining-info__value--zero]="editingBooking!.remainingPayment === 0">
+                  ₹{{ editingBooking!.remainingPayment | number }}
+                </span>
               </div>
             </div>
+            <!-- Full payment toggle -->
+            @if ((editingBooking!.remainingPayment ?? 0) > 0) {
+              <div class="modal-field">
+                <label class="toggle-row">
+                  <input type="checkbox" class="toggle-row__checkbox" [(ngModel)]="editForm.fullPayment" name="editFullPayment" />
+                  <span class="toggle-row__track"></span>
+                  <span class="toggle-row__label">Full Payment Received</span>
+                </label>
+              </div>
+            }
+            <!-- Amount received -->
+            @if (!editForm.fullPayment && (editingBooking!.remainingPayment ?? 0) > 0) {
+              <div class="modal-field">
+                <label class="modal-field__label">AMOUNT RECEIVED NOW</label>
+                <div class="modal-amount-wrap">
+                  <span class="modal-amount-symbol">₹</span>
+                  <input type="number" min="0" [max]="editingBooking!.remainingPayment ?? null" class="modal-field__input" placeholder="0" [(ngModel)]="editForm.amountReceived" name="editAmountReceived" />
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="modal-field">
+              <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface-variant); margin: 0; line-height: 1.5;">
+                This booking is marked as <strong>{{ statusLabel(editingBooking!.status) }}</strong> and cannot be edited further from here.
+              </p>
+            </div>
           }
-        } @else {
+        } @else if (quickEditView === 'settlement') {
+          <div class="settlement-grid">
+            <div class="modal-field">
+              <label class="modal-field__label">BILL AMOUNT</label>
+              <div class="settlement-value">₹{{ editingBooking!.totalPayment || 0 | number }}</div>
+            </div>
+            <div class="modal-field">
+              <label class="modal-field__label">TOTAL DISCOUNT</label>
+              <div class="settlement-value">₹{{ editingBooking!.totalDiscount || 0 | number }}</div>
+            </div>
+            <div class="modal-field">
+              <label class="modal-field__label">ADVANCE</label>
+              <div class="settlement-value text-success">₹{{ editingBooking!.advancePayment || 0 | number }}</div>
+            </div>
+            <div class="modal-field">
+              <label class="modal-field__label">REMAINING</label>
+              <div class="settlement-value text-danger">₹{{ editingBooking!.remainingPayment || 0 | number }}</div>
+            </div>
+          </div>
+          
+          <div class="modal-field" style="margin-top: 16px;">
+            <label class="modal-field__label">TYPE</label>
+            <div class="radio-group" style="display: flex; gap: 16px; margin-top: 8px;">
+              <label class="radio-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="radio" name="settlementType" value="receive" [(ngModel)]="settlementForm.type">
+                <span>Receive</span>
+              </label>
+              <label class="radio-btn" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="radio" name="settlementType" value="refund" [(ngModel)]="settlementForm.type">
+                <span>Refund</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="modal-field" style="margin-top: 16px;">
+            <label class="modal-field__label">AMOUNT</label>
+            <div class="modal-amount-wrap">
+              <span class="modal-amount-symbol">₹</span>
+              <input type="number" min="0" class="modal-field__input" placeholder="0" [(ngModel)]="settlementForm.amount" />
+            </div>
+          </div>
+        } @else if (quickEditView === 'delete') {
           <div class="modal-field">
-             <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface-variant); margin: 0; line-height: 1.5;">This booking is marked as <strong>{{ statusLabel(editingBooking!.status) }}</strong> and cannot be edited further from here.</p>
+            <p style="font-size: 15px; color: var(--on-surface); line-height: 1.5;">
+              Are you sure you want to delete this booking?
+            </p>
+            <p style="font-size: 14px; color: var(--on-surface-variant); margin-top: 8px;">
+              This will remove the booking from your list but preserve the record in the database.
+            </p>
           </div>
         }
       </div>
 
       <div class="modal__footer">
-        <button class="btn-cancel" (click)="closeEdit()" [disabled]="saving">
-          @if (editingBooking!.status === 'booked' || editingBooking!.status === 'rented' || editingBooking!.status === 'pending_return') { Discard } @else { Close }
-        </button>
-        @if (editingBooking!.status === 'booked') {
-          <button class="btn-primary" (click)="markAsRented()" [disabled]="saving">
-            @if (saving) {
-              <span class="material-symbols-outlined spinning">progress_activity</span>
-            }
-            Mark as Rented
+        @if (quickEditView === 'menu') {
+          <!-- No footer in menu view -->
+        } @else if (quickEditView === 'status') {
+          <button class="btn-cancel" (click)="backToMenu()" [disabled]="saving">Cancel</button>
+          @if (editingBooking!.status === "booked") {
+            <button class="btn-primary" (click)="markAsRented()" [disabled]="saving">
+              @if (saving) { <span class="material-symbols-outlined spinning">progress_activity</span> }
+              Mark as Rented
+            </button>
+          } @else if (editingBooking!.status === "rented" || editingBooking!.status === "pending_return") {
+            <button class="btn-save" (click)="markAsReturned()" [disabled]="saving">
+              @if (saving) { <span class="material-symbols-outlined spinning">progress_activity</span> }
+              Mark as Returned
+            </button>
+          }
+        } @else if (quickEditView === 'settlement') {
+          <button class="btn-cancel" (click)="backToMenu()" [disabled]="saving">Cancel</button>
+          <button class="btn-primary" (click)="submitSettlement()" [disabled]="saving || !settlementForm.amount">
+            @if (saving) { <span class="material-symbols-outlined spinning">progress_activity</span> }
+            Save Settlement
           </button>
-        } @else if (editingBooking!.status === 'rented' || editingBooking!.status === 'pending_return') {
-          <button class="btn-save" (click)="markAsReturned()" [disabled]="saving">
-            @if (saving) {
-              <span class="material-symbols-outlined spinning">progress_activity</span>
-            }
-            Mark as Returned
+        } @else if (quickEditView === 'delete') {
+          <button class="btn-cancel" (click)="backToMenu()" [disabled]="saving">Cancel</button>
+          <button class="btn-danger" style="background-color: var(--error); color: white; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer;" (click)="deleteBookingSoft()" [disabled]="saving">
+            @if (saving) { <span class="material-symbols-outlined spinning">progress_activity</span> }
+            Yes, Delete
           </button>
         }
       </div>
     </div>
   </div>
 }
+
 
 <!-- WhatsApp Session Modal -->
 @if (waModalOpen) {
@@ -629,30 +642,79 @@
   <div class="modal-backdrop" (click)="closeItemModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal__header">
-        <h3 class="modal__title">Booking Items ({{ selectedBookingForItems.orderId || 'Unknown' }})</h3>
+        <h3 class="modal__title">
+          Booking Items ({{ selectedBookingForItems.orderId || "Unknown" }})
+        </h3>
         <button class="modal__close" (click)="closeItemModal()">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="modal__body" style="max-height: 400px; overflow-y: auto;">
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="modal__body" style="max-height: 400px; overflow-y: auto">
+        <div style="display: flex; flex-direction: column; gap: 16px">
           @for (item of modalItems; track $index) {
-            <div style="display: flex; gap: 16px; align-items: center; padding: 12px; background: var(--surface-container); border-radius: 8px;">
+            <div
+              style="
+                display: flex;
+                gap: 16px;
+                align-items: center;
+                padding: 12px;
+                background: var(--surface-container);
+                border-radius: 8px;
+              "
+            >
               @if (getProductImage(item.serialNumber)) {
-                <img [src]="getProductImage(item.serialNumber)" alt="item" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" />
+                <img
+                  [src]="getProductImage(item.serialNumber)"
+                  alt="item"
+                  style="
+                    width: 60px;
+                    height: 60px;
+                    object-fit: cover;
+                    border-radius: 6px;
+                  "
+                />
               } @else {
-                <div style="width: 60px; height: 60px; background: var(--surface-variant); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--on-surface-variant);">
+                <div
+                  style="
+                    width: 60px;
+                    height: 60px;
+                    background: var(--surface-variant);
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--on-surface-variant);
+                  "
+                >
                   <span class="material-symbols-outlined">checkroom</span>
                 </div>
               }
               <div>
-                <p style="margin: 0; font-weight: 600;">SN: {{ item.serialNumber || 'N/A' }}</p>
-                <p style="margin: 4px 0 0; font-size: 14px; color: var(--on-surface-variant);">Quantity: {{ item.quantity || 1 }}</p>
+                <p style="margin: 0; font-weight: 600">
+                  SN: {{ item.serialNumber || "N/A" }}
+                </p>
+                <p
+                  style="
+                    margin: 4px 0 0;
+                    font-size: 14px;
+                    color: var(--on-surface-variant);
+                  "
+                >
+                  Quantity: {{ item.quantity || 1 }}
+                </p>
               </div>
             </div>
           }
         </div>
       </div>
     </div>
+  </div>
+}
+
+<!-- Print Loader -->
+@if (isPrinting) {
+  <div class="modal-backdrop" style="z-index: 9999; flex-direction: column; gap: 16px;">
+    <span class="material-symbols-outlined spinning" style="font-size: 48px; color: var(--primary);">progress_activity</span>
+    <h3 style="color: white; font-family: 'Poppins', sans-serif; margin: 0;">Preparing Print...</h3>
   </div>
 }

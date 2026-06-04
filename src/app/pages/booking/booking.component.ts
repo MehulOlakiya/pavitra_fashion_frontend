@@ -21,6 +21,7 @@ interface SelectedItem {
   beltType: 'HB' | 'FB' | null;
   freshPiece: boolean;
   freshPieceCost: number | null;
+  rentPrice: number;
 }
 
 @Component({
@@ -37,9 +38,11 @@ interface SelectedItem {
 })
 export class BookingComponent implements OnInit {
   // Step 1 – dates
-  bookingDate: Date | null = null;
-  returnDate: Date | null = null;
+  bookingDate: Date | null = new Date();
+  returnDate: Date | null = new Date();
   readonly today = new Date();
+  pickupTime: 'Morning' | 'Evening' = 'Morning';
+  returnTime: 'Morning' | 'Evening' = 'Morning';
 
   get datesSelected(): boolean {
     return !!(
@@ -69,6 +72,17 @@ export class BookingComponent implements OnInit {
     return this.selectedItems.some((i) => i.hasConflict);
   }
 
+  // Image Modal
+  selectedImage: string | null = null;
+  openImageModal(imageUrl?: string): void {
+    if (imageUrl) {
+      this.selectedImage = imageUrl;
+    }
+  }
+  closeImageModal(): void {
+    this.selectedImage = null;
+  }
+
   // Customer / payment form
   form = {
     customerName: '',
@@ -92,7 +106,7 @@ export class BookingComponent implements OnInit {
 
   get subtotal(): number {
     return this.selectedItems.reduce((acc, item) => {
-      let itemTotal = (item.product.rentPrice || 0) * item.quantity;
+      let itemTotal = item.rentPrice * item.quantity;
       if (item.freshPiece && item.freshPieceCost) {
         itemTotal += item.freshPieceCost;
       }
@@ -253,6 +267,7 @@ export class BookingComponent implements OnInit {
         beltType: null,
         freshPiece: false,
         freshPieceCost: null,
+        rentPrice: product.rentPrice || 0,
       };
       this.selectedItems.push(newItem);
       this.checkConflict(newItem);
@@ -348,13 +363,23 @@ export class BookingComponent implements OnInit {
       !this.bookingDate ||
       !this.returnDate ||
       !this.form.mobileNumber ||
+      this.form.mobileNumber.toString().length !== 10 ||
       !this.form.villageCity
     ) {
       this.toast.show(
         'error',
         'Validation Failed',
-        'Please fill all required fields.',
+        'Please fill all required fields correctly.',
       );
+      setTimeout(() => {
+        const firstInvalid = document.querySelector(
+          '.is-invalid',
+        ) as HTMLElement;
+        if (firstInvalid) {
+          firstInvalid.focus();
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
       return;
     }
     this.loading = true;
@@ -366,6 +391,7 @@ export class BookingComponent implements OnInit {
       beltType: item.beltType || undefined,
       freshPiece: item.freshPiece,
       freshPieceCost: item.freshPieceCost || undefined,
+      rentPrice: item.rentPrice,
     }));
 
     const createBooking = (customerId: string) => {
@@ -377,7 +403,9 @@ export class BookingComponent implements OnInit {
           remainingPayment: this.form.remainingPayment ?? 0,
           totalPayment: this.grandTotal,
           bookingDate: this.toISTDate(this.bookingDate!),
+          pickupTime: this.pickupTime,
           returnDate: this.toISTDate(this.returnDate!),
+          returnTime: this.returnTime,
           note: this.form.note || undefined,
         })
         .subscribe({
@@ -405,45 +433,58 @@ export class BookingComponent implements OnInit {
       createBooking(this.selectedCustomer._id);
     } else {
       // Check for exact customer match before creating a new one
-      this.customerService.search(this.form.mobileNumber.toString(), 1, 50).subscribe({
-        next: (res) => {
-          const exactMatch = res.data.find(c => 
-            c.name.trim().toLowerCase() === this.form.customerName.trim().toLowerCase() &&
-            c.mobileNumber === this.form.mobileNumber.toString() &&
-            c.village.trim().toLowerCase() === this.form.villageCity.trim().toLowerCase()
-          );
+      this.customerService
+        .search(this.form.mobileNumber.toString(), 1, 50)
+        .subscribe({
+          next: (res) => {
+            const exactMatch = res.data.find(
+              (c) =>
+                c.name.trim().toLowerCase() ===
+                  this.form.customerName.trim().toLowerCase() &&
+                c.mobileNumber === this.form.mobileNumber.toString() &&
+                c.village.trim().toLowerCase() ===
+                  this.form.villageCity.trim().toLowerCase(),
+            );
 
-          if (exactMatch) {
-            createBooking(exactMatch._id);
-          } else {
-            // Create a new customer first, then use the returned _id
-            const customerId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
-            this.customerService
-              .create({
-                customerId,
-                name: this.form.customerName || 'Unknown',
-                mobileNumber: this.form.mobileNumber.toString(),
-                village: this.form.villageCity,
-              })
-              .subscribe({
-                next: (newCustomer) => {
-                  createBooking(newCustomer._id);
-                },
-                error: (err) => {
-                  this.loading = false;
-                  const message: string =
-                    err?.error?.message ??
-                    'Could not create customer. Please try again.';
-                  this.toast.show('error', 'Customer Creation Failed', message);
-                },
-              });
-          }
-        },
-        error: () => {
-          this.loading = false;
-          this.toast.show('error', 'Customer Check Failed', 'Could not verify customer existence.');
-        }
-      });
+            if (exactMatch) {
+              createBooking(exactMatch._id);
+            } else {
+              // Create a new customer first, then use the returned _id
+              const customerId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+              this.customerService
+                .create({
+                  customerId,
+                  name: this.form.customerName || 'Unknown',
+                  mobileNumber: this.form.mobileNumber.toString(),
+                  village: this.form.villageCity,
+                })
+                .subscribe({
+                  next: (newCustomer) => {
+                    createBooking(newCustomer._id);
+                  },
+                  error: (err) => {
+                    this.loading = false;
+                    const message: string =
+                      err?.error?.message ??
+                      'Could not create customer. Please try again.';
+                    this.toast.show(
+                      'error',
+                      'Customer Creation Failed',
+                      message,
+                    );
+                  },
+                });
+            }
+          },
+          error: () => {
+            this.loading = false;
+            this.toast.show(
+              'error',
+              'Customer Check Failed',
+              'Could not verify customer existence.',
+            );
+          },
+        });
     }
   }
 

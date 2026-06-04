@@ -1,6 +1,6 @@
-<div class="page">
+<div class="page page--compact">
   <!-- Page Header -->
-  <div class="page-header">
+  <div class="page-header page-header--compact">
     <div class="page-header__left">
       <div class="breadcrumb">
         <a routerLink="/bookings" class="breadcrumb__link">Bookings</a>
@@ -12,25 +12,50 @@
       <h2 class="page-title">Booking Details</h2>
     </div>
 
-    <div class="page-header__right">
-      <button type="button" class="btn-cancel" (click)="generateBill()">
-        <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">receipt_long</span>
-        Generate Bill
-      </button>
-      <button
-        type="button"
-        class="btn-confirm"
-        [disabled]="isSaving"
-        (click)="saveChanges()"
-      >
-        @if (isSaving) {
-          <span class="material-symbols-outlined spinning">progress_activity</span>
-          Saving…
+    <div
+      class="page-header__right"
+      style="display: flex; gap: 8px; align-items: center"
+    >
+      @if (booking) {
+        <button type="button" class="btn-cancel" (click)="generateBill()">
+          <span
+            class="material-symbols-outlined"
+            style="font-size: 18px; margin-right: 4px"
+            >receipt_long</span
+          >
+          Generate Bill
+        </button>
+        @if (!isEditing) {
+          <button type="button" class="btn-submit" (click)="enterEditMode()" [disabled]="booking.status !== 'booked'">
+            <span class="material-symbols-outlined" style="font-size: 18px"
+              >edit</span
+            >
+            Edit
+          </button>
         } @else {
-          <span class="material-symbols-outlined">check</span>
-          Save
+          <button type="button" class="btn-cancel" (click)="cancelEdit()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-submit"
+            [disabled]="isSaving"
+            (click)="saveChanges()"
+          >
+            @if (isSaving) {
+              <span class="material-symbols-outlined spinning"
+                >progress_activity</span
+              >
+              Saving…
+            } @else {
+              <span class="material-symbols-outlined" style="font-size: 18px"
+                >check</span
+              >
+              Save
+            }
+          </button>
         }
-      </button>
+      }
     </div>
   </div>
 
@@ -46,287 +71,746 @@
       <p>{{ errorMessage }}</p>
     </div>
   } @else if (booking) {
-    <div class="form-stack">
-      <!-- Row 1: Schedule and Customer -->
-      <div class="row-grid">
-        <div class="section-card">
-          <div class="section-header">
-            <span class="material-symbols-outlined section-icon">event</span>
-            <h3 class="section-title">Rental Schedule</h3>
-          </div>
-          <div class="section-body">
-            <div class="info-grid">
-              <div class="info-item">
-                <p class="info-item__label">Booking Date</p>
-                <p class="info-item__value">
-                  {{ formatDate(booking.bookingDate) }}
-                </p>
-              </div>
-              <div class="info-item">
-                <p class="info-item__label">Return Date</p>
-                <p class="info-item__value">
-                  {{ formatDate(booking.returnDate) }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section-card">
-          <div class="section-header">
-            <span class="material-symbols-outlined section-icon">person</span>
-            <h3 class="section-title">Customer Information</h3>
-          </div>
-          <div class="section-body">
-            <div class="info-grid info-grid--3col">
-              @if (booking.customer.name) {
-                <div class="info-item">
-                  <p class="info-item__label">Full Name</p>
-                  <p class="info-item__value">{{ booking.customer.name }}</p>
-                </div>
-              }
-              <div class="info-item">
-                <p class="info-item__label">Mobile</p>
-                <p class="info-item__value">
-                  {{ booking.customer.mobileNumber }}
-                </p>
-              </div>
-              <div class="info-item">
-                <p class="info-item__label">Village / City</p>
-                <p class="info-item__value">{{ booking.customer.village }}</p>
-              </div>
-              @if (booking.beltType) {
-                <div class="info-item">
-                  <p class="info-item__label">Belt Type</p>
-                  <span class="type-chip">{{ booking.beltType }}</span>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 2: Status & Payment -->
-      <div class="row-grid">
-        <!-- Status & Extras -->
-        <div class="section-card">
-          <div class="section-header">
-            <span class="material-symbols-outlined section-icon">tune</span>
-            <h3 class="section-title">Manage Status & Extras</h3>
-          </div>
-          <div class="section-body manage-card">
-            <!-- STATUS -->
-            <div class="form-group">
-              <label class="form-label">STATUS</label>
-              <div class="float-input">
-                <select class="float-input__field" [(ngModel)]="editStatus">
-                  <option value="booked">Pending Pickup</option>
-                  <option value="rented">Rented</option>
-                  <option value="pending_return">Pending Return</option>
-                  <option value="returned">Returned</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-                <span class="material-symbols-outlined select-icon"
-                  >expand_more</span
-                >
-              </div>
-            </div>
-
-            <!-- Extras (if any) -->
-            @if (booking.freshPiece || booking.note) {
-              <div class="info-grid" style="margin-top: 8px">
-                @if (booking.freshPiece) {
-                  <div class="info-item">
-                    <p class="info-item__label">Fresh Piece</p>
-                    <p class="info-item__value">Yes</p>
+    <div class="form-stack form-stack--compact">
+      <!-- ── Customer Details & Schedule (Compact Top Bar) ── -->
+      <div class="section-card section-card--compact">
+        <div class="section-body section-body--compact">
+          <div class="compact-top-grid">
+            <div class="flex-row" style="align-items: flex-start">
+              <div class="field-compact" style="flex: 2">
+                <label>Booking Date *</label>
+                @if (isEditing) {
+                  <app-datepicker
+                    placeholder="DD/MM/YYYY"
+                    [value]="bookingDate"
+                    [invalid]="submitted && !bookingDate"
+                    [minDate]="today"
+                    (valueChange)="bookingDate = $event; onDateChange()"
+                  />
+                } @else {
+                  <div class="readonly-field">
+                    {{ formatDate(booking.bookingDate) }}
                   </div>
-                  @if (booking.freshPieceCost) {
-                    <div class="info-item">
-                      <p class="info-item__label">Fresh Piece Cost</p>
-                      <p class="info-item__value info-item__value--money">
-                        ₹{{ booking.freshPieceCost | number }}
-                      </p>
+                }
+              </div>
+              <div class="field-compact" style="flex: 1">
+                <label>Pickup Time</label>
+                @if (isEditing) {
+                  <select
+                    class="compact-select"
+                    [(ngModel)]="pickupTime"
+                    style="width: 100%"
+                  >
+                    <option value="Morning">Morning</option>
+                    <option value="Evening">Evening</option>
+                  </select>
+                } @else {
+                  <div class="readonly-field">
+                    {{ booking.pickupTime || "Morning" }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="flex-row" style="align-items: flex-start">
+              <div class="field-compact" style="flex: 2">
+                <label>Return Date *</label>
+                @if (isEditing) {
+                  <app-datepicker
+                    placeholder="DD/MM/YYYY"
+                    [value]="returnDate"
+                    [invalid]="submitted && !returnDate"
+                    [minDate]="bookingDate ?? today"
+                    (valueChange)="returnDate = $event; onDateChange()"
+                  />
+                } @else {
+                  <div class="readonly-field">
+                    {{ formatDate(booking.returnDate) }}
+                  </div>
+                }
+              </div>
+              <div class="field-compact" style="flex: 1">
+                <label>Return Time</label>
+                @if (isEditing) {
+                  <select
+                    class="compact-select"
+                    [(ngModel)]="returnTime"
+                    style="width: 100%"
+                  >
+                    <option value="Morning">Morning</option>
+                    <option value="Evening">Evening</option>
+                  </select>
+                } @else {
+                  <div class="readonly-field">
+                    {{ booking.returnTime || "Morning" }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="field-compact customer-search-wrap">
+              <label>Customer Name *</label>
+              @if (isEditing) {
+                <div style="position: relative">
+                  <input
+                    id="customerName"
+                    type="text"
+                    class="compact-input"
+                    [class.is-invalid]="
+                      submitted && !form.customerName && !selectedCustomer
+                    "
+                    placeholder="Search or enter name..."
+                    [(ngModel)]="form.customerName"
+                    (input)="onCustomerNameInput()"
+                    name="customerName"
+                    autocomplete="off"
+                    [disabled]="!!selectedCustomer"
+                  />
+                  @if (customerSearchLoading) {
+                    <span
+                      class="material-symbols-outlined customer-search-icon spinning"
+                      style="
+                        position: absolute;
+                        right: 8px;
+                        top: 8px;
+                        font-size: 16px;
+                      "
+                      >progress_activity</span
+                    >
+                  }
+                  @if (selectedCustomer) {
+                    <div class="customer-selected-chip compact-chip">
+                      <span>{{ selectedCustomer.name }}</span>
+                      <button
+                        type="button"
+                        class="customer-chip-clear"
+                        (click)="clearCustomerSelection()"
+                      >
+                        <span class="material-symbols-outlined">close</span>
+                      </button>
                     </div>
                   }
-                }
-                @if (booking.note) {
-                  <div class="info-item info-item--full">
-                    <p class="info-item__label">Note</p>
-                    <p class="info-item__value info-item__value--note">
-                      {{ booking.note }}
-                    </p>
+                </div>
+                @if (customerDropdownVisible) {
+                  <div class="customer-dropdown">
+                    <div class="customer-dropdown__header">
+                      <span>Suggestions</span>
+                      <button type="button" (click)="closeCustomerDropdown()">
+                        <span class="material-symbols-outlined">close</span>
+                      </button>
+                    </div>
+                    @for (c of customerSuggestions; track c._id) {
+                      <div
+                        class="customer-dropdown__item"
+                        (click)="selectCustomer(c)"
+                      >
+                        <div class="customer-dropdown__info">
+                          <span class="customer-dropdown__name">{{
+                            c.name
+                          }}</span>
+                          <span class="customer-dropdown__meta"
+                            >{{ c.mobileNumber }} · {{ c.village }}</span
+                          >
+                        </div>
+                      </div>
+                    }
                   </div>
                 }
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Payment -->
-        <div class="section-card">
-          <div class="section-header">
-            <span class="material-symbols-outlined section-icon">payments</span>
-            <h3 class="section-title">Payment Management</h3>
-          </div>
-          <div class="section-body manage-card">
-            <!-- TOTAL PAYMENT -->
-            <div class="form-group" style="margin-bottom: 12px;">
-              <label class="form-label">TOTAL PAYMENT</label>
-              <div class="readonly-box">
-                <span class="readonly-box__label">Total Amount:</span>
-                <span class="readonly-box__value" style="color: var(--primary);">₹{{ totalPayment | number }}</span>
-              </div>
-            </div>
-
-            <!-- REMAINING PAYMENT -->
-            <div class="form-group">
-              <label class="form-label">REMAINING PAYMENT</label>
-              <div class="readonly-box">
-                <span class="readonly-box__label">Current Remaining:</span>
-                <span class="readonly-box__value"
-                  >₹{{ booking.remainingPayment || 0 }}</span
-                >
-              </div>
-            </div>
-
-            @if (booking.remainingPayment && booking.remainingPayment > 0) {
-              <!-- Full Payment Toggle -->
-              <div class="toggle-row">
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="fullPaymentReceived"
-                    (change)="onFullPaymentToggle()"
-                  />
-                  <span class="slider round"></span>
-                </label>
-                <span class="toggle-label">Full Payment Received</span>
-              </div>
-
-              <!-- AMOUNT RECEIVED NOW -->
-              @if (!fullPaymentReceived) {
-                <div class="form-group">
-                  <label class="form-label">AMOUNT RECEIVED NOW</label>
-                  <div class="float-input">
-                    <span class="float-input__prefix">₹</span>
-                    <input
-                      type="number"
-                      class="float-input__field float-input__field--prefix"
-                      [(ngModel)]="editPaymentAmount"
-                      placeholder="0"
-                    />
-                  </div>
+              } @else {
+                <div class="readonly-field">
+                  {{ booking.customer?.name || "N/A" }}
                 </div>
               }
-            }
+            </div>
+
+            <div class="field-compact">
+              <label>Mobile Number *</label>
+              @if (isEditing) {
+                <input
+                  type="number"
+                  class="compact-input"
+                  [class.is-invalid]="
+                    submitted &&
+                    (!form.mobileNumber ||
+                      form.mobileNumber.toString().length !== 10)
+                  "
+                  placeholder="e.g. 9876543210"
+                  [(ngModel)]="form.mobileNumber"
+                  name="mobileNumber"
+                  [disabled]="!!selectedCustomer"
+                />
+                @if (
+                  submitted &&
+                  form.mobileNumber &&
+                  form.mobileNumber.toString().length !== 10
+                ) {
+                  <div
+                    style="
+                      color: var(--error);
+                      font-size: 10px;
+                      margin-top: 2px;
+                    "
+                  >
+                    Must be 10 digits
+                  </div>
+                }
+              } @else {
+                <div class="readonly-field">
+                  {{ booking.customer?.mobileNumber || "N/A" }}
+                </div>
+              }
+            </div>
+
+            <div class="field-compact">
+              <label>Village / City *</label>
+              @if (isEditing) {
+                <input
+                  type="text"
+                  class="compact-input"
+                  [class.is-invalid]="submitted && !form.villageCity"
+                  placeholder="Village or City"
+                  [(ngModel)]="form.villageCity"
+                  name="villageCity"
+                  [disabled]="!!selectedCustomer"
+                />
+              } @else {
+                <div class="readonly-field">
+                  {{ booking.customer?.village || "N/A" }}
+                </div>
+              }
+            </div>
           </div>
+
+          @if (
+            isEditing &&
+            bookingDate &&
+            returnDate &&
+            returnDate.getTime() < bookingDate.getTime()
+          ) {
+            <div class="date-error" style="margin-top: 8px; padding: 6px 10px">
+              <span class="material-symbols-outlined" style="font-size: 14px"
+                >error</span
+              >
+              <span style="font-size: 12px"
+                >Return date must be on or after the booking date.</span
+              >
+            </div>
+          }
         </div>
       </div>
 
-      <!-- Row 3: Products -->
-      <div class="section-card">
-        <div class="section-header section-header--between">
-          <div class="section-header__left">
-            <span class="material-symbols-outlined section-icon"
-              >checkroom</span
-            >
-            <h3 class="section-title">Products</h3>
+      <!-- ── Product Details (Table format) ── -->
+      <div class="section-card section-card--compact">
+        <div class="section-body section-body--compact" style="padding: 16px">
+          <div class="flex-between" style="margin-bottom: 12px">
+            <h3 class="section-title" style="font-size: 14px">
+              Product Details
+            </h3>
+            @if (isEditing && selectedItems.length > 0) {
+              <button
+                type="button"
+                class="btn-clear-all"
+                (click)="clearAllProducts()"
+              >
+                Clear All
+              </button>
+            }
+          </div>
+
+          @if (isEditing) {
+            @if (!datesSelected) {
+              <div class="step-placeholder step-placeholder--compact">
+                <span class="material-symbols-outlined">date_range</span>
+                <p>Select rental dates above to search for products.</p>
+              </div>
+            } @else {
+              <!-- Search Bar -->
+              <div class="product-search-wrap">
+                <span
+                  class="material-symbols-outlined search-icon"
+                  [class.spinning]="searchLoading"
+                  >{{ searchLoading ? "progress_activity" : "search" }}</span
+                >
+                <input
+                  type="text"
+                  class="compact-search-input"
+                  placeholder="Search by serial number or product name…"
+                  [(ngModel)]="searchQuery"
+                  (input)="onSearchInput()"
+                  autocomplete="off"
+                />
+                @if (dropdownVisible) {
+                  <div class="search-dropdown">
+                    @for (p of filteredProducts; track p._id) {
+                      <div
+                        class="search-result-item"
+                        (click)="selectProduct(p)"
+                      >
+                        <div
+                          class="result-thumb"
+                          style="width: 32px; height: 32px"
+                        >
+                          @if (p.imageUrl) {
+                            <img [src]="p.imageUrl" [alt]="p.name" />
+                          } @else {
+                            <span
+                              class="material-symbols-outlined"
+                              style="font-size: 16px"
+                              >checkroom</span
+                            >
+                          }
+                        </div>
+                        <div class="result-info">
+                          <span class="result-serial">{{
+                            p.serialNumber
+                          }}</span>
+                          <span class="result-name">{{ p.name }}</span>
+                        </div>
+                        <span class="result-rate"
+                          >₹{{ p.rentPrice | number }}</span
+                        >
+                      </div>
+                    }
+                    @if (filteredProducts.length === 0) {
+                      <div class="search-empty">
+                        No products found for "{{ searchQuery }}"
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Selected Products Table (Edit mode) -->
+              <div class="table-wrapper">
+                <table class="compact-table">
+                  <thead>
+                    <tr>
+                      <th width="10%">Code</th>
+                      <th width="20%">Name</th>
+                      <th width="10%">Qty</th>
+                      <th width="15%">Rent/Day</th>
+                      <th width="25%">Extras</th>
+                      <th width="15%">Total Amt.</th>
+                      <th width="5%">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of selectedItems; track item.product._id) {
+                      <tr [class.tr-conflict]="item.hasConflict">
+                        <td>
+                          <div class="td-code" (click)="openImageModal(item.product.imageUrl)" [style.cursor]="item.product.imageUrl ? 'pointer' : 'default'">
+                            @if (item.product.imageUrl) {
+                              <img [src]="item.product.imageUrl" />
+                            } @else {
+                              <div class="img-placeholder">
+                                <span class="material-symbols-outlined"
+                                  >checkroom</span
+                                >
+                              </div>
+                            }
+                            <span>{{ item.product.serialNumber }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="td-name">{{ item.product.name }}</div>
+                        </td>
+                        <td>
+                          <div class="qty-control qty-control--compact">
+                            <button
+                              type="button"
+                              class="qty-btn"
+                              (click)="decrementQuantity(item)"
+                              [disabled]="item.quantity <= 1"
+                            >
+                              −
+                            </button>
+                            <span class="qty-value">{{ item.quantity }}</span>
+                            <button
+                              type="button"
+                              class="qty-btn"
+                              (click)="incrementQuantity(item)"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="table-input-wrap">
+                            <span class="curr">₹</span>
+                            <input
+                              type="number"
+                              [(ngModel)]="item.rentPrice"
+                              (ngModelChange)="calculateRemainingPayment()"
+                              min="0"
+                            />
+                          </div>
+                        </td>
+                        <td>
+                          <div class="td-extras">
+                            <label class="compact-checkbox">
+                              <input
+                                type="checkbox"
+                                [(ngModel)]="item.freshPiece"
+                                (ngModelChange)="calculateRemainingPayment()"
+                              />
+                              Fresh
+                            </label>
+                            @if (item.freshPiece) {
+                              <div
+                                class="table-input-wrap table-input-wrap--small"
+                              >
+                                <span class="curr">₹</span>
+                                <input
+                                  type="number"
+                                  [(ngModel)]="item.freshPieceCost"
+                                  (ngModelChange)="calculateRemainingPayment()"
+                                  placeholder="Cost"
+                                  min="0"
+                                />
+                              </div>
+                            }
+                            <label
+                              class="compact-checkbox"
+                              style="margin-left: 8px"
+                            >
+                              <input
+                                type="checkbox"
+                                [checked]="item.beltType !== null"
+                                (change)="
+                                  item.beltType = $any($event.target).checked
+                                    ? 'HB'
+                                    : null
+                                "
+                              />
+                              Belt
+                            </label>
+                            @if (item.beltType !== null) {
+                              <select
+                                class="compact-select-small"
+                                [(ngModel)]="item.beltType"
+                              >
+                                <option value="HB">HB</option>
+                                <option value="FB">FB</option>
+                              </select>
+                            }
+                          </div>
+                        </td>
+                        <td>
+                          <strong class="td-total"
+                            >₹{{
+                              item.rentPrice * item.quantity +
+                                (item.freshPiece ? item.freshPieceCost || 0 : 0)
+                                | number
+                            }}</strong
+                          >
+                        </td>
+                        <td align="center">
+                          <button
+                            type="button"
+                            class="btn-remove"
+                            (click)="removeItem(item)"
+                          >
+                            <span class="material-symbols-outlined"
+                              >delete</span
+                            >
+                          </button>
+                          @if (item.hasConflict) {
+                            <div class="conflict-label">Conflict!</div>
+                          }
+                        </td>
+                      </tr>
+                      @if (
+                        item.hasConflict &&
+                        item.conflictBookings &&
+                        item.conflictBookings.length > 0
+                      ) {
+                        <tr class="tr-conflict-details">
+                          <td colspan="7" style="padding: 0; border: none">
+                            <div class="conflict-bookings-box">
+                              <strong
+                                >Conflicting Bookings for
+                                {{ item.product.serialNumber }}:</strong
+                              >
+                              <div class="conflict-bookings-list">
+                                @for (
+                                  cb of item.conflictBookings;
+                                  track cb._id
+                                ) {
+                                  <div class="conflict-booking-item">
+                                    <span class="cb-customer"
+                                      ><strong>{{ cb.customer?.name }}</strong>
+                                      ({{ cb.customer?.mobileNumber }})</span
+                                    >
+                                    <span class="cb-dates"
+                                      >{{
+                                        cb.bookingDate | date: "dd/MM/yyyy"
+                                      }}
+                                      -
+                                      {{
+                                        cb.returnDate | date: "dd/MM/yyyy"
+                                      }}</span
+                                    >
+                                    <a
+                                      [routerLink]="['/bookings', cb._id]"
+                                      target="_blank"
+                                      class="cb-link"
+                                      >View</a
+                                    >
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    }
+                    @if (selectedItems.length === 0) {
+                      <tr>
+                        <td colspan="7" class="empty-table">
+                          No products added. Search above.
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          } @else {
+            <!-- Read-only Products Table -->
+            <div class="table-wrapper">
+              <table class="compact-table">
+                <thead>
+                  <tr>
+                    <th width="10%">Code</th>
+                    <th width="25%">Name</th>
+                    <th width="8%">Qty</th>
+                    <th width="12%">Rent/Day</th>
+                    <th width="25%">Extras</th>
+                    <th width="15%">Total Amt.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of products; track item.product?.serialNumber) {
+                    <tr>
+                      <td>
+                        <div class="td-code" (click)="openImageModal(item.product.imageUrl)" [style.cursor]="item.product.imageUrl ? 'pointer' : 'default'">
+                          @if (item.product.imageUrl) {
+                            <img [src]="item.product.imageUrl" />
+                          } @else {
+                            <div class="img-placeholder">
+                              <span class="material-symbols-outlined"
+                                >checkroom</span
+                              >
+                            </div>
+                          }
+                          <span>{{ item.product.serialNumber }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="td-name">{{ item.product.name }}</div>
+                      </td>
+                      <td>
+                        <span class="qty-value">{{ item.quantity }}</span>
+                      </td>
+                      <td>₹{{ (item.rentPrice || item.product.rentPrice) | number }}</td>
+                      <td>
+                        <div class="td-extras">
+                          @if (item.freshPiece) {
+                            <span
+                              class="type-chip"
+                              style="font-size: 11px; padding: 4px 8px"
+                              >Fresh (₹{{ item.freshPieceCost || 0 }})</span
+                            >
+                          } @else {
+                            <span
+                              class="type-chip"
+                              style="font-size: 11px; padding: 4px 8px; background: rgba(191, 199, 212, 0.2); color: var(--on-surface-variant);"
+                              >No Fresh Piece</span
+                            >
+                          }
+                          @if (item.beltType) {
+                            <span
+                              class="type-chip"
+                              style="
+                                font-size: 11px;
+                                padding: 4px 8px;
+                                background: rgba(207, 132, 0, 0.1);
+                                color: var(--tertiary);
+                              "
+                              >{{ item.beltType }}</span
+                            >
+                          } @else {
+                            <span
+                              class="type-chip"
+                              style="
+                                font-size: 11px;
+                                padding: 4px 8px;
+                                background: rgba(191, 199, 212, 0.2);
+                                color: var(--on-surface-variant);
+                              "
+                              >No Belt</span
+                            >
+                          }
+                        </div>
+                      </td>
+                      <td>
+                        <strong class="td-total"
+                          >₹{{
+                            (item.rentPrice || item.product.rentPrice) * item.quantity +
+                              (item.freshPiece ? item.freshPieceCost || 0 : 0)
+                              | number
+                          }}</strong
+                        >
+                      </td>
+                    </tr>
+                  }
+                  @if (products.length === 0) {
+                    <tr>
+                      <td colspan="6" class="empty-table">
+                        No products found.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ── Bottom Area: Remark & Totals ── -->
+      <div class="bottom-compact-grid">
+        <!-- Left: Note -->
+        <div class="section-card section-card--compact">
+          <div class="section-body section-body--compact" style="padding: 16px">
+            <div class="field-compact">
+              <label>Remark</label>
+              @if (isEditing) {
+                <textarea
+                  class="compact-textarea"
+                  [(ngModel)]="form.note"
+                  rows="5"
+                  placeholder="Type your remark here..."
+                ></textarea>
+              } @else {
+                <div
+                  class="readonly-field"
+                  style="min-height: 80px; white-space: pre-wrap"
+                >
+                  {{ booking.note || "—" }}
+                </div>
+              }
+            </div>
           </div>
         </div>
-        <div class="section-body">
-          <div class="product-cards">
-            @for (item of products; track item.product?.serialNumber) {
-              <div class="product-card">
-                <div class="product-card__top">
-                  <div class="product-card__info">
-                    <div class="product-card__thumb">
-                      @if (item.product.imageUrl) {
-                        <img
-                          [src]="item.product.imageUrl"
-                          [alt]="item.product.name"
-                        />
-                      } @else {
-                        <span class="material-symbols-outlined">checkroom</span>
-                      }
-                    </div>
-                    <div class="product-card__meta">
-                      <span class="product-card__serial"
-                        >#{{ item.product.serialNumber }} (Qty:
-                        {{ item.quantity }})</span
-                      >
-                      <h4 class="product-card__name">
-                        {{ item.product.name }}
-                      </h4>
-                      @if (item.product.rentPrice) {
-                        <span class="product-card__category"
-                          >₹{{ item.product.rentPrice | number }} / day (Total:
-                          ₹{{
-                            item.product.rentPrice * item.quantity | number
-                          }})</span
-                        >
-                      }
 
-                      <div
-                        class="product-extras"
-                        style="
-                          display: flex;
-                          gap: 8px;
-                          margin-top: 10px;
-                          flex-wrap: wrap;
-                        "
-                      >
-                        @if (item.freshPiece) {
-                          <span
-                            class="type-chip"
-                            style="font-size: 11px; padding: 4px 8px"
-                            >Fresh Piece (₹{{ item.freshPieceCost || 0 }})</span
-                          >
-                        } @else {
-                          <span
-                            class="type-chip"
-                            style="
-                              font-size: 11px;
-                              padding: 4px 8px;
-                              background: rgba(191, 199, 212, 0.2);
-                              color: var(--on-surface-variant);
-                            "
-                            >Not Fresh Piece</span
-                          >
-                        }
-
-                        @if (item.beltType) {
-                          <span
-                            class="type-chip"
-                            style="
-                              font-size: 11px;
-                              padding: 4px 8px;
-                              background: rgba(207, 132, 0, 0.1);
-                              color: var(--tertiary);
-                            "
-                            >{{ item.beltType }}</span
-                          >
-                        } @else {
-                          <span
-                            class="type-chip"
-                            style="
-                              font-size: 11px;
-                              padding: 4px 8px;
-                              background: rgba(191, 199, 212, 0.2);
-                              color: var(--on-surface-variant);
-                            "
-                            >No Belt</span
-                          >
-                        }
-                      </div>
+        <!-- Right: Totals & Payments -->
+        <div class="section-card section-card--compact">
+          <div class="section-body section-body--compact" style="padding: 16px">
+            <div class="totals-layout">
+              <div class="payment-fields">
+                <div class="field-compact">
+                  <label>Advance Payment</label>
+                  @if (isEditing) {
+                    <div class="table-input-wrap table-input-wrap--large">
+                      <span class="curr">₹</span>
+                      <input
+                        type="number"
+                        [(ngModel)]="form.advancePayment"
+                        (ngModelChange)="calculateRemainingPayment()"
+                        min="0"
+                      />
                     </div>
-                  </div>
+                  } @else {
+                    <div class="readonly-field">
+                      ₹{{ booking.advancePayment || 0 | number }}
+                    </div>
+                  }
                 </div>
+                <div class="field-compact" style="margin-top: 12px">
+                  <label>Remaining Payment</label>
+                  @if (isEditing) {
+                    <div class="table-input-wrap table-input-wrap--large">
+                      <span class="curr">₹</span>
+                      <input
+                        type="number"
+                        [(ngModel)]="form.remainingPayment"
+                        min="0"
+                      />
+                    </div>
+                  } @else {
+                    <div class="readonly-field">
+                      ₹{{ booking.remainingPayment || 0 | number }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="order-summary-compact">
+                <div class="summary-row">
+                  <span>Total Qty:</span>
+                  <span class="val">{{
+                    isEditing ? selectedItems.length : products.length
+                  }}</span>
+                </div>
+                <div class="summary-row">
+                  <span>Taxable Amt.</span>
+                  <span class="val"
+                    >₹{{
+                      isEditing
+                        ? (grandTotal | number)
+                        : (totalPayment | number)
+                    }}</span
+                  >
+                </div>
+                <div class="summary-row grand-total-row">
+                  <span>Net Amt.</span>
+                  <span class="val"
+                    >₹{{
+                      isEditing
+                        ? (grandTotal | number)
+                        : (totalPayment | number)
+                    }}</span
+                  >
+                </div>
+                <div class="summary-row">
+                  <span>Payable Amt.</span>
+                  <span class="val" style="color: #15803d; font-weight: 700"
+                    >₹{{
+                      isEditing
+                        ? (grandTotal | number)
+                        : (totalPayment | number)
+                    }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            @if (isEditing) {
+              <!-- Actions -->
+              <div
+                class="compact-actions"
+                style="
+                  margin-top: 16px;
+                  display: flex;
+                  justify-content: flex-end;
+                  align-items: center;
+                  gap: 16px;
+                  border-top: 1px solid var(--outline-variant);
+                  padding-top: 16px;
+                "
+              >
+                @if (hasConflict) {
+                  <label class="compact-checkbox conflict-checkbox">
+                    <input type="checkbox" [(ngModel)]="confirmed" />
+                    Confirm overlap booking
+                  </label>
+                }
               </div>
             }
           </div>
         </div>
       </div>
-
     </div>
   }
 </div>
@@ -453,12 +937,21 @@
 
       <div class="preview-modal__body">
         @if (isPreviewLoading) {
-          <div class="state-center" style="flex: 1; height: 100%;">
-            <span class="material-symbols-outlined spinning">progress_activity</span>
+          <div class="state-center" style="flex: 1; height: 100%">
+            <span class="material-symbols-outlined spinning"
+              >progress_activity</span
+            >
             <p>Generating PDF preview…</p>
           </div>
         } @else if (pdfBlobUrl) {
-          <iframe [src]="pdfBlobUrl" width="100%" height="100%" frameborder="0" scrolling="no" id="pdf-frame"></iframe>
+          <iframe
+            [src]="pdfBlobUrl"
+            width="100%"
+            height="100%"
+            frameborder="0"
+            scrolling="no"
+            id="pdf-frame"
+          ></iframe>
         }
       </div>
 
@@ -466,11 +959,19 @@
         @if (!isPreviewLoading) {
           <button class="btn-cancel" (click)="closePreview()">Close</button>
           <button class="btn-cancel" (click)="downloadFromPreview()">
-            <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">download</span>
+            <span
+              class="material-symbols-outlined"
+              style="font-size: 18px; margin-right: 4px"
+              >download</span
+            >
             Download
           </button>
           <button class="btn-cancel" (click)="printFromPreview()">
-            <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">print</span>
+            <span
+              class="material-symbols-outlined"
+              style="font-size: 18px; margin-right: 4px"
+              >print</span
+            >
             Print
           </button>
           <button class="btn-whatsapp" (click)="sendBill()">
@@ -480,7 +981,7 @@
               height="18"
               viewBox="0 0 24 24"
               fill="currentColor"
-              style="margin-right: 4px;"
+              style="margin-right: 4px"
             >
               <path
                 d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
@@ -490,6 +991,19 @@
           </button>
         }
       </div>
+    </div>
+  </div>
+}
+
+
+<!-- Image Modal -->
+@if (selectedImage) {
+  <div class="modal-backdrop" (click)="closeImageModal()" style="z-index: 9999; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8);">
+    <button class="image-modal-close" (click)="closeImageModal()" style="position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000; backdrop-filter: blur(4px);">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <div class="image-modal" (click)="$event.stopPropagation()" style="position: relative; max-width: 90vw; max-height: 90vh; background: transparent; padding: 0; box-shadow: none; display: flex; justify-content: center; align-items: center;">
+      <img [src]="selectedImage" alt="Product Image" style="max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" />
     </div>
   </div>
 }

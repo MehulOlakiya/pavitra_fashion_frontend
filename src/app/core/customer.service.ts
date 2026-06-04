@@ -33,6 +33,10 @@ export interface PaginatedCustomers {
   totalPages: number;
 }
 
+export interface CustomerReport extends Customer {
+  totalRevenue?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
   private http = inject(HttpClient);
@@ -89,5 +93,9 @@ export class CustomerService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${encodeURIComponent(id)}`);
+  }
+
+  getReport(): Observable<CustomerReport[]> {
+    return this.http.get<CustomerReport[]>(`${this.base}/report`);
   }
 }

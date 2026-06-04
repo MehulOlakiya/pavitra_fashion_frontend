@@ -34,7 +34,7 @@ function toDisplayBooking(b: ApiBooking, idx: number): DisplayBooking {
       : name.slice(0, 2).toUpperCase();
 
   const statusMap: Record<ApiBooking['status'], string> = {
-    booked: 'Pending Pickup',
+    booked: 'Booked',
     rented: 'Rented',
     pending_return: 'Upcoming',
     returned: 'Completed',

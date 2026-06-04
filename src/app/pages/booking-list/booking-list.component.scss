@@ -714,6 +714,112 @@
   }
 }
 
+// ── Action Grid (Quick Edit Menu) ──────────────────────────
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  &__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--surface-container-low);
+    border: 1px solid rgba(191, 199, 212, 0.3);
+    border-radius: 12px;
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--on-surface);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    .material-symbols-outlined {
+      font-size: 24px;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    svg {
+      color: #25D366;
+      margin-bottom: 4px;
+    }
+
+    &:hover {
+      background: var(--surface-container);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    &--edit {
+      .material-symbols-outlined {
+        color: #10b981;
+      }
+      &:hover {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.05);
+      }
+    }
+
+    &--danger {
+      .material-symbols-outlined {
+        color: var(--error);
+      }
+      &:hover {
+        border-color: var(--error);
+        background: rgba(186, 26, 26, 0.05);
+      }
+    }
+  }
+}
+
+// ── Settlement UI ──────────────────────────────────────────
+.settlement-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: var(--surface-container-lowest);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(191, 199, 212, 0.3);
+}
+
+.settlement-value {
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin-top: 4px;
+}
+
+.text-success {
+  color: #15803d;
+}
+
+.text-danger {
+  color: var(--error);
+}
+
+.radio-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--on-surface);
+
+  input[type="radio"] {
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+  }
+}
+
 // ── Modal field ────────────────────────────────────────────
 .modal-field {
   display: flex;
@@ -1385,7 +1491,8 @@
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
   width: 100%;
   max-width: 860px;
-  height: 95vh;
+  height: 90vh;
+  max-height: 900px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1428,6 +1535,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 12px;
     padding: 16px 24px;
     border-top: 1px solid rgba(191, 199, 212, 0.2);

@@ -14,13 +14,16 @@ export type BeltType = 'HB' | 'FB';
 
 export interface CreateBookingPayload {
   productSerialNumber?: string; // Kept for backwards compatibility
-  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number }[];
+  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number; rentPrice?: number; }[];
   customer: string; // Customer ObjectId
   advancePayment?: number;
   remainingPayment?: number;
   totalPayment?: number;
+  totalDiscount?: number;
   bookingDate: string; // ISO date string
+  pickupTime?: 'Morning' | 'Evening';
   returnDate: string; // ISO date string
+  returnTime?: 'Morning' | 'Evening';
   status?: BookingStatus;
   beltType?: BeltType;
   note?: string;
@@ -40,19 +43,23 @@ export interface Booking {
   _id: string;
   orderId?: string;
   productSerialNumber?: string;
-  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number }[];
+  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number; rentPrice?: number; }[];
   customer: BookingCustomer;
   advancePayment?: number;
   remainingPayment?: number;
   totalPayment?: number;
+  totalDiscount?: number;
   bookingDate: string;
+  pickupTime?: 'Morning' | 'Evening';
   returnDate: string;
+  returnTime?: 'Morning' | 'Evening';
   status: BookingStatus;
   beltType?: BeltType;
   note?: string;
   freshPiece?: boolean;
   freshPieceCost?: number;
   isBillSend?: boolean;
+  isDeleted?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -135,6 +142,10 @@ export class BookingService {
     return this.http.patch<Booking>(`${this.base}/${id}/bill-sent`, {});
   }
 
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
+  }
+
   getAnalytics(
     params: { fromDate?: string; toDate?: string } = {},
   ): Observable<BookingAnalytics> {
@@ -151,5 +162,13 @@ export class BookingService {
     return this.http.get(`${this.base}/${id}/pdf`, {
       responseType: 'blob',
     });
+  }
+
+  getReport(params: { status?: string; fromDate?: string; toDate?: string } = {}): Observable<Booking[]> {
+    let httpParams = new HttpParams();
+    if (params.status) httpParams = httpParams.set('status', params.status);
+    if (params.fromDate) httpParams = httpParams.set('fromDate', params.fromDate);
+    if (params.toDate) httpParams = httpParams.set('toDate', params.toDate);
+    return this.http.get<Booking[]>(`${this.base}/report`, { params: httpParams });
   }
 }

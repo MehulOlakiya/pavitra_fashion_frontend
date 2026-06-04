@@ -43,7 +43,7 @@
             (change)="onYearChange($any($event.target).value)"
           >
             @for (y of years; track y) {
-              <option [value]="y">{{ y }}</option>
+              <option [value]="y" [selected]="y === viewYear">{{ y }}</option>
             }
           </select>
           <span class="material-symbols-outlined dp-year-arrow">keyboard_arrow_down</span>

@@ -16,7 +16,12 @@ import {
 import { BookingService } from '../../core/booking.service';
 import { FormsModule } from '@angular/forms';
 
-export type EventType = 'booked' | 'rented' | 'pending_return' | 'returned' | 'cancelled';
+export type EventType =
+  | 'booked'
+  | 'rented'
+  | 'pending_return'
+  | 'returned'
+  | 'cancelled';
 
 export interface RentalEvent {
   id: string; // MongoDB _id
@@ -189,13 +194,17 @@ export class RentalCalendarComponent implements OnInit {
     () => this.filteredEvents().filter((e) => e.eventType === 'rented').length,
   );
   pendingReturnCount = computed(
-    () => this.filteredEvents().filter((e) => e.eventType === 'pending_return').length,
+    () =>
+      this.filteredEvents().filter((e) => e.eventType === 'pending_return')
+        .length,
   );
   returnedCount = computed(
-    () => this.filteredEvents().filter((e) => e.eventType === 'returned').length,
+    () =>
+      this.filteredEvents().filter((e) => e.eventType === 'returned').length,
   );
   cancelledCount = computed(
-    () => this.filteredEvents().filter((e) => e.eventType === 'cancelled').length,
+    () =>
+      this.filteredEvents().filter((e) => e.eventType === 'cancelled').length,
   );
 
   // ── Lifecycle ──────────────────────────────────────────────
@@ -286,7 +295,7 @@ export class RentalCalendarComponent implements OnInit {
       error: () => {
         this.isSubmitting.set(false);
         alert('Failed to mark as rented');
-      }
+      },
     });
   }
 
@@ -332,7 +341,10 @@ export class RentalCalendarComponent implements OnInit {
     let payload: any = { status: 'returned' };
 
     if (this.amountReceived() !== null && this.amountReceived()! > 0) {
-      const remaining = Math.max(0, (ev.remainingPayment || 0) - this.amountReceived()!);
+      const remaining = Math.max(
+        0,
+        (ev.remainingPayment || 0) - this.amountReceived()!,
+      );
       payload.remainingPayment = remaining;
     }
 
@@ -346,7 +358,7 @@ export class RentalCalendarComponent implements OnInit {
       error: () => {
         this.isSubmitting.set(false);
         alert('Failed to mark as returned');
-      }
+      },
     });
   }
 
@@ -361,7 +373,7 @@ export class RentalCalendarComponent implements OnInit {
   }
 
   getLabel(type: EventType): string {
-    if (type === 'booked') return 'PENDING PICKUP';
+    if (type === 'booked') return 'BOOKED';
     if (type === 'rented') return 'RENTED';
     if (type === 'pending_return') return 'PENDING RETURN';
     if (type === 'returned') return 'RETURNED';

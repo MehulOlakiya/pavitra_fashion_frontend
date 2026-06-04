@@ -1,0 +1,370 @@
+<div class="reports-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__icon-wrap">
+        <span class="material-symbols-outlined">assessment</span>
+      </div>
+      <div>
+        <h1 class="page-header__title">Reports</h1>
+        <p class="page-header__sub">Generate and download business reports</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button
+      class="tab-btn"
+      [class.tab-btn--active]="activeTab === 'bookings'"
+      (click)="setTab('bookings')"
+      id="tab-bookings"
+    >
+      <span class="material-symbols-outlined tab-btn__icon">receipt_long</span>
+      Booking Report
+    </button>
+    <button
+      class="tab-btn"
+      [class.tab-btn--active]="activeTab === 'customers'"
+      (click)="setTab('customers')"
+      id="tab-customers"
+    >
+      <span class="material-symbols-outlined tab-btn__icon">group</span>
+      Customer Report
+    </button>
+  </div>
+
+  <!-- ════════════════════ BOOKING REPORT ════════════════════ -->
+  @if (activeTab === 'bookings') {
+    <!-- Filters -->
+    <div class="filters-card">
+      <div class="filters-card__row">
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <div class="select-wrap">
+            <span class="material-symbols-outlined select-icon">filter_list</span>
+            <select
+              class="filter-select"
+              [(ngModel)]="bookingFilters.status"
+              id="booking-status-filter"
+            >
+              @for (s of bookingStatuses; track s.value) {
+                <option [value]="s.value">{{ s.label }}</option>
+              }
+            </select>
+            <span class="material-symbols-outlined select-chevron">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Date Range -->
+        <div class="filter-group filter-group--date">
+          <label class="filter-label">Date Range</label>
+          <button
+            class="date-range-btn"
+            [class.date-range-btn--active]="bookingFilters.fromDate || bookingFilters.toDate"
+            (click)="toggleBookingDatePicker()"
+            id="booking-date-range-btn"
+          >
+            <span class="material-symbols-outlined">calendar_today</span>
+            <span class="date-range-btn__label">
+              @if (bookingFilters.fromDate && bookingFilters.toDate) {
+                {{ formatDate(bookingFilters.fromDate) }} → {{ formatDate(bookingFilters.toDate) }}
+              } @else if (bookingFilters.fromDate) {
+                From {{ formatDate(bookingFilters.fromDate) }}
+              } @else {
+                All Dates
+              }
+            </span>
+            @if (bookingFilters.fromDate || bookingFilters.toDate) {
+              <span
+                class="material-symbols-outlined date-clear-icon"
+                (click)="clearBookingDates(); $event.stopPropagation()"
+              >close</span>
+            }
+          </button>
+
+          @if (bookingDatePickerOpen) {
+            <div class="date-picker-dropdown" (click)="$event.stopPropagation()">
+              <app-date-range-picker
+                [fromDate]="bookingFromDateObj"
+                [toDate]="bookingToDateObj"
+                (apply)="applyBookingDateRange($event)"
+                (clear)="clearBookingDates()"
+              />
+            </div>
+          }
+        </div>
+
+        <!-- Generate Button -->
+        <div class="filter-group filter-group--actions">
+          <button class="btn-generate" (click)="loadBookingReport()" id="generate-booking-report">
+            <span class="material-symbols-outlined">sync</span>
+            Generate Report
+          </button>
+          <button
+            class="btn-export"
+            (click)="downloadBookingExcel()"
+            [disabled]="bookings.length === 0"
+            id="export-booking-report"
+          >
+            <span class="material-symbols-outlined">download</span>
+            Export Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-card--blue">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">receipt_long</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Total Bookings</p>
+          <p class="kpi-card__value">{{ totalBookings }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--green">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">currency_rupee</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Total Revenue</p>
+          <p class="kpi-card__value">₹{{ totalRevenue | number }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--purple">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Advance Collected</p>
+          <p class="kpi-card__value">₹{{ totalAdvance | number }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--orange">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">pending_actions</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Pending Payment</p>
+          <p class="kpi-card__value">₹{{ totalPending | number }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Table -->
+    <div class="table-card">
+      <div class="table-card__header">
+        <h2 class="table-card__title">
+          <span class="material-symbols-outlined">table_rows</span>
+          Booking Records
+        </h2>
+        <span class="table-card__count">{{ bookings.length }} records</span>
+      </div>
+      <div class="table-scroll">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Sr.</th>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Mobile</th>
+              <th>Village / City</th>
+              <th>Products</th>
+              <th>Booking Date</th>
+              <th>Return Date</th>
+              <th>Advance (₹)</th>
+              <th>Remaining (₹)</th>
+              <th>Total (₹)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading) {
+              <tr>
+                <td colspan="12" class="cell-state">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined spinning">progress_activity</span>
+                    <p class="empty-state__text">Generating report…</p>
+                  </div>
+                </td>
+              </tr>
+            } @else if (bookings.length === 0) {
+              <tr>
+                <td colspan="12" class="cell-state">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                    </div>
+                    <p class="empty-state__title">No bookings found</p>
+                    <p class="empty-state__sub">Adjust the filters and generate report again.</p>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (b of bookings; track b._id; let i = $index) {
+                <tr class="table-row">
+                  <td class="cell-sr">{{ i + 1 }}</td>
+                  <td class="cell-order-id">{{ b.orderId ?? '—' }}</td>
+                  <td class="cell-customer">{{ b.customer?.name ?? '—' }}</td>
+                  <td class="cell-mobile">{{ b.customer?.mobileNumber ?? '—' }}</td>
+                  <td>{{ b.customer?.village ?? '—' }}</td>
+                  <td class="cell-products">{{ productSummary(b) }}</td>
+                  <td class="cell-date">{{ formatDate(b.bookingDate) }}</td>
+                  <td class="cell-date">{{ formatDate(b.returnDate) }}</td>
+                  <td class="cell-amount">{{ b.advancePayment | number }}</td>
+                  <td class="cell-amount">
+                    @if ((b.remainingPayment ?? 0) > 0) {
+                      <span class="remaining-chip">{{ b.remainingPayment | number }}</span>
+                    } @else {
+                      <span class="paid-chip">Paid</span>
+                    }
+                  </td>
+                  <td class="cell-amount cell-total">{{ (b.totalPayment ?? 0) | number }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="statusClass(b.status)">{{ statusLabel(b.status) }}</span>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════ CUSTOMER REPORT ════════════════════ -->
+  @if (activeTab === 'customers') {
+    <!-- Actions Bar -->
+    <div class="filters-card filters-card--slim">
+      <div class="filters-card__row">
+        <p class="filters-card__info">
+          <span class="material-symbols-outlined">info</span>
+          Shows all customers with their booking activity and revenue summary.
+        </p>
+        <div class="filter-group filter-group--actions">
+          <button class="btn-generate" (click)="loadCustomerReport()" id="generate-customer-report">
+            <span class="material-symbols-outlined">sync</span>
+            Refresh
+          </button>
+          <button
+            class="btn-export"
+            (click)="downloadCustomerExcel()"
+            [disabled]="customers.length === 0"
+            id="export-customer-report"
+          >
+            <span class="material-symbols-outlined">download</span>
+            Export Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid kpi-grid--3">
+      <div class="kpi-card kpi-card--blue">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">group</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Total Customers</p>
+          <p class="kpi-card__value">{{ totalCustomers }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--green">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">currency_rupee</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Total Revenue</p>
+          <p class="kpi-card__value">₹{{ totalCustomerRevenue | number }}</p>
+        </div>
+      </div>
+      <div class="kpi-card kpi-card--orange">
+        <div class="kpi-card__icon-wrap">
+          <span class="material-symbols-outlined">pending_actions</span>
+        </div>
+        <div class="kpi-card__body">
+          <p class="kpi-card__label">Total Pending</p>
+          <p class="kpi-card__value">₹{{ totalCustomerPending | number }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Table -->
+    <div class="table-card">
+      <div class="table-card__header">
+        <h2 class="table-card__title">
+          <span class="material-symbols-outlined">table_rows</span>
+          Customer Records
+        </h2>
+        <span class="table-card__count">{{ customers.length }} customers</span>
+      </div>
+      <div class="table-scroll">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Sr.</th>
+              <th>Customer ID</th>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Village / City</th>
+              <th>Total Bookings</th>
+              <th>Total Revenue (₹)</th>
+              <th>Pending Payment (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading) {
+              <tr>
+                <td colspan="8" class="cell-state">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined spinning">progress_activity</span>
+                    <p class="empty-state__text">Loading customers…</p>
+                  </div>
+                </td>
+              </tr>
+            } @else if (customers.length === 0) {
+              <tr>
+                <td colspan="8" class="cell-state">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <span class="material-symbols-outlined">group_off</span>
+                    </div>
+                    <p class="empty-state__title">No customers found</p>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (c of customers; track c._id; let i = $index) {
+                <tr class="table-row">
+                  <td class="cell-sr">{{ i + 1 }}</td>
+                  <td class="cell-order-id">{{ c.customerId ?? '—' }}</td>
+                  <td class="cell-customer">{{ c.name }}</td>
+                  <td class="cell-mobile">{{ c.mobileNumber }}</td>
+                  <td>{{ c.village ?? '—' }}</td>
+                  <td class="cell-center">
+                    <span class="booking-count-chip">{{ c.totalBooking ?? 0 }}</span>
+                  </td>
+                  <td class="cell-amount cell-total">{{ (c.totalRevenue ?? 0) | number }}</td>
+                  <td class="cell-amount">
+                    @if ((c.pendingPayment ?? 0) > 0) {
+                      <span class="remaining-chip">{{ c.pendingPayment | number }}</span>
+                    } @else {
+                      <span class="paid-chip">Cleared</span>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+</div>

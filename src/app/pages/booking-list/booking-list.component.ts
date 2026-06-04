@@ -57,6 +57,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
   // Preview Modal
   isPreviewModalOpen = false;
   isPreviewLoading = false;
+  isPrinting = false;
   pdfBlobUrl: SafeResourceUrl | null = null;
   rawPdfBlob: Blob | null = null;
   tempPdfBlob: Blob | null = null;
@@ -105,11 +106,16 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   // Quick-edit modal
+  quickEditView: 'menu' | 'status' | 'settlement' | 'delete' = 'menu';
   editingBooking: Booking | null = null;
   editForm = {
     status: 'booked' as BookingStatus,
     fullPayment: false,
     amountReceived: null as number | null,
+  };
+  settlementForm = {
+    type: 'receive' as 'receive' | 'refund',
+    amount: null as number | null,
   };
   saving = false;
 
@@ -120,7 +126,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
 
   readonly statusFilterOptions = [
     { value: '', label: 'Status: All' },
-    { value: 'booked', label: 'Pending Pickup' },
+    { value: 'booked', label: 'Booked' },
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
@@ -128,7 +134,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
   ];
 
   readonly statusEditOptions = [
-    { value: 'booked', label: 'Pending Pickup' },
+    { value: 'booked', label: 'Booked' },
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
@@ -263,14 +269,86 @@ export class BookingListComponent implements OnInit, OnDestroy {
     event?.stopPropagation();
     this.openMenuId = null;
     this.editingBooking = booking;
+    this.quickEditView = 'menu';
     this.editForm.status = booking.status;
     this.editForm.fullPayment = booking.remainingPayment === 0;
     this.editForm.amountReceived = null;
   }
 
+  goToStatus(): void {
+    this.quickEditView = 'status';
+  }
+
+  goToSettlement(): void {
+    this.quickEditView = 'settlement';
+    this.settlementForm = {
+      type: 'receive',
+      amount: null,
+    };
+  }
+
+  goToDelete(): void {
+    this.quickEditView = 'delete';
+  }
+
+  backToMenu(): void {
+    this.quickEditView = 'menu';
+  }
+
   closeEdit(): void {
     this.editingBooking = null;
     this.saving = false;
+    this.quickEditView = 'menu';
+  }
+
+  submitSettlement(): void {
+    if (!this.editingBooking) return;
+    if (this.settlementForm.amount === null || this.settlementForm.amount <= 0) return;
+
+    this.saving = true;
+    let newRemaining = this.editingBooking.remainingPayment || 0;
+    let newAdvance = this.editingBooking.advancePayment || 0;
+
+    if (this.settlementForm.type === 'receive') {
+      newRemaining = Math.max(0, newRemaining - this.settlementForm.amount);
+    } else if (this.settlementForm.type === 'refund') {
+      newAdvance = Math.max(0, newAdvance - this.settlementForm.amount);
+    }
+
+    const payload = {
+      remainingPayment: newRemaining,
+      advancePayment: newAdvance,
+    };
+
+    this.bookingService.update(this.editingBooking._id, payload).subscribe({
+      next: (updated) => {
+        const idx = this.bookings.findIndex((b) => b._id === updated._id);
+        if (idx !== -1) this.bookings[idx] = updated;
+        this.toastService.show('success', 'Settlement Saved', 'Payment information updated successfully.');
+        this.closeEdit();
+      },
+      error: () => {
+        this.toastService.show('error', 'Update Failed', 'Could not save settlement.');
+        this.saving = false;
+      },
+    });
+  }
+
+  deleteBookingSoft(): void {
+    if (!this.editingBooking) return;
+    this.saving = true;
+    this.bookingService.delete(this.editingBooking._id).subscribe({
+      next: () => {
+        this.bookings = this.bookings.filter((b) => b._id !== this.editingBooking!._id);
+        this.toastService.show('success', 'Booking Deleted', 'The booking was successfully deleted.');
+        this.closeEdit();
+        this.total--;
+      },
+      error: () => {
+        this.toastService.show('error', 'Delete Failed', 'Could not delete the booking.');
+        this.saving = false;
+      },
+    });
   }
 
   saveEdit(): void {
@@ -526,6 +604,52 @@ export class BookingListComponent implements OnInit, OnDestroy {
     });
   }
 
+  getAvailableStatusOptions(status: string): { value: string; label: string }[] {
+    switch (status) {
+      case 'booked':
+        return [
+          { value: 'booked', label: 'Booked' },
+          { value: 'rented', label: 'Rented' },
+          { value: 'returned', label: 'Returned' },
+          { value: 'cancelled', label: 'Cancelled' },
+        ];
+      case 'rented':
+        return [
+          { value: 'rented', label: 'Rented' },
+          { value: 'returned', label: 'Returned' },
+          { value: 'pending_return', label: 'Pending Return' },
+        ];
+      case 'pending_return':
+        return [
+          { value: 'pending_return', label: 'Pending Return' },
+          { value: 'returned', label: 'Returned' },
+        ];
+      case 'returned':
+        return [{ value: 'returned', label: 'Returned' }];
+      case 'cancelled':
+        return [{ value: 'cancelled', label: 'Cancelled' }];
+      default:
+        return [{ value: status, label: this.statusLabel(status) }];
+    }
+  }
+
+  onRowStatusChange(booking: Booking, newStatus: string): void {
+    if (booking.status === newStatus) return;
+
+    this.bookingService.update(booking._id, { status: newStatus as BookingStatus }).subscribe({
+      next: (updatedBooking) => {
+        const idx = this.bookings.findIndex((b) => b._id === updatedBooking._id);
+        if (idx !== -1) {
+          this.bookings[idx] = updatedBooking;
+        }
+        this.toastService.show('success', 'Status Updated', `Booking status changed to ${this.statusLabel(newStatus)}`);
+      },
+      error: () => {
+        this.toastService.show('error', 'Update Failed', 'Failed to change booking status.');
+      }
+    });
+  }
+
   totalRemaining(booking: Booking): number {
     if (booking.remainingPayment === 0) {
       return 0;
@@ -579,7 +703,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
     const url = window.URL.createObjectURL(this.rawPdfBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Invoice-${this.previewBooking.orderId?.split('-')[1]}.pdf`;
+    a.download = `Invoice-${this.previewBooking.orderId?.split('-')[1] || this.previewBooking.orderId}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
     this.toastService.show(
@@ -588,6 +712,52 @@ export class BookingListComponent implements OnInit, OnDestroy {
       'Invoice downloaded successfully.',
     );
     this.closePreview();
+  }
+
+  downloadBill(booking: Booking): void {
+    this.closeEdit();
+    this.toastService.show('info', 'Downloading', 'Bill downloading started...');
+    this.bookingService.downloadInvoice(booking._id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Invoice-${booking.orderId?.split('-')[1] || booking.orderId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.toastService.show('success', 'Download Complete', 'Invoice downloaded successfully.');
+      },
+      error: () => {
+        this.toastService.show('error', 'Download Failed', 'Failed to download invoice.');
+      },
+    });
+  }
+
+  printBill(booking: Booking): void {
+    this.closeEdit();
+    this.isPrinting = true; // Show dedicated print loader
+    this.bookingService.downloadInvoice(booking._id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+          this.isPrinting = false; // Hide loader when ready to print
+          iframe.contentWindow?.print();
+          // Optional: Clean up iframe after a delay
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            window.URL.revokeObjectURL(url);
+          }, 2000);
+        };
+      },
+      error: () => {
+        this.isPrinting = false;
+        this.toastService.show('error', 'Print Failed', 'Failed to generate invoice for printing.');
+      },
+    });
   }
 
   printFromPreview(): void {

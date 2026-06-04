@@ -1,6 +1,6 @@
-<div class="page">
+<div class="page page--compact">
   <!-- Page Header -->
-  <div class="page-header">
+  <div class="page-header page-header--compact">
     <div class="page-header__left">
       <div class="breadcrumb">
         <a routerLink="/bookings" class="breadcrumb__link">Bookings</a>
@@ -13,532 +13,543 @@
     </div>
   </div>
 
-  <div class="form-stack">
-    <!-- ── Row 1: Rental Schedule + Customer Information ── -->
-    <div class="row-grid">
-      <!-- Rental Schedule -->
-      <div class="section-card">
-        <div class="section-header">
-          <span class="material-symbols-outlined section-icon">event</span>
-          <h3 class="section-title">Rental Schedule</h3>
-        </div>
-        <div class="section-body">
-          <div class="date-grid">
-            <!-- Booking Date -->
-            <div class="date-field">
-              <label class="date-label">
-                <span class="material-symbols-outlined date-label__icon"
-                  >calendar_today</span
-                >
-                Booking Date <span class="required">*</span>
-              </label>
+  <div class="form-stack form-stack--compact">
+    <!-- ── Customer Details & Schedule (Compact Top Bar) ── -->
+    <div class="section-card section-card--compact">
+      <div class="section-body section-body--compact">
+        <div class="compact-top-grid">
+          <div class="flex-row" style="align-items: flex-start">
+            <div class="field-compact" style="flex: 2">
+              <label>Booking Date *</label>
               <app-datepicker
-                placeholder="DD / MM / YYYY"
+                placeholder="DD/MM/YYYY"
                 [value]="bookingDate"
                 [invalid]="submitted && !bookingDate"
                 [minDate]="today"
                 (valueChange)="bookingDate = $event; onDateChange()"
               />
             </div>
-
-            <!-- Arrow connector -->
-            <div class="date-arrow">
-              <span class="material-symbols-outlined">arrow_forward</span>
+            <div class="field-compact" style="flex: 1">
+              <label>Pickup Time</label>
+              <select
+                class="compact-select"
+                [(ngModel)]="pickupTime"
+                style="width: 100%"
+              >
+                <option value="Morning">Morning</option>
+                <option value="Evening">Evening</option>
+              </select>
             </div>
+          </div>
 
-            <!-- Return Date -->
-            <div class="date-field">
-              <label class="date-label">
-                <span class="material-symbols-outlined date-label__icon"
-                  >event_available</span
-                >
-                Return Date <span class="required">*</span>
-              </label>
+          <div class="flex-row" style="align-items: flex-start">
+            <div class="field-compact" style="flex: 2">
+              <label>Return Date *</label>
               <app-datepicker
-                placeholder="DD / MM / YYYY"
+                placeholder="DD/MM/YYYY"
                 [value]="returnDate"
                 [invalid]="submitted && !returnDate"
                 [minDate]="bookingDate ?? today"
                 (valueChange)="returnDate = $event; onDateChange()"
               />
             </div>
+            <div class="field-compact" style="flex: 1">
+              <label>Return Time</label>
+              <select
+                class="compact-select"
+                [(ngModel)]="returnTime"
+                style="width: 100%"
+              >
+                <option value="Morning">Morning</option>
+                <option value="Evening">Evening</option>
+              </select>
+            </div>
           </div>
 
-          @if (datesSelected) {
-            <div class="date-summary">
-              <span class="material-symbols-outlined">check_circle</span>
-              <span>
-                <strong>{{ formatDate(bookingDate) }}</strong>
-                &nbsp;→&nbsp;
-                <strong>{{ formatDate(returnDate) }}</strong>
-              </span>
+          <div class="field-compact customer-search-wrap">
+            <label>Customer Name *</label>
+            <div style="position: relative">
+              <input
+                id="customerName"
+                type="text"
+                class="compact-input"
+                [class.is-invalid]="
+                  submitted && !form.customerName && !selectedCustomer
+                "
+                placeholder="Search or enter name..."
+                [(ngModel)]="form.customerName"
+                (input)="onCustomerNameInput()"
+                name="customerName"
+                autocomplete="off"
+                [disabled]="!!selectedCustomer"
+              />
+              @if (customerSearchLoading) {
+                <span
+                  class="material-symbols-outlined customer-search-icon spinning"
+                  style="
+                    position: absolute;
+                    right: 8px;
+                    top: 8px;
+                    font-size: 16px;
+                  "
+                  >progress_activity</span
+                >
+              }
+              @if (selectedCustomer) {
+                <div class="customer-selected-chip compact-chip">
+                  <span>{{ selectedCustomer.name }}</span>
+                  <button
+                    type="button"
+                    class="customer-chip-clear"
+                    (click)="clearCustomerSelection()"
+                  >
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              }
             </div>
-          }
-          @if (
-            bookingDate &&
-            returnDate &&
-            returnDate.getTime() < bookingDate.getTime()
-          ) {
-            <div class="date-error">
-              <span class="material-symbols-outlined">error</span>
-              Return date must be on or after the booking date.
-            </div>
-          }
-        </div>
-      </div>
 
-      <!-- Customer Information -->
-      <div class="section-card">
-        <div class="section-header">
-          <span class="material-symbols-outlined section-icon">person</span>
-          <h3 class="section-title">Customer Information</h3>
-        </div>
-        <div class="section-body">
-          <!-- Customer Name with autocomplete -->
-          <div class="field-float customer-search-wrap">
-            @if (customerSearchLoading) {
-              <span class="material-symbols-outlined customer-search-icon spinning"
-                >progress_activity</span
-              >
-            }
-            <input
-              id="customerName"
-              type="text"
-              class="float-input"
-              placeholder=" "
-              [(ngModel)]="form.customerName"
-              (input)="onCustomerNameInput()"
-              name="customerName"
-              autocomplete="off"
-              [disabled]="!!selectedCustomer"
-            />
-            <label class="float-label" for="customerName">Full Name</label>
-
-            <!-- Selected customer chip -->
-            @if (selectedCustomer) {
-              <div class="customer-selected-chip">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>{{ selectedCustomer.name }}</span>
-                <button type="button" class="customer-chip-clear" (click)="clearCustomerSelection()">
-                  <span class="material-symbols-outlined">close</span>
-                </button>
-              </div>
-            }
-
-            <!-- Customer suggestions dropdown -->
             @if (customerDropdownVisible) {
               <div class="customer-dropdown">
-                <div class="customer-dropdown__header" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--outline-variant); background: var(--surface-container-low); position: sticky; top: 0; z-index: 1;">
-                  <span style="font-size: 12px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 0.5px;">Suggestions</span>
-                  <button type="button" (click)="closeCustomerDropdown()" style="background: transparent; border: none; cursor: pointer; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%;">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                <div class="customer-dropdown__header">
+                  <span>Suggestions</span>
+                  <button type="button" (click)="closeCustomerDropdown()">
+                    <span class="material-symbols-outlined">close</span>
                   </button>
                 </div>
                 @for (c of customerSuggestions; track c._id) {
-                  <div class="customer-dropdown__item" (click)="selectCustomer(c)">
-                    <div class="customer-dropdown__avatar">
-                      <span class="material-symbols-outlined">person</span>
-                    </div>
+                  <div
+                    class="customer-dropdown__item"
+                    (click)="selectCustomer(c)"
+                  >
                     <div class="customer-dropdown__info">
                       <span class="customer-dropdown__name">{{ c.name }}</span>
-                      <span class="customer-dropdown__meta">{{ c.mobileNumber }} · {{ c.village }}</span>
+                      <span class="customer-dropdown__meta"
+                        >{{ c.mobileNumber }} · {{ c.village }}</span
+                      >
                     </div>
                   </div>
                 }
               </div>
             }
           </div>
-          <div class="field-float">
+
+          <div class="field-compact">
+            <label>Mobile Number *</label>
             <input
-              id="mobileNumber"
               type="number"
-              class="float-input"
-              [class.is-invalid]="submitted && !form.mobileNumber"
-              placeholder=" "
+              class="compact-input"
+              [class.is-invalid]="
+                submitted &&
+                (!form.mobileNumber ||
+                  form.mobileNumber.toString().length !== 10)
+              "
+              placeholder="e.g. 9876543210"
               [(ngModel)]="form.mobileNumber"
               name="mobileNumber"
               [disabled]="!!selectedCustomer"
             />
-            <label class="float-label" for="mobileNumber"
-              >Mobile Number *</label
-            >
+            @if (
+              submitted &&
+              form.mobileNumber &&
+              form.mobileNumber.toString().length !== 10
+            ) {
+              <div
+                style="color: var(--error); font-size: 10px; margin-top: 2px"
+              >
+                Must be 10 digits
+              </div>
+            }
           </div>
-          <div class="field-float">
+
+          <div class="field-compact">
+            <label>Village / City *</label>
             <input
-              id="villageCity"
               type="text"
-              class="float-input"
+              class="compact-input"
               [class.is-invalid]="submitted && !form.villageCity"
-              placeholder=" "
+              placeholder="Village or City"
               [(ngModel)]="form.villageCity"
               name="villageCity"
               [disabled]="!!selectedCustomer"
             />
-            <label class="float-label" for="villageCity"
-              >Village / City *</label
-            >
           </div>
         </div>
-      </div>
-    </div>
-    <!-- ── End Row 1 ── -->
 
-    <!-- ── Row 2: Product Selection (full width) ── -->
-    <div class="section-card">
-      <div class="section-header section-header--between">
-        <div class="section-header__left">
-          <span class="material-symbols-outlined section-icon">checkroom</span>
-          <h3 class="section-title">Select Products</h3>
-        </div>
-        @if (selectedItems.length > 0) {
-          <button type="button" class="btn-clear-all" (click)="clearAllProducts()">
-            <span class="material-symbols-outlined">delete_sweep</span>
-            Clear All
-          </button>
+        @if (
+          bookingDate &&
+          returnDate &&
+          returnDate.getTime() < bookingDate.getTime()
+        ) {
+          <div class="date-error" style="margin-top: 8px; padding: 6px 10px">
+            <span class="material-symbols-outlined" style="font-size: 14px"
+              >error</span
+            >
+            <span style="font-size: 12px"
+              >Return date must be on or after the booking date.</span
+            >
+          </div>
         }
       </div>
-      <div class="section-body">
+    </div>
+
+    <!-- ── Product Details (Table format) ── -->
+    <div class="section-card section-card--compact">
+      <div class="section-body section-body--compact" style="padding: 16px">
+        <div class="flex-between" style="margin-bottom: 12px">
+          <h3 class="section-title" style="font-size: 14px">Product Details</h3>
+          @if (selectedItems.length > 0) {
+            <button
+              type="button"
+              class="btn-clear-all"
+              (click)="clearAllProducts()"
+            >
+              Clear All
+            </button>
+          }
+        </div>
+
         @if (!datesSelected) {
-          <div class="step-placeholder">
+          <div class="step-placeholder step-placeholder--compact">
             <span class="material-symbols-outlined">date_range</span>
             <p>Select rental dates above to search for products.</p>
           </div>
         } @else {
           <!-- Search Bar -->
           <div class="product-search-wrap">
-            @if (searchLoading) {
-              <span class="material-symbols-outlined search-icon spinning"
-                >progress_activity</span
-              >
-            } @else {
-              <span class="material-symbols-outlined search-icon"
-                >search</span
-              >
-            }
+            <span
+              class="material-symbols-outlined search-icon"
+              [class.spinning]="searchLoading"
+              >{{ searchLoading ? "progress_activity" : "search" }}</span
+            >
             <input
               type="text"
-              class="product-search-input"
+              class="compact-search-input"
               placeholder="Search by serial number or product name…"
               [(ngModel)]="searchQuery"
               (input)="onSearchInput()"
-              name="productSearch"
               autocomplete="off"
             />
 
-          <!-- Search Dropdown -->
-          @if (dropdownVisible) {
-            <div class="search-dropdown">
-              @for (p of filteredProducts; track p._id) {
-                <div class="search-result-item" (click)="selectProduct(p)">
-                  <div class="result-thumb">
-                    @if (p.imageUrl) {
-                      <img [src]="p.imageUrl" [alt]="p.name" />
-                    } @else {
-                      <span class="material-symbols-outlined">checkroom</span>
-                    }
+            @if (dropdownVisible) {
+              <div class="search-dropdown">
+                @for (p of filteredProducts; track p._id) {
+                  <div class="search-result-item" (click)="selectProduct(p)">
+                    <div class="result-thumb" style="width: 32px; height: 32px">
+                      @if (p.imageUrl) {
+                        <img [src]="p.imageUrl" [alt]="p.name" />
+                      } @else {
+                        <span
+                          class="material-symbols-outlined"
+                          style="font-size: 16px"
+                          >checkroom</span
+                        >
+                      }
+                    </div>
+                    <div class="result-info">
+                      <span class="result-serial">{{ p.serialNumber }}</span>
+                      <span class="result-name">{{ p.name }}</span>
+                    </div>
+                    <span class="result-rate">₹{{ p.rentPrice | number }}</span>
                   </div>
-                  <div class="result-info">
-                    <span class="result-serial">{{ p.serialNumber }}</span>
-                    <span class="result-name">{{ p.name }}</span>
+                }
+                @if (filteredProducts.length === 0) {
+                  <div class="search-empty">
+                    No products found for "{{ searchQuery }}"
                   </div>
-                  <span class="result-rate">₹{{ p.rentPrice | number }}</span>
-                </div>
-              }
-              @if (filteredProducts.length === 0) {
-                <div class="search-empty">
-                  <span class="material-symbols-outlined">inventory_2</span>
-                  No products found for "{{ searchQuery }}"
-                </div>
-              }
-            </div>
-          }
+                }
+              </div>
+            }
           </div>
 
-          <!-- Selected Products -->
-          @if (selectedItems.length > 0) {
-            <div class="items-label">
-              Selected Products ({{ selectedItems.length }})
-            </div>
-            <div class="product-cards">
-              @for (item of selectedItems; track item.product._id) {
-                <div class="product-card" [class.product-card--conflict]="item.hasConflict">
-                  <!-- Card Top Row: Product Info + Status + Remove -->
-                  <div class="product-card__top">
-                    <div class="product-card__info">
-                      <div class="product-card__thumb">
+          <!-- Selected Products Table -->
+          <div class="table-wrapper">
+            <table class="compact-table">
+              <thead>
+                <tr>
+                  <th width="10%">Code</th>
+                  <th width="20%">Name</th>
+                  <th width="10%">Qty</th>
+                  <th width="15%">Rent/Day</th>
+                  <th width="25%">Extras</th>
+                  <th width="15%">Total Amt.</th>
+                  <th width="5%">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of selectedItems; track item.product._id) {
+                  <tr [class.tr-conflict]="item.hasConflict">
+                    <td>
+                      <div class="td-code" (click)="openImageModal(item.product.imageUrl)" [style.cursor]="item.product.imageUrl ? 'pointer' : 'default'">
                         @if (item.product.imageUrl) {
-                          <img [src]="item.product.imageUrl" [alt]="item.product.name" />
+                          <img [src]="item.product.imageUrl" />
                         } @else {
-                          <span class="material-symbols-outlined">checkroom</span>
+                          <div class="img-placeholder">
+                            <span class="material-symbols-outlined"
+                              >checkroom</span
+                            >
+                          </div>
+                        }
+                        <span>{{ item.product.serialNumber }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="td-name">{{ item.product.name }}</div>
+                    </td>
+                    <td>
+                      <div class="qty-control qty-control--compact">
+                        <button
+                          type="button"
+                          class="qty-btn"
+                          (click)="decrementQuantity(item)"
+                          [disabled]="item.quantity <= 1"
+                        >
+                          −
+                        </button>
+                        <span class="qty-value">{{ item.quantity }}</span>
+                        <button
+                          type="button"
+                          class="qty-btn"
+                          (click)="incrementQuantity(item)"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="table-input-wrap">
+                        <span class="curr">₹</span>
+                        <input
+                          type="number"
+                          [(ngModel)]="item.rentPrice"
+                          (ngModelChange)="calculateRemainingPayment()"
+                          min="0"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <div class="td-extras">
+                        <label class="compact-checkbox">
+                          <input
+                            type="checkbox"
+                            [(ngModel)]="item.freshPiece"
+                            (ngModelChange)="calculateRemainingPayment()"
+                          />
+                          Fresh
+                        </label>
+                        @if (item.freshPiece) {
+                          <div class="table-input-wrap table-input-wrap--small">
+                            <span class="curr">₹</span>
+                            <input
+                              type="number"
+                              [(ngModel)]="item.freshPieceCost"
+                              (ngModelChange)="calculateRemainingPayment()"
+                              placeholder="Cost"
+                              min="0"
+                            />
+                          </div>
+                        }
+
+                        <label
+                          class="compact-checkbox"
+                          style="margin-left: 8px"
+                        >
+                          <input
+                            type="checkbox"
+                            [checked]="item.beltType !== null"
+                            (change)="
+                              item.beltType = $any($event.target).checked
+                                ? 'HB'
+                                : null
+                            "
+                          />
+                          Belt
+                        </label>
+                        @if (item.beltType !== null) {
+                          <select
+                            class="compact-select-small"
+                            [(ngModel)]="item.beltType"
+                          >
+                            <option value="HB">HB</option>
+                            <option value="FB">FB</option>
+                          </select>
                         }
                       </div>
-                      <div class="product-card__meta">
-                        <span class="product-card__serial">#{{ item.product.serialNumber }}</span>
-                        <h4 class="product-card__name">{{ item.product.name }}</h4>
-                        
-                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 2px; flex-wrap: wrap;">
-                          <span class="product-card__category" style="font-size: 13px; text-transform: none; letter-spacing: normal;">
-                            ₹{{ item.product.rentPrice | number }} / day (Total: ₹{{ ((item.product.rentPrice || 0) * item.quantity + (item.freshPiece ? (item.freshPieceCost || 0) : 0)) | number }})
-                          </span>
-                          <div class="qty-control" style="transform: scale(0.85); transform-origin: left center;">
-                            <button type="button" class="qty-btn" (click)="decrementQuantity(item)" [disabled]="item.quantity <= 1">−</button>
-                            <span class="qty-value">{{ item.quantity }}</span>
-                            <button type="button" class="qty-btn" (click)="incrementQuantity(item)">+</button>
-                          </div>
-                        </div>
-
-                        <div class="product-extras" style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
-                          <!-- Fresh Piece Toggle -->
-                          <div class="option-pill" style="padding: 4px 10px; border-radius: 8px;">
-                            <label class="option-toggle">
-                              <input
-                                type="checkbox"
-                                [(ngModel)]="item.freshPiece"
-                                (ngModelChange)="calculateRemainingPayment()"
-                              />
-                              <span class="option-toggle__track" style="transform: scale(0.8); margin-left: -4px;"></span>
-                              <span class="option-toggle__label" style="font-size: 12px;">Fresh Piece</span>
-                            </label>
-                            @if (item.freshPiece) {
-                              <div class="fresh-cost-wrap" style="width: 70px; margin-left: 4px;">
-                                <span class="fresh-cost-symbol" style="font-size: 11px; left: 6px;">₹</span>
-                                <input
-                                  type="number"
-                                  class="fresh-cost-input"
-                                  style="height: 24px; padding: 0 4px 0 16px; font-size: 12px;"
-                                  placeholder="Cost"
-                                  [(ngModel)]="item.freshPieceCost"
-                                  (ngModelChange)="calculateRemainingPayment()"
-                                  min="0"
-                                />
-                              </div>
-                            }
-                          </div>
-
-                          <!-- Belt Toggle -->
-                          <div class="option-pill" style="padding: 4px 10px; border-radius: 8px;">
-                            <label class="option-toggle">
-                              <input
-                                type="checkbox"
-                                [checked]="item.beltType !== null"
-                                (change)="item.beltType = $any($event.target).checked ? 'HB' : null"
-                              />
-                              <span class="option-toggle__track" style="transform: scale(0.8); margin-left: -4px;"></span>
-                              <span class="option-toggle__label" style="font-size: 12px;">Belt</span>
-                            </label>
-                            @if (item.beltType !== null) {
-                              <div class="belt-switch" style="margin-left: 4px;">
-                                <button
-                                  type="button"
-                                  class="belt-switch__btn"
-                                  style="padding: 2px 8px; font-size: 11px;"
-                                  [class.belt-switch__btn--active]="item.beltType === 'HB'"
-                                  (click)="item.beltType = 'HB'"
-                                >HB</button>
-                                <button
-                                  type="button"
-                                  class="belt-switch__btn"
-                                  style="padding: 2px 8px; font-size: 11px;"
-                                  [class.belt-switch__btn--active]="item.beltType === 'FB'"
-                                  (click)="item.beltType = 'FB'"
-                                >FB</button>
-                              </div>
-                            }
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                    
-                    <div class="product-card__status-area" style="flex-direction: column; align-items: flex-end; gap: 8px;">
-                      <button type="button" class="product-card__remove" (click)="removeItem(item)">
-                        <span class="material-symbols-outlined">close</span>
+                    </td>
+                    <td>
+                      <strong class="td-total"
+                        >₹{{
+                          item.rentPrice * item.quantity +
+                            (item.freshPiece ? item.freshPieceCost || 0 : 0)
+                            | number
+                        }}</strong
+                      >
+                    </td>
+                    <td align="center">
+                      <button
+                        type="button"
+                        class="btn-remove"
+                        (click)="removeItem(item)"
+                      >
+                        <span class="material-symbols-outlined">delete</span>
                       </button>
-                      @if (item.conflictLoading) {
-                        <span class="status-chip status--checking">
-                          <span class="material-symbols-outlined spinning">progress_activity</span>
-                          Checking
-                        </span>
-                      } @else if (item.hasConflict) {
-                        <span class="status-chip status--booked">
-                          <span class="material-symbols-outlined">cancel</span>
-                          Pending Pickup
-                        </span>
-                      } @else {
-                        <span class="status-chip status--available">
-                          <span class="material-symbols-outlined">check_circle</span>
-                          Available
-                        </span>
+                      @if (item.hasConflict) {
+                        <div class="conflict-label">Conflict!</div>
                       }
-                    </div>
-                  </div>
-
-                  @if (item.hasConflict && !item.conflictLoading) {
-                    <div class="conflict-details">
-                      <p class="conflict-hint">Already booked for the selected dates.</p>
-                      @if (item.conflictBookings && item.conflictBookings.length > 0) {
-                        <ul class="conflict-list">
-                          @for (conflict of item.conflictBookings; track conflict._id) {
-                            <li>
-                              <span class="material-symbols-outlined">calendar_today</span>
-                              {{ conflict.bookingDate | date:'dd MMM, yyyy' }} - {{ conflict.returnDate | date:'dd MMM, yyyy' }}
-                              <span class="conflict-customer">
-                                ({{ conflict.customer.name || 'Unknown Customer' }})
-                              </span>
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
+                    </td>
+                  </tr>
+                  @if (
+                    item.hasConflict &&
+                    item.conflictBookings &&
+                    item.conflictBookings.length > 0
+                  ) {
+                    <tr class="tr-conflict-details">
+                      <td colspan="7" style="padding: 0; border: none">
+                        <div class="conflict-bookings-box">
+                          <strong
+                            >Conflicting Bookings for
+                            {{ item.product.serialNumber }}:</strong
+                          >
+                          <div class="conflict-bookings-list">
+                            @for (cb of item.conflictBookings; track cb._id) {
+                              <div class="conflict-booking-item">
+                                <span class="cb-customer"
+                                  ><strong>{{ cb.customer?.name }}</strong> ({{
+                                    cb.customer?.mobileNumber
+                                  }})</span
+                                >
+                                <span class="cb-dates"
+                                  >{{ cb.bookingDate | date: "dd/MM/yyyy" }} -
+                                  {{ cb.returnDate | date: "dd/MM/yyyy" }}</span
+                                >
+                                <a
+                                  [routerLink]="['/bookings', cb._id]"
+                                  target="_blank"
+                                  class="cb-link"
+                                  >View</a
+                                >
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
                   }
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="step-placeholder step-placeholder--compact">
-              <span class="material-symbols-outlined">style</span>
-              <p>No products selected yet. Search above to add products.</p>
-            </div>
-          }
+                }
+                @if (selectedItems.length === 0) {
+                  <tr>
+                    <td colspan="7" class="empty-table">
+                      No products added. Search above.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
       </div>
     </div>
-    <!-- ── End Row 2 ── -->
 
-    <!-- ── Row 3: Payment Details + Order Summary ── -->
+    <!-- ── Bottom Area: Remark & Totals ── -->
     @if (productSelected) {
-      <div class="row-grid">
-        <!-- Payment Details -->
-        <div class="section-card">
-          <div class="section-header">
-            <span class="material-symbols-outlined section-icon">payments</span>
-            <h3 class="section-title">Payment Details</h3>
-          </div>
-          <div class="section-body">
-            <div class="field-float field-float--currency">
-              <span class="currency-symbol">₹</span>
-              <input
-                id="advancePayment"
-                type="number"
-                class="float-input float-input--currency"
-                placeholder=" "
-                [(ngModel)]="form.advancePayment"
-                (ngModelChange)="calculateRemainingPayment()"
-                name="advancePayment"
-                min="0"
-              />
-              <label
-                class="float-label float-label--currency"
-                for="advancePayment"
-              >
-                Advance Payment
-              </label>
-            </div>
-
-            <div class="field-float field-float--currency">
-              <span class="currency-symbol">₹</span>
-              <input
-                id="remainingPayment"
-                type="number"
-                class="float-input float-input--currency"
-                placeholder=" "
-                [(ngModel)]="form.remainingPayment"
-                name="remainingPayment"
-                min="0"
-              />
-              <label
-                class="float-label float-label--currency"
-                for="remainingPayment"
-              >
-                Remaining Payment
-              </label>
-            </div>
-
-            <!-- Note -->
-            <div class="field-note">
-              <label class="note-label" for="bookingNote">Note</label>
+      <div class="bottom-compact-grid">
+        <!-- Left: Note -->
+        <div class="section-card section-card--compact">
+          <div class="section-body section-body--compact" style="padding: 16px">
+            <div class="field-compact">
+              <label>Remark</label>
               <textarea
-                id="bookingNote"
-                class="note-input"
-                placeholder="Add any additional notes…"
+                class="compact-textarea"
                 [(ngModel)]="form.note"
-                name="bookingNote"
-                rows="3"
+                rows="5"
+                placeholder="Type your remark here..."
               ></textarea>
             </div>
           </div>
         </div>
 
-        <!-- Order Summary -->
-        <div class="col-stack">
-          <div class="section-card">
-            <div class="section-header">
-              <span class="material-symbols-outlined section-icon">receipt_long</span>
-              <h3 class="section-title">Order Summary</h3>
-            </div>
-            <div class="section-body">
-              <div class="summary-list">
-                @for (item of selectedItems; track item.product._id) {
-                  <div class="summary-line">
-                    <span class="summary-line__name">
-                      {{ item.product.name }}
-                      @if (item.quantity > 1) {
-                        <span class="summary-line__qty">×{{ item.quantity }}</span>
-                      }
-                    </span>
-                    <span class="summary-line__price">₹{{ ((item.product.rentPrice || 0) * item.quantity) | number }}</span>
+        <!-- Right: Totals & Payments -->
+        <div class="section-card section-card--compact">
+          <div class="section-body section-body--compact" style="padding: 16px">
+            <div class="totals-layout">
+              <div class="payment-fields">
+                <div class="field-compact">
+                  <label>Advance Payment</label>
+                  <div class="table-input-wrap table-input-wrap--large">
+                    <span class="curr">₹</span>
+                    <input
+                      type="number"
+                      [(ngModel)]="form.advancePayment"
+                      (ngModelChange)="calculateRemainingPayment()"
+                      min="0"
+                    />
                   </div>
-                  @if (item.freshPiece && item.freshPieceCost) {
-                    <div class="summary-line summary-line--sub">
-                      <span class="summary-line__name">└ Fresh Piece</span>
-                      <span class="summary-line__price">₹{{ item.freshPieceCost | number }}</span>
-                    </div>
-                  }
-                }
+                </div>
+                <div class="field-compact" style="margin-top: 12px">
+                  <label>Remaining Payment</label>
+                  <div class="table-input-wrap table-input-wrap--large">
+                    <span class="curr">₹</span>
+                    <input
+                      type="number"
+                      [(ngModel)]="form.remainingPayment"
+                      min="0"
+                    />
+                  </div>
+                </div>
               </div>
-              <div class="summary-total">
-                <span class="summary-total__label">Grand Total</span>
-                <span class="summary-total__value">₹{{ grandTotal | number }}</span>
+
+              <div class="order-summary-compact">
+                <div class="summary-row">
+                  <span>Total Qty:</span>
+                  <span class="val">{{ selectedItems.length }}</span>
+                </div>
+                <div class="summary-row">
+                  <span>Taxable Amt.</span>
+                  <span class="val">₹{{ grandTotal | number }}</span>
+                </div>
+                <div class="summary-row grand-total-row">
+                  <span>Net Amt.</span>
+                  <span class="val">₹{{ grandTotal | number }}</span>
+                </div>
+                <div class="summary-row">
+                  <span>Payable Amt.</span>
+                  <span class="val" style="color: #15803d; font-weight: 700"
+                    >₹{{ grandTotal | number }}</span
+                  >
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Confirm + Actions -->
-          <div class="section-card section-card--footer">
-            <div class="form-footer">
+            <!-- Actions -->
+            <div
+              class="compact-actions"
+              style="
+                margin-top: 16px;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                gap: 16px;
+                border-top: 1px solid var(--outline-variant);
+                padding-top: 16px;
+              "
+            >
               @if (hasConflict) {
-                <label class="confirm-check">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="confirmed"
-                    name="confirmCheckbox"
-                  />
-                  <span class="confirm-check__text">
-                    I am aware of the booking overlap and confirm that I want to
-                    proceed with this booking.
-                  </span>
+                <label class="compact-checkbox conflict-checkbox">
+                  <input type="checkbox" [(ngModel)]="confirmed" />
+                  Confirm overlap booking
                 </label>
               }
-
-              <div class="form-actions">
+              <div style="display: flex; gap: 8px">
                 <button type="button" class="btn-cancel" (click)="goBack()">
                   Cancel
                 </button>
                 <button
                   type="button"
-                  class="btn-confirm"
+                  class="btn-submit"
                   [disabled]="!canConfirm || loading"
                   (click)="onSubmit()"
                 >
-                  @if (loading) {
-                    <span class="material-symbols-outlined spinning"
-                      >progress_activity</span
-                    >
-                    Saving…
-                  } @else {
-                    <span class="material-symbols-outlined">check</span>
-                    Confirm Booking
-                  }
+                  {{ loading ? "Saving..." : "Submit" }}
                 </button>
               </div>
             </div>
@@ -546,6 +557,18 @@
         </div>
       </div>
     }
-    <!-- ── End Row 3 ── -->
   </div>
 </div>
+
+
+<!-- Image Modal -->
+@if (selectedImage) {
+  <div class="modal-backdrop" (click)="closeImageModal()" style="z-index: 9999; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8);">
+    <button class="image-modal-close" (click)="closeImageModal()" style="position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000; backdrop-filter: blur(4px);">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <div class="image-modal" (click)="$event.stopPropagation()" style="position: relative; max-width: 90vw; max-height: 90vh; background: transparent; padding: 0; box-shadow: none; display: flex; justify-content: center; align-items: center;">
+      <img [src]="selectedImage" alt="Product Image" style="max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" />
+    </div>
+  </div>
+}

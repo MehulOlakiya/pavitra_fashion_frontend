@@ -30,7 +30,9 @@ export class EditBookingComponent implements OnInit {
   readonly today = new Date();
 
   bookingDate: Date | null = null;
+  pickupTime: 'Morning' | 'Evening' = 'Morning';
   returnDate: Date | null = null;
+  returnTime: 'Morning' | 'Evening' = 'Morning';
   items: { serialNumber: string; quantity: number }[] = [];
 
   form = {
@@ -45,7 +47,7 @@ export class EditBookingComponent implements OnInit {
   };
 
   readonly statusOptions: { value: BookingStatus; label: string }[] = [
-    { value: 'booked', label: 'Pending Pickup' },
+    { value: 'booked', label: 'Booked' },
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
@@ -79,7 +81,9 @@ export class EditBookingComponent implements OnInit {
         this.form.remainingPayment = b.remainingPayment ?? null;
         this.form.status = b.status;
         this.bookingDate = new Date(b.bookingDate);
+        this.pickupTime = b.pickupTime || 'Morning';
         this.returnDate = new Date(b.returnDate);
+        this.returnTime = b.returnTime || 'Morning';
         this.loading = false;
       },
       error: () => {
@@ -126,7 +130,9 @@ export class EditBookingComponent implements OnInit {
         advancePayment: this.form.advancePayment!,
         remainingPayment: this.form.remainingPayment!,
         bookingDate: this.toISTDate(this.bookingDate),
+        pickupTime: this.pickupTime,
         returnDate: this.toISTDate(this.returnDate),
+        returnTime: this.returnTime,
         status: this.form.status,
       })
       .subscribe({
