@@ -1,0 +1,303 @@
+<div class="page">
+
+  <!-- Page Header -->
+  <div class="page-header page-header--compact">
+    <div class="page-header__left">
+      <div class="breadcrumb">
+        <a routerLink="/expenses" class="breadcrumb__link">Expenses</a>
+        <span class="material-symbols-outlined breadcrumb__sep">chevron_right</span>
+        <span class="breadcrumb__current">New Expense</span>
+      </div>
+      <h2 class="page-title">New Expense</h2>
+    </div>
+  </div>
+
+  <div class="form-layout">
+
+    <!-- LEFT COLUMN -->
+    <div class="form-col">
+
+      <!-- Party -->
+      <div class="form-card">
+        <div class="form-card__header">
+          <span class="material-symbols-outlined form-card__icon">storefront</span>
+          <h2 class="form-card__title">Party / Vendor</h2>
+        </div>
+
+        <div class="field-group" *ngIf="!selectedPartyId">
+          <label class="field-label">Search Party</label>
+          <div class="input-combo">
+            <div class="input-wrap" style="flex:1; position:relative;">
+              <span class="material-symbols-outlined input-icon">search</span>
+              <input
+                type="text"
+                class="field-input with-icon"
+                placeholder="Type to search parties…"
+                [(ngModel)]="partySearch"
+                (input)="onPartySearch()"
+                (focus)="partyDropdownVisible = true"
+                autocomplete="off"
+              />
+              <div class="dropdown" *ngIf="partyDropdownVisible && parties.length > 0">
+                <div class="dropdown__header">
+                  <span class="dropdown__title">SUGGESTIONS</span>
+                  <button class="dropdown__close" (click)="partyDropdownVisible = false">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+                <div class="dropdown__list">
+                  <div
+                    class="dropdown__item"
+                    *ngFor="let p of parties"
+                    (click)="selectParty(p)"
+                  >
+                    <span class="material-symbols-outlined dropdown__icon">storefront</span>
+                    {{ p.name }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="btn-icon-action" title="Add New Party" (click)="addPartyOpen = !addPartyOpen">
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+
+          <!-- Inline add party -->
+          <div class="inline-add" *ngIf="addPartyOpen">
+            <input
+              type="text"
+              class="field-input"
+              placeholder="New party name"
+              [(ngModel)]="newPartyName"
+            />
+            <div class="inline-add__actions">
+              <button class="btn-primary-sm" (click)="createParty()" [disabled]="creatingParty || !newPartyName.trim()">
+                <span *ngIf="creatingParty" class="material-symbols-outlined spinning">progress_activity</span>
+                Add Party
+              </button>
+              <button class="btn-ghost-sm" (click)="addPartyOpen = false">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected chip -->
+        <div class="selected-chip" *ngIf="selectedPartyId">
+          <div class="selected-chip__avatar">
+            <span class="material-symbols-outlined">storefront</span>
+          </div>
+          <span class="selected-chip__name">{{ selectedPartyName }}</span>
+          <button class="selected-chip__clear" (click)="clearParty()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-card">
+        <div class="form-card__header">
+          <span class="material-symbols-outlined form-card__icon">category</span>
+          <h2 class="form-card__title">Category</h2>
+        </div>
+        <div class="category-grid">
+          <button
+            *ngFor="let cat of categoryOptions"
+            class="category-card"
+            [class.category-card--active]="selectedCategory === cat.value && !isCustomCategory"
+            (click)="selectedCategory = cat.value; isCustomCategory = false"
+          >
+            <span class="material-symbols-outlined category-card__icon">{{ cat.icon }}</span>
+            <span class="category-card__label">{{ cat.label }}</span>
+          </button>
+          <button
+            class="category-card"
+            [class.category-card--active]="isCustomCategory"
+            (click)="isCustomCategory = true; selectedCategory = ''"
+          >
+            <span class="material-symbols-outlined category-card__icon">more_horiz</span>
+            <span class="category-card__label">Custom</span>
+          </button>
+        </div>
+        
+        <div class="field-group" *ngIf="isCustomCategory" style="margin-top: 16px;">
+          <label class="field-label">Custom Category Name</label>
+          <input
+            type="text"
+            class="field-input"
+            placeholder="e.g. Ironing, Dyeing, Dry Cleaning"
+            [(ngModel)]="customCategory"
+          />
+        </div>
+      </div>
+
+      <!-- Pricing & Remarks -->
+      <div class="form-card">
+        <div class="form-card__header">
+          <span class="material-symbols-outlined form-card__icon">payments</span>
+          <h2 class="form-card__title">Pricing & Remarks</h2>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Per Piece Price (₹)</label>
+          <input
+            type="number"
+            class="field-input"
+            placeholder="e.g. 50"
+            [(ngModel)]="perPiecePrice"
+            min="0"
+          />
+        </div>
+
+        <div class="pricing-summary" *ngIf="cartProducts.length > 0 && perPiecePrice">
+          <div class="pricing-row">
+            <span class="pricing-row__label">Total Quantity</span>
+            <span class="pricing-row__value">{{ totalQuantity }}</span>
+          </div>
+          <div class="pricing-row pricing-row--total">
+            <span class="pricing-row__label">Total Price</span>
+            <span class="pricing-row__value pricing-row__value--primary">₹{{ totalPrice | number }}</span>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top: 16px;">
+          <label class="field-label">Remarks (optional)</label>
+          <textarea
+            class="field-textarea"
+            placeholder="Any additional notes…"
+            [(ngModel)]="remarks"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="form-col">
+
+      <!-- Product selection -->
+      <div class="form-card form-card--products">
+        <div class="form-card__header">
+          <span class="material-symbols-outlined form-card__icon">checkroom</span>
+          <h2 class="form-card__title">Products</h2>
+          <span class="form-card__count" *ngIf="cartProducts.length > 0">{{ cartProducts.length }} selected</span>
+          <button class="btn-primary-sm" style="margin-left:auto;" (click)="openProductPicker()">
+            <span class="material-symbols-outlined">add</span>
+            Add Products
+          </button>
+        </div>
+
+        <div class="empty-products" *ngIf="cartProducts.length === 0">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <p>No products selected yet</p>
+          <button class="btn-primary" (click)="openProductPicker()">
+            <span class="material-symbols-outlined">add</span>
+            Select Products
+          </button>
+        </div>
+
+        <div class="product-grid" *ngIf="cartProducts.length > 0">
+          <div class="product-row" *ngFor="let cp of cartProducts; let i = index">
+            <div class="product-row__thumb">
+              <img *ngIf="cp.product.imageUrl" [src]="cp.product.imageUrl" [alt]="cp.product.name" />
+              <span *ngIf="!cp.product.imageUrl" class="material-symbols-outlined">image</span>
+            </div>
+            <div class="product-row__info">
+              <span class="product-row__name">{{ cp.product.name || cp.product.serialNumber }}</span>
+              <span class="product-row__code">{{ cp.product.serialNumber }}</span>
+            </div>
+            <div class="product-row__qty">
+              <label class="qty-label">Qty</label>
+              <input
+                type="number"
+                class="qty-input"
+                [(ngModel)]="cp.quantity"
+                min="1"
+              />
+            </div>
+            <button class="product-row__remove" (click)="removeFromCart(cp.product._id)">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button class="btn-ghost" (click)="cancel()" [disabled]="saving">Cancel</button>
+        <button class="btn-primary btn-submit" (click)="submit()" [disabled]="saving">
+          <span *ngIf="saving" class="material-symbols-outlined spinning">progress_activity</span>
+          <span *ngIf="!saving" class="material-symbols-outlined">save</span>
+          Create Expense
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Product Picker Modal -->
+@if (productPickerOpen) {
+  <div class="modal-backdrop" (click)="closeProductPicker()">
+    <div class="picker-modal" (click)="$event.stopPropagation()">
+      <div class="picker-modal__header">
+        <h3 class="picker-modal__title">Select Products</h3>
+        <button class="modal-close-btn" (click)="closeProductPicker()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="picker-modal__search">
+        <span class="material-symbols-outlined search-icon-sm">search</span>
+        <input
+          type="text"
+          class="picker-search-input"
+          placeholder="Search by name or code…"
+          [(ngModel)]="productSearch"
+          (input)="searchProducts(true)"
+          autofocus
+        />
+      </div>
+
+      <div class="picker-modal__body" (scroll)="onProductScroll($event)">
+        <div class="picker-loading" *ngIf="productSearchLoading">
+          <span class="material-symbols-outlined spinning">progress_activity</span>
+          Loading…
+        </div>
+        <div class="picker-grid" *ngIf="!productSearchLoading">
+          <div
+            class="picker-product"
+            *ngFor="let p of productSearchResults"
+            [class.picker-product--selected]="isInCart(p)"
+            (click)="toggleProduct(p)"
+          >
+            <div class="picker-product__thumb">
+              <img *ngIf="p.imageUrl" [src]="p.imageUrl" [alt]="p.name" />
+              <span *ngIf="!p.imageUrl" class="material-symbols-outlined">image</span>
+            </div>
+            <div class="picker-product__info">
+              <span class="picker-product__name">{{ p.name || 'Unnamed' }}</span>
+              <span class="picker-product__code">{{ p.serialNumber }}</span>
+              <span class="picker-product__cat">{{ p.category }}</span>
+            </div>
+            <div class="picker-product__check" *ngIf="isInCart(p)">
+              <span class="material-symbols-outlined">check_circle</span>
+            </div>
+          </div>
+          <div class="picker-empty" *ngIf="productSearchResults.length === 0">
+            No products found.
+          </div>
+        </div>
+        <!-- Infinite Scroll Loading Indicator -->
+        <div class="picker-loading" *ngIf="productSearchLoadingMore" style="padding: 12px; margin-top: 10px;">
+          <span class="material-symbols-outlined spinning" style="font-size: 20px;">progress_activity</span>
+          <span style="font-size: 13px;">Loading more…</span>
+        </div>
+      </div>
+
+      <div class="picker-modal__footer">
+        <span>{{ cartProducts.length }} product(s) selected</span>
+        <button class="btn-primary" (click)="closeProductPicker()">Done</button>
+      </div>
+    </div>
+  </div>
+}

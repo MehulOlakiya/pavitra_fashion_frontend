@@ -7,23 +7,35 @@ export type BookingStatus =
   | 'booked'
   | 'rented'
   | 'pending_return'
+  | 'partial_return'
   | 'returned'
   | 'cancelled';
 
 export type BeltType = 'HB' | 'FB';
 
+export interface BookingItem {
+  serialNumber: string;
+  product: string | any;
+  quantity: number;
+  beltType?: BeltType;
+  freshPiece?: boolean;
+  freshPieceCost?: number;
+  rentPrice?: number;
+  isReturned?: boolean;
+}
+
 export interface CreateBookingPayload {
   productSerialNumber?: string; // Kept for backwards compatibility
-  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number; rentPrice?: number; }[];
+  items: BookingItem[];
   customer: string; // Customer ObjectId
   advancePayment?: number;
   remainingPayment?: number;
   totalPayment?: number;
   totalDiscount?: number;
   bookingDate: string; // ISO date string
-  pickupTime?: 'Morning' | 'Evening';
+  pickupTime?: 'Morning' | 'Afternoon' | 'Evening' | 'Night';
   returnDate: string; // ISO date string
-  returnTime?: 'Morning' | 'Evening';
+  returnTime?: 'Morning' | 'Afternoon' | 'Evening' | 'Night';
   status?: BookingStatus;
   beltType?: BeltType;
   note?: string;
@@ -43,16 +55,16 @@ export interface Booking {
   _id: string;
   orderId?: string;
   productSerialNumber?: string;
-  items: { serialNumber: string; quantity: number; beltType?: BeltType; freshPiece?: boolean; freshPieceCost?: number; rentPrice?: number; }[];
+  items: BookingItem[];
   customer: BookingCustomer;
   advancePayment?: number;
   remainingPayment?: number;
   totalPayment?: number;
   totalDiscount?: number;
   bookingDate: string;
-  pickupTime?: 'Morning' | 'Evening';
+  pickupTime?: 'Morning' | 'Afternoon' | 'Evening' | 'Night';
   returnDate: string;
-  returnTime?: 'Morning' | 'Evening';
+  returnTime?: 'Morning' | 'Afternoon' | 'Evening' | 'Night';
   status: BookingStatus;
   beltType?: BeltType;
   note?: string;

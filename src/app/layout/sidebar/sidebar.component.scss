@@ -51,10 +51,14 @@
 
 .brand-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1.4;
-  color: var(--primary);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--primary), #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
 .brand-sub {
@@ -71,6 +75,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.brand-info-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  
+  &:hover .brand-logo {
+    transform: scale(1.05) rotate(-2deg);
+  }
+}
+
+.brand-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .sidebar-close-btn {

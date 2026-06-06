@@ -15,6 +15,14 @@ import {
 } from '@angular/router';
 import { UserStateService } from '../../core/user-state.service';
 
+export interface NavItem {
+  icon: string;
+  label: string;
+  route: string;
+  comingSoon: boolean;
+  exact?: boolean;
+}
+
 @Component({
   selector: 'app-sidebar',
   imports: [RouterLink, RouterLinkActive, TitleCasePipe],
@@ -37,7 +45,7 @@ export class SidebarComponent {
     this.closed.emit();
   }
 
-  navItems = [
+  navItems: NavItem[] = [
     {
       icon: 'dashboard',
       label: 'Dashboard',
@@ -54,6 +62,13 @@ export class SidebarComponent {
       icon: 'inventory_2',
       label: 'Inventory',
       route: '/inventory',
+      comingSoon: false,
+      exact: true,
+    },
+    {
+      icon: 'check_circle',
+      label: 'Product Available',
+      route: '/inventory/available',
       comingSoon: false,
     },
     {
@@ -73,6 +88,12 @@ export class SidebarComponent {
       label: 'Payments',
       route: '/payments',
       comingSoon: true,
+    },
+    {
+      icon: 'receipt_long',
+      label: 'Expenses',
+      route: '/expenses',
+      comingSoon: false,
     },
     {
       icon: 'bar_chart',

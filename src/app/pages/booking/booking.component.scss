@@ -93,7 +93,7 @@
 // ── Top Grid (Dates & Customer) ───────────────────────────
 .compact-top-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 12px;
   align-items: end;
 }
@@ -120,6 +120,24 @@
 ::ng-deep app-datepicker .dp-trigger {
   height: 40px !important;
   min-height: 40px !important;
+}
+
+::ng-deep .field-compact app-custom-select .cs-trigger {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  background: var(--surface-container-lowest, #fff) !important;
+  border: 1px solid rgba(191, 199, 212, 0.6) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+::ng-deep .field-compact app-custom-select .cs-trigger__chevron {
+  font-size: 18px !important;
 }
 
 .compact-input,
@@ -728,10 +746,10 @@
   color: var(--on-surface-variant);
   &:hover {
     background: #f1f5f9;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
 }
 
@@ -746,10 +764,10 @@
   cursor: pointer;
   &:hover:not(:disabled) {
     background: #01518c;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
   &:disabled {
     opacity: 0.6;
@@ -764,5 +782,29 @@
 @keyframes spin {
   100% {
     transform: rotate(360deg);
+  }
+}
+
+.belt-chips {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+
+  .belt-chip {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid rgba(191, 199, 212, 0.6);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--on-surface-variant, #475569);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &--active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
   }
 }

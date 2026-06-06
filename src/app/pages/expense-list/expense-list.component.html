@@ -1,0 +1,295 @@
+<div class="page">
+  <!-- Filters -->
+  <div class="filters-wrap">
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by expense no..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="applyFilters()"
+        />
+      </div>
+
+      <div class="filters-actions">
+        <app-custom-select
+          [options]="partyOptions"
+          [(ngModel)]="selectedParty"
+          (ngModelChange)="applyFilters()"
+          placeholder="All Parties"
+        ></app-custom-select>
+
+        <app-custom-select
+          [options]="categoryFilterOptions"
+          [(ngModel)]="selectedCategory"
+          (ngModelChange)="applyFilters()"
+          placeholder="All Categories"
+        ></app-custom-select>
+
+        <app-custom-select
+          [options]="statusFilterOptions"
+          [(ngModel)]="selectedStatus"
+          (ngModelChange)="applyFilters()"
+          placeholder="All Statuses"
+        ></app-custom-select>
+
+        <button
+          class="btn-outline"
+          [class.btn-outline--active]="dateRangeActive"
+          (click)="toggleDateRange($event)"
+        >
+          <span class="material-symbols-outlined btn-icon">calendar_today</span>
+          {{ dateRangeLabel }}
+          <span
+            *ngIf="dateRangeActive"
+            class="material-symbols-outlined btn-clear-icon"
+            (click)="clearDateRange(); $event.stopPropagation()"
+            >close</span
+          >
+        </button>
+
+        <a routerLink="/expenses/new" class="btn-primary">
+          <span class="material-symbols-outlined">add</span>
+          New Expense
+        </a>
+      </div>
+    </div>
+
+    <!-- Date Range Dropdown -->
+    <div *ngIf="dateRangeOpen" class="date-range-dropdown" (click)="$event.stopPropagation()">
+      <app-date-range-picker
+        [fromDate]="fromDateObj"
+        [toDate]="toDateObj"
+        [allowFuture]="true"
+        (apply)="applyDateRange($event)"
+        (clear)="clearDateRange()"
+      />
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Expense No</th>
+            <th>Date</th>
+            <th>Party</th>
+            <th>Category</th>
+            <th>Products</th>
+            <th>Qty</th>
+            <th>Per Piece</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            <tr>
+              <td colspan="10" class="cell-state">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined spinning"
+                    >progress_activity</span
+                  >
+                  <p class="empty-state__title">Loading expenses…</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (expenses.length === 0) {
+            <tr>
+              <td colspan="10" class="cell-state">
+                <div class="empty-state">
+                  <div class="empty-state__icon-wrap">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                  </div>
+                  <p class="empty-state__title">No expenses found</p>
+                  <p class="empty-state__sub">
+                    Create your first expense to start tracking.
+                  </p>
+                  <a
+                    routerLink="/expenses/new"
+                    class="btn-primary"
+                    style="margin-top: 8px"
+                  >
+                    <span class="material-symbols-outlined">add</span>New
+                    Expense
+                  </a>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (e of expenses; track e._id) {
+              <tr class="table-row">
+                <td>
+                  <a [routerLink]="['/expenses', e._id]" class="expense-no expense-link">{{ e.expenseNo }}</a>
+                </td>
+                <td>
+                  <span class="cell-date">{{ formatDate(e.createdAt) }}</span>
+                </td>
+                <td>
+                  <span class="cell-party">{{ e.party.name || "—" }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="categoryClass(e.category)">
+                    {{ categoryLabel(e.category) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="cell-count"
+                    >{{ e.items.length || 0 }} items</span
+                  >
+                </td>
+                <td class="cell-num">{{ e.totalQuantity }}</td>
+                <td class="cell-num">₹{{ e.perPiecePrice | number }}</td>
+                <td class="cell-amount">₹{{ e.totalPrice | number }}</td>
+                <td>
+                  <span class="badge" [ngClass]="statusClass(e.status)">
+                    {{ statusLabel(e.status, e.items) }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  <div class="action-menu-wrap">
+                    <button class="action-btn" (click)="toggleMenu(e._id, $event)">
+                      <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                    
+                    <div class="action-menu" *ngIf="openMenuId === e._id">
+                      <button class="action-menu__item" (click)="viewExpense(e._id); openMenuId = null">
+                        <span class="material-symbols-outlined">visibility</span> View Detail
+                      </button>
+                      <button class="action-menu__item" (click)="openStatusModal(e); openMenuId = null" *ngIf="e.status !== 'returned'">
+                        <span class="material-symbols-outlined">sync_alt</span> Update Status
+                      </button>
+                      <div class="action-menu__divider" *ngIf="e.status !== 'returned'"></div>
+                      <button class="action-menu__item action-menu__item--danger" (click)="confirmDelete(e._id); openMenuId = null">
+                        <span class="material-symbols-outlined">delete</span> Delete
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (total > 0 && !loading) {
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [total]="total"
+        [limit]="limit"
+        (pageChange)="goToPage($event)"
+      />
+    }
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+@if (deleteConfirmId) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-modal__icon">
+        <span class="material-symbols-outlined">warning</span>
+      </div>
+      <h3 class="confirm-modal__title">Delete Expense?</h3>
+      <p class="confirm-modal__body">
+        This action cannot be undone. The expense will be permanently removed.
+      </p>
+      <div class="confirm-modal__actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="btn-danger" (click)="doDelete()">
+          <span *ngIf="deletingId" class="material-symbols-outlined spinning"
+            >progress_activity</span
+          >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Update Status Modal -->
+@if (statusModalExpenseId) {
+  <div class="modal-backdrop" (click)="closeStatusModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Update Status</h3>
+        <button class="modal__close" (click)="closeStatusModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal__body">
+        <label class="modal-label">Select New Status</label>
+        <div class="status-options">
+          <button
+            *ngFor="let s of getUpdateStatusOptions(statusModalCurrentStatus)"
+            class="status-option"
+            [class.status-option--active]="statusModalValue === s.value"
+            (click)="statusModalValue = s.value"
+          >
+            <span class="material-symbols-outlined">
+              @if (s.value.includes('returned')) { check_circle }
+              @else if (s.value.includes('progress')) { autorenew }
+              @else { local_shipping }
+            </span>
+            {{ s.label }}
+          </button>
+        </div>
+
+        @if (statusModalValue === 'returned' && statusModalRenderItems.length > 0) {
+          <div class="product-checklist-wrap" style="margin-top: 16px;">
+            <label class="modal-label" style="margin-bottom: 8px;">Select Returned Products</label>
+            <div class="product-checklist">
+              <label *ngFor="let item of statusModalRenderItems" class="checklist-item">
+                <input 
+                  type="checkbox" 
+                  class="checklist-item__checkbox"
+                  [checked]="statusModalSelectedProductIds.has(item.product._id)" 
+                  (change)="toggleStatusProduct(item.product._id)"
+                >
+                <div class="checklist-item__info">
+                  <div class="checklist-item__img-wrap">
+                    <img *ngIf="item.product.imageUrl" [src]="item.product.imageUrl">
+                    <span *ngIf="!item.product.imageUrl" class="material-symbols-outlined">image</span>
+                  </div>
+                  <div class="checklist-item__text">
+                    <span class="checklist-item__name">{{ item.product.name || item.product.serialNumber }}</span>
+                    <span class="checklist-item__code">{{ item.product.serialNumber }}</span>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="modal__footer">
+        <button
+          class="btn-cancel"
+          (click)="closeStatusModal()"
+          [disabled]="statusUpdating"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn-primary"
+          (click)="saveStatus()"
+          [disabled]="statusUpdating || !statusModalValue"
+        >
+          <span
+            *ngIf="statusUpdating"
+            class="material-symbols-outlined spinning"
+            >progress_activity</span
+          >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+}

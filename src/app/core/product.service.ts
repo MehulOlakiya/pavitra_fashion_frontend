@@ -14,6 +14,9 @@ export interface Product {
   rentPrice: number;
   category: string;
   isActive: boolean;
+  rentCount?: number;
+  totalRevenue?: number;
+  profit?: number;
 }
 
 export interface PaginatedProducts {
@@ -33,6 +36,7 @@ export interface ProductAnalytics {
 
 export interface ApiBooking {
   _id: string;
+  orderId?: string;
   productSerialNumber: string;
   customer: {
     _id: string;
@@ -50,6 +54,7 @@ export interface ApiBooking {
 export interface InventoryDetail {
   product: Product;
   futureBookings: ApiBooking[];
+  activeExpense?: any; // The currently active expense the product is tied to, if any
 }
 
 @Injectable({ providedIn: 'root' })
@@ -138,6 +143,16 @@ export class ProductService {
     return this.http.post<{ url: string }>(
       `${environment.apiUrl}/upload/image`,
       formData,
+    );
+  }
+
+  /** Bulk create multiple products in one request. */
+  createBulk(
+    products: Partial<Product>[],
+  ): Observable<{ inserted: number; skipped: number; errors: { index: number; serialNumber: string; message: string }[] }> {
+    return this.http.post<{ inserted: number; skipped: number; errors: { index: number; serialNumber: string; message: string }[] }>(
+      `${this.base}/bulk`,
+      products,
     );
   }
 

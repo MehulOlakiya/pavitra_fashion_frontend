@@ -43,18 +43,12 @@
         <!-- Status Filter -->
         <div class="filter-group">
           <label class="filter-label">Status</label>
-          <div class="select-wrap">
-            <span class="material-symbols-outlined select-icon">filter_list</span>
-            <select
-              class="filter-select"
+          <div class="select-wrap" style="border: none; padding: 0;">
+            <app-custom-select
               [(ngModel)]="bookingFilters.status"
-              id="booking-status-filter"
-            >
-              @for (s of bookingStatuses; track s.value) {
-                <option [value]="s.value">{{ s.label }}</option>
-              }
-            </select>
-            <span class="material-symbols-outlined select-chevron">expand_more</span>
+              [options]="bookingStatuses"
+              style="width: 100%"
+            />
           </div>
         </div>
 
@@ -209,10 +203,10 @@
               @for (b of bookings; track b._id; let i = $index) {
                 <tr class="table-row">
                   <td class="cell-sr">{{ i + 1 }}</td>
-                  <td class="cell-order-id">{{ b.orderId ?? '—' }}</td>
-                  <td class="cell-customer">{{ b.customer?.name ?? '—' }}</td>
-                  <td class="cell-mobile">{{ b.customer?.mobileNumber ?? '—' }}</td>
-                  <td>{{ b.customer?.village ?? '—' }}</td>
+                  <td class="cell-order-id">{{ b.orderId || '—' }}</td>
+                  <td class="cell-customer">{{ b.customer.name || '—' }}</td>
+                  <td class="cell-mobile">{{ b.customer.mobileNumber || '—' }}</td>
+                  <td>{{ b.customer.village || '—' }}</td>
                   <td class="cell-products">{{ productSummary(b) }}</td>
                   <td class="cell-date">{{ formatDate(b.bookingDate) }}</td>
                   <td class="cell-date">{{ formatDate(b.returnDate) }}</td>
@@ -343,10 +337,10 @@
               @for (c of customers; track c._id; let i = $index) {
                 <tr class="table-row">
                   <td class="cell-sr">{{ i + 1 }}</td>
-                  <td class="cell-order-id">{{ c.customerId ?? '—' }}</td>
+                  <td class="cell-order-id">{{ c.customerId || '—' }}</td>
                   <td class="cell-customer">{{ c.name }}</td>
                   <td class="cell-mobile">{{ c.mobileNumber }}</td>
-                  <td>{{ c.village ?? '—' }}</td>
+                  <td>{{ c.village || '—' }}</td>
                   <td class="cell-center">
                     <span class="booking-count-chip">{{ c.totalBooking ?? 0 }}</span>
                   </td>

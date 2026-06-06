@@ -5,10 +5,12 @@ import { UserService, UserProfile } from '../../core/user.service';
 import { UploadService } from '../../core/upload.service';
 import { UserStateService } from '../../core/user-state.service';
 
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CustomSelectComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
@@ -29,9 +31,12 @@ export class SettingsComponent implements OnInit {
     pickupTime: { hour: '09', minute: '00', ampm: 'AM' }
   };
 
-  hoursOptions = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
-  minutesOptions = ['00', '15', '30', '45'];
-  ampmOptions = ['AM', 'PM'];
+  hoursOptions = Array.from({ length: 12 }, (_, i) => {
+    const val = (i + 1).toString().padStart(2, '0');
+    return { value: val, label: val };
+  });
+  minutesOptions = ['00', '15', '30', '45'].map(m => ({ value: m, label: m }));
+  ampmOptions = ['AM', 'PM'].map(a => ({ value: a, label: a }));
 
   imageLoadError = false;
 

@@ -54,4 +54,5 @@ export interface DashboardStats {
   monthlyRevenue: StatItem;
   returnedThisMonth: StatItem;
   todaysReturns: StatItem;
+  newWidgetStats?: any;
 }

@@ -2,9 +2,15 @@
   <!-- Brand -->
   <div class="sidebar-brand">
     <div class="brand-header">
-      <div>
-        <h1 class="brand-title">Pavitra Fashion</h1>
-        <p class="brand-sub">Premium Management</p>
+      <div class="brand-info-wrapper">
+        <img
+          src="Logo-removebg-preview.png"
+          alt="Pavitra Fashion"
+          class="brand-logo"
+        />
+        <div>
+          <h1 class="brand-title">Pavitra Fashion</h1>
+        </div>
       </div>
       <button
         class="sidebar-close-btn"
@@ -22,6 +28,7 @@
       <a
         [routerLink]="item.route"
         routerLinkActive="nav-item--active"
+        [routerLinkActiveOptions]="{ exact: item.exact || false }"
         class="nav-item"
       >
         <span class="material-symbols-outlined nav-icon">{{ item.icon }}</span>

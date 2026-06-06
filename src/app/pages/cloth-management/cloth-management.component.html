@@ -1,6 +1,4 @@
 <div class="page">
-
-
   <!-- Filters Bar -->
   <div class="filters-bar">
     <div class="search-wrap">
@@ -60,6 +58,10 @@
         <span class="material-symbols-outlined btn-icon">upload</span>
         Import
       </button>
+      <button class="btn-outline" routerLink="/inventory/bulk-add">
+        <span class="material-symbols-outlined btn-icon">table_rows</span>
+        Bulk Product
+      </button>
       <button class="btn-primary" (click)="addProduct()">
         <span class="material-symbols-outlined btn-icon">add</span>
         Add Product
@@ -77,6 +79,11 @@
             <th>Item</th>
             <th>Category</th>
             <th>Rental Price</th>
+            <th>Total Revenue</th>
+            <th>Profit</th>
+            <th>Rent Count</th>
+            <th>Purchase Price</th>
+            <th>Selling Price</th>
             <th>Status</th>
             <th class="col-actions">Actions</th>
           </tr>
@@ -84,7 +91,7 @@
         <tbody>
           @if (loading) {
             <tr>
-              <td colspan="6" class="cell-state">
+              <td colspan="11" class="cell-state">
                 <div class="empty-state">
                   <span class="material-symbols-outlined spinning"
                     >progress_activity</span
@@ -95,7 +102,7 @@
             </tr>
           } @else if (errorMessage) {
             <tr>
-              <td colspan="6" class="cell-state">
+              <td colspan="11" class="cell-state">
                 <div class="empty-state">
                   <span class="material-symbols-outlined">error_outline</span>
                   <p class="empty-state__title">{{ errorMessage }}</p>
@@ -104,7 +111,7 @@
             </tr>
           } @else if (displayedProducts.length === 0) {
             <tr>
-              <td colspan="6" class="cell-state">
+              <td colspan="11" class="cell-state">
                 <div class="empty-state">
                   <div class="empty-state__icon-wrap">
                     <span class="material-symbols-outlined">checkroom</span>
@@ -127,7 +134,12 @@
               </td>
             </tr>
           } @else {
-            @for (product of displayedProducts; track product._id; let i = $index; let count = $count) {
+            @for (
+              product of displayedProducts;
+              track product._id;
+              let i = $index;
+              let count = $count
+            ) {
               <tr
                 class="table-row table-row--clickable"
                 (click)="onViewInsights(product)"
@@ -167,8 +179,49 @@
                 <!-- Rental Price -->
                 <td>
                   <span class="price-text">
-                    ₹{{ product.rentPrice | number
-                    }}<span class="price-unit"> / day</span>
+                    {{ product.rentPrice | number }}
+                  </span>
+                </td>
+
+                <!-- Total Revenue -->
+                <td>
+                  <span class="price-text">
+                    {{ product.totalRevenue || 0 | number }}
+                  </span>
+                </td>
+
+                <!-- Profit -->
+                <td>
+                  <span
+                    class="price-text"
+                    [style.color]="
+                      (product.profit || 0) >= 0
+                        ? 'var(--primary)'
+                        : 'var(--error)'
+                    "
+                  >
+                    {{ product.profit || 0 | number }}
+                  </span>
+                </td>
+
+                <!-- Rent Count -->
+                <td>
+                  <span class="cell-text">
+                    {{ product.rentCount || 0 }}
+                  </span>
+                </td>
+
+                <!-- Purchase Price -->
+                <td>
+                  <span class="price-text">
+                    {{ product.purchasePrice || 0 | number }}
+                  </span>
+                </td>
+
+                <!-- Selling Price -->
+                <td>
+                  <span class="price-text">
+                    {{ product.sellingPrice || 0 | number }}
                   </span>
                 </td>
 
@@ -194,7 +247,12 @@
                     </button>
 
                     @if (openMenuId === product._id) {
-                      <div class="action-dropdown" [class.action-dropdown--up]="count > 2 && i >= count - 2">
+                      <div
+                        class="action-dropdown"
+                        [class.action-dropdown--up]="
+                          count > 2 && i >= count - 2
+                        "
+                      >
                         <button
                           class="action-dropdown__item"
                           (click)="onEdit(product); closeMenu()"

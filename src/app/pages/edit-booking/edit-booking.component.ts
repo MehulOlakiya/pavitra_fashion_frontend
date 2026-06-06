@@ -30,10 +30,17 @@ export class EditBookingComponent implements OnInit {
   readonly today = new Date();
 
   bookingDate: Date | null = null;
-  pickupTime: 'Morning' | 'Evening' = 'Morning';
+  pickupTime: 'Morning' | 'Afternoon' | 'Evening' | 'Night' | null = 'Morning';
   returnDate: Date | null = null;
-  returnTime: 'Morning' | 'Evening' = 'Morning';
+  returnTime: 'Morning' | 'Afternoon' | 'Evening' | 'Night' | null = 'Morning';
   items: { serialNumber: string; quantity: number }[] = [];
+
+  timeOptions = [
+    { value: 'Morning', label: 'Morning' },
+    { value: 'Afternoon', label: 'Afternoon' },
+    { value: 'Evening', label: 'Evening' },
+    { value: 'Night', label: 'Night' },
+  ];
 
   form = {
     productSerialNumber: '',
@@ -130,9 +137,9 @@ export class EditBookingComponent implements OnInit {
         advancePayment: this.form.advancePayment!,
         remainingPayment: this.form.remainingPayment!,
         bookingDate: this.toISTDate(this.bookingDate),
-        pickupTime: this.pickupTime,
+        pickupTime: this.pickupTime ?? undefined,
         returnDate: this.toISTDate(this.returnDate),
-        returnTime: this.returnTime,
+        returnTime: this.returnTime ?? undefined,
         status: this.form.status,
       })
       .subscribe({

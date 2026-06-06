@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass, DecimalPipe } from '@angular/common';
@@ -22,6 +22,8 @@ import {
 } from '../../core/booking.service';
 import { Product, ProductService } from '../../core/product.service';
 import { WhatsappService, WhatsAppStatus } from '../../core/whatsapp.service';
+import { AuthService } from '../../core/auth.service';
+import { UserStateService } from '../../core/user-state.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
@@ -43,6 +45,9 @@ import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.direc
   styleUrl: './booking-list.component.scss',
 })
 export class BookingListComponent implements OnInit, OnDestroy {
+  private authService = inject(AuthService);
+  private userState = inject(UserStateService);
+
   // ── WhatsApp bill ───────────────────────────────────────────────
   waModalOpen = false;
   waStatus: WhatsAppStatus = { state: 'idle', qr: null };
@@ -88,6 +93,63 @@ export class BookingListComponent implements OnInit, OnDestroy {
   fromDate: Date | null = null;
   toDate: Date | null = null;
 
+  // Password Modal
+  passwordModalOpen = false;
+  masterPassword = '';
+  verifyingPassword = false;
+  passwordError = '';
+  private passwordSuccessCallback: (() => void) | null = null;
+  private passwordCancelCallback: (() => void) | null = null;
+
+  promptMasterPassword(onSuccess: () => void, onCancel?: () => void): void {
+    this.masterPassword = '';
+    this.passwordError = '';
+    this.passwordSuccessCallback = onSuccess;
+    this.passwordCancelCallback = onCancel || null;
+    this.passwordModalOpen = true;
+  }
+
+  closePasswordModal(): void {
+    this.passwordModalOpen = false;
+    if (this.passwordCancelCallback) {
+      this.passwordCancelCallback();
+    }
+    this.passwordSuccessCallback = null;
+    this.passwordCancelCallback = null;
+  }
+
+  verifyPasswordAndProceed(): void {
+    if (!this.masterPassword) {
+      this.passwordError = 'Password is required';
+      return;
+    }
+    
+    const user = this.userState.user();
+    if (!user || !user.email) {
+      this.passwordError = 'Could not determine user email.';
+      return;
+    }
+
+    this.verifyingPassword = true;
+    this.passwordError = '';
+    
+    this.authService.login({ email: user.email, password: this.masterPassword }).subscribe({
+      next: () => {
+        this.verifyingPassword = false;
+        this.passwordModalOpen = false;
+        if (this.passwordSuccessCallback) {
+          this.passwordSuccessCallback();
+        }
+        this.passwordSuccessCallback = null;
+        this.passwordCancelCallback = null;
+      },
+      error: () => {
+        this.verifyingPassword = false;
+        this.passwordError = 'Incorrect password. Please try again.';
+      }
+    });
+  }
+
   get dateRangeActive(): boolean {
     return !!(this.fromDate || this.toDate);
   }
@@ -106,18 +168,21 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   // Quick-edit modal
-  quickEditView: 'menu' | 'status' | 'settlement' | 'delete' = 'menu';
+  quickEditView: 'menu' | 'status' | 'settlement' | 'return_settlement' | 'delete' = 'menu';
   editingBooking: Booking | null = null;
   editForm = {
     status: 'booked' as BookingStatus,
     fullPayment: false,
     amountReceived: null as number | null,
   };
+  statusModalSelectedProductIds: Set<string> = new Set();
+  
   settlementForm = {
     type: 'receive' as 'receive' | 'refund',
     amount: null as number | null,
   };
   saving = false;
+  originalStatusForCancel: string | null = null;
 
   // Detail view modal
   viewingBooking: Booking | null = null;
@@ -130,6 +195,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
+    { value: 'partial_return', label: 'Partial Return' },
     { value: 'cancelled', label: 'Cancelled' },
   ];
 
@@ -138,11 +204,13 @@ export class BookingListComponent implements OnInit, OnDestroy {
     { value: 'rented', label: 'Rented' },
     { value: 'pending_return', label: 'Pending Return' },
     { value: 'returned', label: 'Returned' },
+    { value: 'partial_return', label: 'Partial Return' },
     { value: 'cancelled', label: 'Cancelled' },
   ];
 
   bookings: Booking[] = [];
   private productImageMap = new Map<string, string>();
+  private productNameMap = new Map<string, string>();
   private productRentMap = new Map<string, number>();
 
   // Pagination state
@@ -226,6 +294,14 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.modalItems = [];
   }
 
+  getPendingCount(booking: Booking | null): number {
+    if (!booking) return 0;
+    if (booking.items && booking.items.length > 0) {
+      return booking.items.filter((item: any) => !item.isReturned).length;
+    }
+    return booking.status === 'returned' ? 0 : 1;
+  }
+
   toggleMenu(id: string, event: MouseEvent): void {
     const booking = this.bookings.find((booking) => id === booking._id);
     if (booking?.status === 'cancelled') {
@@ -273,11 +349,73 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.editForm.status = booking.status;
     this.editForm.fullPayment = booking.remainingPayment === 0;
     this.editForm.amountReceived = null;
+    
+    this.statusModalSelectedProductIds = new Set();
+    if (booking.items) {
+      booking.items.forEach(i => {
+        if (i.isReturned) {
+          this.statusModalSelectedProductIds.add(i.serialNumber);
+        }
+      });
+    }
   }
 
-  goToStatus(): void {
-    this.quickEditView = 'status';
+  goToStatus(skipPassword = false): void {
+    const execute = () => {
+      this.quickEditView = 'status';
+      if (this.editForm.status === 'returned' || this.editForm.status === 'partial_return') {
+        if (this.editForm.status === 'returned' && this.statusModalSelectedProductIds.size === 0) {
+           this.getEditingItems().forEach(i => this.statusModalSelectedProductIds.add(i.serialNumber));
+        }
+      }
+    };
+
+    if (skipPassword) {
+      execute();
+    } else {
+      this.promptMasterPassword(execute);
+    }
   }
+
+  goToReturnSettlement(): void {
+    this.quickEditView = 'return_settlement';
+    this.settlementForm = {
+      type: 'receive',
+      amount: null,
+    };
+    if (this.editForm.status === 'returned' && this.statusModalSelectedProductIds.size === 0) {
+      this.getEditingItems().forEach(i => this.statusModalSelectedProductIds.add(i.serialNumber));
+    }
+  }
+
+  toggleStatusProduct(serialNumber: string): void {
+    if (this.statusModalSelectedProductIds.has(serialNumber)) {
+      this.statusModalSelectedProductIds.delete(serialNumber);
+    } else {
+      this.statusModalSelectedProductIds.add(serialNumber);
+    }
+    this.updatePartialReturnStatus();
+  }
+
+  updatePartialReturnStatus(): void {
+    const totalItems = this.getEditingItems().length;
+    if (totalItems === 0) return;
+    
+    if (this.statusModalSelectedProductIds.size === totalItems) {
+      this.editForm.status = 'returned';
+    } else if (this.statusModalSelectedProductIds.size > 0) {
+      this.editForm.status = 'partial_return';
+    }
+  }
+
+  onEditStatusChange(status: string): void {
+    if (status === 'returned') {
+      this.getEditingItems().forEach(i => this.statusModalSelectedProductIds.add(i.serialNumber));
+    } else if (status !== 'partial_return') {
+      this.statusModalSelectedProductIds.clear();
+    }
+  }
+
 
   goToSettlement(): void {
     this.quickEditView = 'settlement';
@@ -295,40 +433,69 @@ export class BookingListComponent implements OnInit, OnDestroy {
     this.quickEditView = 'menu';
   }
 
+  cancelSettlement(): void {
+    if (this.originalStatusForCancel) {
+      this.closeEdit();
+    } else {
+      this.backToMenu();
+    }
+  }
+
   closeEdit(): void {
+    if (this.editingBooking && this.originalStatusForCancel) {
+      this.editingBooking.status = this.originalStatusForCancel as BookingStatus;
+    }
+    this.originalStatusForCancel = null;
+
     this.editingBooking = null;
     this.saving = false;
     this.quickEditView = 'menu';
+    this.bookings = [...this.bookings];
+  }
+
+  getEditingItems(): any[] {
+    if (!this.editingBooking) return [];
+    if (this.editingBooking.items?.length) return this.editingBooking.items;
+    return [{ serialNumber: this.editingBooking.productSerialNumber, quantity: 1, rentPrice: 0 }];
   }
 
   submitSettlement(): void {
     if (!this.editingBooking) return;
-    if (this.settlementForm.amount === null || this.settlementForm.amount <= 0) return;
 
     this.saving = true;
     let newRemaining = this.editingBooking.remainingPayment || 0;
     let newAdvance = this.editingBooking.advancePayment || 0;
 
-    if (this.settlementForm.type === 'receive') {
+    if (this.settlementForm.amount) {
       newRemaining = Math.max(0, newRemaining - this.settlementForm.amount);
-    } else if (this.settlementForm.type === 'refund') {
-      newAdvance = Math.max(0, newAdvance - this.settlementForm.amount);
     }
 
-    const payload = {
+    const payload: any = {
       remainingPayment: newRemaining,
       advancePayment: newAdvance,
+      status: this.editForm.status,
     };
+
+    if (this.quickEditView === 'return_settlement') {
+      payload.status = this.editForm.status;
+      payload.items = this.getEditingItems().map(item => ({
+        product: item.product?._id || item.product,
+        serialNumber: item.serialNumber,
+        quantity: item.quantity,
+        isReturned: this.statusModalSelectedProductIds.has(item.serialNumber)
+      }));
+    }
 
     this.bookingService.update(this.editingBooking._id, payload).subscribe({
       next: (updated) => {
         const idx = this.bookings.findIndex((b) => b._id === updated._id);
         if (idx !== -1) this.bookings[idx] = updated;
-        this.toastService.show('success', 'Settlement Saved', 'Payment information updated successfully.');
+        this.toastService.show('success', 'Changes Saved', 'Information updated successfully.');
+        this.originalStatusForCancel = null;
         this.closeEdit();
       },
       error: () => {
-        this.toastService.show('error', 'Update Failed', 'Could not save settlement.');
+        this.toastService.show('error', 'Update Failed', 'Could not save changes.');
         this.saving = false;
       },
     });
@@ -341,6 +508,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
       next: () => {
         this.bookings = this.bookings.filter((b) => b._id !== this.editingBooking!._id);
         this.toastService.show('success', 'Booking Deleted', 'The booking was successfully deleted.');
+        this.originalStatusForCancel = null;
         this.closeEdit();
         this.total--;
       },
@@ -354,9 +522,19 @@ export class BookingListComponent implements OnInit, OnDestroy {
   saveEdit(): void {
     if (!this.editingBooking) return;
     this.saving = true;
-    const payload: { status: BookingStatus; remainingPayment?: number } = {
+    const payload: { status: BookingStatus; remainingPayment?: number; items?: any[] } = {
       status: this.editForm.status,
     };
+    
+    if (this.editForm.status === 'returned' || this.editForm.status === 'partial_return') {
+      payload.items = this.getEditingItems().map(item => ({
+        product: item.product?._id || item.product,
+        serialNumber: item.serialNumber,
+        quantity: item.quantity,
+        isReturned: this.statusModalSelectedProductIds.has(item.serialNumber)
+      }));
+    }
+    
     if (this.editForm.fullPayment) {
       payload.remainingPayment = 0;
     } else if (
@@ -378,6 +556,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
           'Booking Updated',
           'Changes saved successfully.',
         );
+        this.originalStatusForCancel = null;
         this.closeEdit();
       },
       error: () => {
@@ -509,6 +688,7 @@ export class BookingListComponent implements OnInit, OnDestroy {
           products.forEach((p) => {
             const sn = p.serialNumber.trim().toLowerCase();
             if (p.imageUrl) this.productImageMap.set(sn, p.imageUrl);
+            if (p.name) this.productNameMap.set(sn, p.name);
             this.productRentMap.set(sn, p.rentPrice);
           });
         },
@@ -519,6 +699,13 @@ export class BookingListComponent implements OnInit, OnDestroy {
     if (!serialNumber) return '';
     return (
       this.productImageMap.get(String(serialNumber).trim().toLowerCase()) ?? ''
+    );
+  }
+
+  getProductName(serialNumber: any): string {
+    if (!serialNumber) return '';
+    return (
+      this.productNameMap.get(String(serialNumber).trim().toLowerCase()) ?? String(serialNumber)
     );
   }
 
@@ -583,6 +770,8 @@ export class BookingListComponent implements OnInit, OnDestroy {
         return 'Rented';
       case 'pending_return':
         return 'Pending Return';
+      case 'partial_return':
+        return 'Partial Return';
       case 'returned':
         return 'Returned';
       case 'cancelled':
@@ -605,49 +794,49 @@ export class BookingListComponent implements OnInit, OnDestroy {
   }
 
   getAvailableStatusOptions(status: string): { value: string; label: string }[] {
-    switch (status) {
-      case 'booked':
-        return [
-          { value: 'booked', label: 'Booked' },
-          { value: 'rented', label: 'Rented' },
-          { value: 'returned', label: 'Returned' },
-          { value: 'cancelled', label: 'Cancelled' },
-        ];
-      case 'rented':
-        return [
-          { value: 'rented', label: 'Rented' },
-          { value: 'returned', label: 'Returned' },
-          { value: 'pending_return', label: 'Pending Return' },
-        ];
-      case 'pending_return':
-        return [
-          { value: 'pending_return', label: 'Pending Return' },
-          { value: 'returned', label: 'Returned' },
-        ];
-      case 'returned':
-        return [{ value: 'returned', label: 'Returned' }];
-      case 'cancelled':
-        return [{ value: 'cancelled', label: 'Cancelled' }];
-      default:
-        return [{ value: status, label: this.statusLabel(status) }];
-    }
+    const optionsMap: Record<string, { value: string; label: string }[]> = {
+      'booked': [
+        { value: 'booked', label: 'Booked' },
+        { value: 'rented', label: 'Rented' },
+        { value: 'cancelled', label: 'Cancelled' },
+      ],
+      'rented': [
+        { value: 'rented', label: 'Rented' },
+        { value: 'pending_return', label: 'Pending Return' },
+        { value: 'returned', label: 'Returned' },
+      ],
+      'pending_return': [
+        { value: 'pending_return', label: 'Pending Return' },
+        { value: 'returned', label: 'Returned' },
+      ],
+      'partial_return': [
+        { value: 'partial_return', label: 'Partial Return' },
+        { value: 'returned', label: 'Returned' },
+      ],
+      'returned': [
+        { value: 'returned', label: 'Returned' },
+      ],
+      'cancelled': [
+        { value: 'cancelled', label: 'Cancelled' },
+      ],
+    };
+
+    return optionsMap[status] || [{ value: status, label: this.statusLabel(status) }];
   }
 
   onRowStatusChange(booking: Booking, newStatus: string): void {
     if (booking.status === newStatus) return;
 
-    this.bookingService.update(booking._id, { status: newStatus as BookingStatus }).subscribe({
-      next: (updatedBooking) => {
-        const idx = this.bookings.findIndex((b) => b._id === updatedBooking._id);
-        if (idx !== -1) {
-          this.bookings[idx] = updatedBooking;
-        }
-        this.toastService.show('success', 'Status Updated', `Booking status changed to ${this.statusLabel(newStatus)}`);
-      },
-      error: () => {
-        this.toastService.show('error', 'Update Failed', 'Failed to change booking status.');
-      }
-    });
+    this.originalStatusForCancel = booking.status;
+    booking.status = newStatus as BookingStatus;
+    this.openEdit(booking);
+    this.editForm.status = newStatus as BookingStatus;
+
+    if (newStatus === 'returned' || newStatus === 'partial_return') {
+      this.goToReturnSettlement();
+    } else {
+      this.goToSettlement();
+    }
   }
 
   totalRemaining(booking: Booking): number {

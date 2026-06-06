@@ -1,0 +1,708 @@
+<div class="page-container fade-in">
+  <!-- Page Header -->
+
+  <div class="card">
+    <div class="tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'check'"
+        (click)="setTab('check')"
+      >
+        Check Availability
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'cart'"
+        (click)="setTab('cart')"
+      >
+        Booking History
+      </button>
+    </div>
+    `
+    <!-- Check Availability Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'check'">
+      <div class="form-grid">
+        <!-- Row 1 -->
+        <div class="form-group code-group">
+          <label>SN Number<span class="required">*</span></label>
+          <div class="input-with-icons">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="SN Number"
+              [(ngModel)]="code"
+              (keydown.enter)="checkAvailability()"
+            />
+
+            <button
+              class="icon-btn"
+              title="View History"
+              (click)="openProductHistory()"
+            >
+              <span class="material-symbols-outlined">history</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group qty-group">
+          <label>Qty</label>
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="quantity"
+            min="1"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Delivery<span class="required">*</span></label>
+          <app-datepicker
+            [value]="deliveryDate"
+            (valueChange)="deliveryDate = $event"
+            placeholder="Select delivery date"
+          >
+          </app-datepicker>
+        </div>
+
+        <div class="form-group">
+          <label>Return<span class="required">*</span></label>
+          <app-datepicker
+            [value]="returnDate"
+            (valueChange)="returnDate = $event"
+            placeholder="Select return date"
+            [minDate]="deliveryDate ?? null"
+          >
+          </app-datepicker>
+        </div>
+
+        <div class="form-group btn-group-bottom">
+          <button
+            class="btn btn-primary btn-block"
+            (click)="checkAvailability()"
+            [disabled]="checkLoading"
+          >
+            <span *ngIf="checkLoading" class="spinner"></span>
+            <span *ngIf="!checkLoading">Check Available</span>
+          </button>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="form-group customer-group" style="position: relative">
+          <label>Customer<span class="required">*</span></label>
+          <div
+            class="dropdown-wrapper"
+            style="display: flex; gap: 8px; align-items: flex-start"
+          >
+            <div style="position: relative; flex: 1">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search or enter name..."
+                [(ngModel)]="customerName"
+                (input)="onCustomerNameInput()"
+                autocomplete="off"
+                [disabled]="!!selectedCustomer"
+              />
+              <span
+                *ngIf="customerSearchLoading"
+                class="material-symbols-outlined dropdown-icon spinning"
+                >progress_activity</span
+              >
+              <span
+                *ngIf="!customerSearchLoading && !selectedCustomer"
+                class="material-symbols-outlined dropdown-icon"
+                >search</span
+              >
+
+              <div
+                *ngIf="selectedCustomer"
+                class="customer-selected-chip compact-chip"
+              >
+                <span>{{ selectedCustomer.name }}</span>
+                <button
+                  type="button"
+                  class="customer-chip-clear"
+                  (click)="clearCustomerSelection()"
+                >
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div class="customer-dropdown" *ngIf="customerDropdownVisible">
+                <div class="customer-dropdown__header">
+                  <span>Suggestions</span>
+                  <button type="button" (click)="closeCustomerDropdown()">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+                <div
+                  *ngIf="customerSearchLoading"
+                  class="suggestion-loading"
+                  style="
+                    padding: 12px;
+                    text-align: center;
+                    color: var(--text-secondary);
+                  "
+                >
+                  Searching...
+                </div>
+                <div
+                  class="customer-dropdown__item"
+                  *ngFor="let c of customerSuggestions"
+                  (click)="selectCustomer(c)"
+                >
+                  <div class="customer-dropdown__info">
+                    <span class="customer-dropdown__name">{{ c.name }}</span>
+                    <span class="customer-dropdown__meta">
+                      {{ c.mobileNumber }} • {{ c.village }}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  *ngIf="
+                    !customerSearchLoading &&
+                    customerSuggestions.length === 0 &&
+                    customerName
+                  "
+                  class="suggestion-empty"
+                  style="
+                    padding: 12px;
+                    text-align: center;
+                    color: var(--text-secondary);
+                  "
+                >
+                  No customers found
+                </div>
+              </div>
+            </div>
+            <button
+              class="icon-btn"
+              title="Create Customer"
+              (click)="openAddCustomer()"
+              style="
+                border: 1px solid rgba(191, 199, 212, 0.5);
+                border-radius: 8px;
+                background: var(--surface);
+                height: 44px;
+                padding: 0 12px;
+                transition: border-color 0.2s;
+                color: var(--on-surface-variant);
+              "
+              onmouseover="this.style.borderColor = 'var(--primary-container)'"
+              onmouseout="this.style.borderColor = 'rgba(191, 199, 212, 0.5)'"
+            >
+              <span class="material-symbols-outlined">person_add</span>
+            </button>
+          </div>
+
+          <!-- Background overlay to close dropdown -->
+          <div
+            class="dropdown-backdrop"
+            *ngIf="customerDropdownVisible"
+            (click)="closeCustomerDropdown()"
+          ></div>
+        </div>
+
+        <div class="form-group">
+          <label>Delivery Time</label>
+          <app-custom-select
+            [options]="timeOptions"
+            [(ngModel)]="deliveryTime"
+            placeholder="Select"
+          >
+          </app-custom-select>
+        </div>
+
+        <div class="form-group">
+          <label>Return Time</label>
+          <app-custom-select
+            [options]="timeOptions"
+            [(ngModel)]="returnTime"
+            placeholder="Select"
+          >
+          </app-custom-select>
+        </div>
+
+        <div class="form-group btn-group-bottom">
+          <button class="btn btn-primary btn-block" (click)="quickBill()">
+            Quick Booking
+          </button>
+        </div>
+      </div>
+
+      <!-- Product Details Accordion -->
+      <div class="accordion" [class.open]="productDetailsVisible">
+        <div class="accordion-header" (click)="toggleProductDetails()">
+          <span>Product Details</span>
+          <span class="material-symbols-outlined accordion-icon">
+            {{ productDetailsVisible ? "expand_less" : "expand_more" }}
+          </span>
+        </div>
+        <div class="accordion-content" *ngIf="productDetailsVisible">
+          <div *ngIf="selectedProduct">
+            <div
+              class="status-banner"
+              [class.available]="isAvailable"
+              [class.unavailable]="!isAvailable"
+            >
+              {{ isAvailable ? "Available" : "Not available" }}
+            </div>
+
+            <div class="product-info-grid">
+              <div class="product-photo" *ngIf="selectedProduct.imageUrl">
+                <img [src]="selectedProduct.imageUrl" alt="Product Photo" />
+              </div>
+              <div class="product-details">
+                <p><strong>Name:</strong> {{ selectedProduct.name }}</p>
+                <p><strong>Category:</strong> {{ selectedProduct.category }}</p>
+                <p>
+                  <strong>Rent Price:</strong> ₹{{ selectedProduct.rentPrice }}
+                </p>
+              </div>
+
+              <div
+                class="history-column"
+                style="display: flex; flex-direction: column; gap: 16px"
+              >
+                <div class="product-history" style="padding-top: 0">
+                  <h4 style="margin-top: 0">Upcoming Bookings</h4>
+                  <div
+                    *ngIf="productFutureBookings.length === 0"
+                    class="no-history"
+                  >
+                    No future bookings for this product.
+                  </div>
+                  <ul
+                    class="history-list"
+                    *ngIf="productFutureBookings.length > 0"
+                  >
+                    <li *ngFor="let b of productFutureBookings">
+                      <span class="history-dates"
+                        >{{ formatDate(b.bookingDate) }} -
+                        {{ formatDate(b.returnDate) }}</span
+                      >
+                      <div class="history-customer">
+                        <span class="customer-name">{{
+                          b.customer.name || "Unknown"
+                        }}</span>
+                        <span class="order-id" *ngIf="b.orderId"
+                          >#{{ b.orderId }}</span
+                        >
+                      </div>
+                      <span
+                        class="status-badge"
+                        [attr.data-status]="b.status"
+                        >{{ b.status }}</span
+                      >
+                    </li>
+                  </ul>
+                </div>
+
+                <div
+                  class="product-history"
+                  *ngIf="activeExpense"
+                  style="padding-top: 0"
+                >
+                  <h4 style="margin-top: 0">Active Expense</h4>
+                  <ul class="history-list">
+                    <li>
+                      <span class="history-dates"
+                        >{{ formatDate(activeExpense.createdAt) }} -
+                        Pending</span
+                      >
+                      <div class="history-customer">
+                        <span class="customer-name">{{
+                          activeExpense.party?.name || "Vendor"
+                        }}</span>
+                        <span
+                          class="order-id"
+                          style="text-transform: capitalize"
+                          >{{ activeExpense.expenseNo }}</span
+                        >
+                      </div>
+                      <span
+                        class="status-badge"
+                        style="
+                          background: rgba(220, 38, 38, 0.1);
+                          color: #dc2626;
+                        "
+                        >{{ activeExpense.category?.replace("_", " ") }}</span
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!selectedProduct && !checkLoading" class="empty-state">
+            Enter a product code and check availability to view details.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking History Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'cart'">
+      <div
+        class="form-grid"
+        style="display: block; max-width: 300px; margin-bottom: 24px"
+      >
+        <div class="form-group code-group">
+          <label>SN Number<span class="required">*</span></label>
+          <div class="input-with-icons">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="SN Number"
+              [(ngModel)]="historySearchCode"
+              (keydown.enter)="searchHistoryByCode()"
+            />
+            <button
+              class="icon-btn"
+              title="Search History"
+              (click)="searchHistoryByCode()"
+            >
+              <span class="material-symbols-outlined">search</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card" style="border: none; box-shadow: none">
+        <div class="table-scroll">
+          <table class="bookings-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Booking Date</th>
+                <th>Return Date</th>
+                <th>Total (₹)</th>
+                <th>Remaining (₹)</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="historyLoading">
+                <td colspan="7" class="cell-state">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined spinning"
+                      >progress_activity</span
+                    >
+                    <p class="empty-state__title">Loading history…</p>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!historyLoading && historyBookings.length === 0">
+                <td colspan="7" class="cell-state">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <span class="material-symbols-outlined">history</span>
+                    </div>
+                    <p class="empty-state__title">No history found</p>
+                    <p class="empty-state__sub">
+                      Search for a product or wait for history to load.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+              <ng-container
+                *ngIf="!historyLoading && historyBookings.length > 0"
+              >
+                <tr class="table-row" *ngFor="let b of historyBookings">
+                  <td class="cell-sn">
+                    <span
+                      class="order-id"
+                      style="font-weight: 600; color: var(--primary)"
+                    >
+                      {{
+                        b.orderId ||
+                          "ORD-" +
+                            b._id.substring(b._id.length - 6).toUpperCase()
+                      }}
+                    </span>
+                  </td>
+                  <td>
+                    <p class="customer-name">
+                      {{ b.customer.name || "Unknown" }}
+                    </p>
+                    <p class="customer-phone">
+                      {{ b.customer.mobileNumber || "N/A" }}
+                    </p>
+                  </td>
+                  <td
+                    [class.text-strike]="isCancelled(b.status)"
+                    class="cell-date"
+                  >
+                    {{ formatDate(b.bookingDate) }}
+                  </td>
+                  <td
+                    class="cell-date cell-return"
+                    [class.text-booked]="b.status === 'booked'"
+                    [class.text-rented]="b.status === 'rented'"
+                    [class.text-pending]="b.status === 'pending_return'"
+                    [class.text-strike]="isCancelled(b.status)"
+                  >
+                    {{ formatDate(b.returnDate) }}
+                  </td>
+                  <td class="cell-rent">
+                    <ng-container *ngIf="getTotalPayment(b) > 0; else noTotal">
+                      ₹{{ getTotalPayment(b) }}
+                    </ng-container>
+                    <ng-template #noTotal>—</ng-template>
+                  </td>
+                  <td class="cell-remaining">
+                    <ng-container *ngIf="totalRemaining(b) > 0; else paid">
+                      <span class="remaining-amount">{{
+                        totalRemaining(b)
+                      }}</span>
+                    </ng-container>
+                    <ng-template #paid>
+                      <span class="remaining-paid">Paid</span>
+                    </ng-template>
+                  </td>
+                  <td class="col-status">
+                    <span class="badge" [ngClass]="statusClass(b.status)">
+                      {{ statusLabel(b.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <app-pagination
+          *ngIf="historyTotal > 0 && !historyLoading"
+          [currentPage]="historyCurrentPage"
+          [totalPages]="historyTotalPages"
+          [total]="historyTotal"
+          [limit]="historyLimit"
+          (pageChange)="goToHistoryPage($event)"
+        ></app-pagination>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Customer Modal -->
+  <div
+    class="modal-backdrop"
+    *ngIf="isAddingCustomer"
+    (click)="closeAddCustomer()"
+  >
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">New Customer</h3>
+        <button class="modal__close" (click)="closeAddCustomer()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div
+          class="modal-field"
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+          "
+        >
+          <label
+            class="modal-field__label"
+            style="
+              font-family: &quot;Inter&quot;, sans-serif;
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.08em;
+              color: var(--on-surface-variant);
+              text-transform: uppercase;
+            "
+            >NAME</label
+          >
+          <div
+            class="modal-input-wrap"
+            style="
+              display: flex;
+              align-items: center;
+              border: 1px solid rgba(191, 199, 212, 0.5);
+              border-radius: 8px;
+              overflow: hidden;
+              background: var(--surface);
+            "
+          >
+            <input
+              type="text"
+              class="modal-field__input"
+              placeholder="Enter full name"
+              [(ngModel)]="newCustomerForm.name"
+              name="newCustomerName"
+              style="
+                flex: 1;
+                height: 44px;
+                padding: 0 14px;
+                background: transparent;
+                border: none;
+                font-family: &quot;Inter&quot;, sans-serif;
+                font-size: 15px;
+                color: var(--on-surface);
+                outline: none;
+              "
+            />
+          </div>
+        </div>
+
+        <div
+          class="modal-field"
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+          "
+        >
+          <label
+            class="modal-field__label"
+            style="
+              font-family: &quot;Inter&quot;, sans-serif;
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.08em;
+              color: var(--on-surface-variant);
+              text-transform: uppercase;
+            "
+            >MOBILE NUMBER</label
+          >
+          <div
+            class="modal-input-wrap"
+            style="
+              display: flex;
+              align-items: center;
+              border: 1px solid rgba(191, 199, 212, 0.5);
+              border-radius: 8px;
+              overflow: hidden;
+              background: var(--surface);
+            "
+          >
+            <input
+              type="tel"
+              class="modal-field__input"
+              placeholder="Enter mobile number"
+              [(ngModel)]="newCustomerForm.mobileNumber"
+              name="newCustomerMobile"
+              style="
+                flex: 1;
+                height: 44px;
+                padding: 0 14px;
+                background: transparent;
+                border: none;
+                font-family: &quot;Inter&quot;, sans-serif;
+                font-size: 15px;
+                color: var(--on-surface);
+                outline: none;
+              "
+            />
+          </div>
+        </div>
+
+        <div
+          class="modal-field"
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+          "
+        >
+          <label
+            class="modal-field__label"
+            style="
+              font-family: &quot;Inter&quot;, sans-serif;
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.08em;
+              color: var(--on-surface-variant);
+              text-transform: uppercase;
+            "
+            >VILLAGE / CITY</label
+          >
+          <div
+            class="modal-input-wrap"
+            style="
+              display: flex;
+              align-items: center;
+              border: 1px solid rgba(191, 199, 212, 0.5);
+              border-radius: 8px;
+              overflow: hidden;
+              background: var(--surface);
+            "
+          >
+            <input
+              type="text"
+              class="modal-field__input"
+              placeholder="Enter village or city"
+              [(ngModel)]="newCustomerForm.village"
+              name="newCustomerVillage"
+              style="
+                flex: 1;
+                height: 44px;
+                padding: 0 14px;
+                background: transparent;
+                border: none;
+                font-family: &quot;Inter&quot;, sans-serif;
+                font-size: 15px;
+                color: var(--on-surface);
+                outline: none;
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="modal__footer"
+        style="
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          padding: 16px 24px 20px;
+          border-top: 1px solid rgba(191, 199, 212, 0.2);
+        "
+      >
+        <button
+          class="btn-cancel"
+          (click)="closeAddCustomer()"
+          [disabled]="savingCustomer"
+          style="
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-family: &quot;Poppins&quot;, sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--on-surface-variant);
+            cursor: pointer;
+          "
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="saveCustomer()"
+          [disabled]="savingCustomer"
+          style="display: flex; align-items: center; gap: 4px"
+        >
+          <span
+            *ngIf="savingCustomer"
+            class="material-symbols-outlined spinning"
+            >progress_activity</span
+          >
+          Save Customer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

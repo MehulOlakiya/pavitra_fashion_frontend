@@ -24,6 +24,8 @@ interface SelectedItem {
   rentPrice: number;
 }
 
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
+
 @Component({
   selector: 'app-booking',
   imports: [
@@ -32,6 +34,7 @@ interface SelectedItem {
     RouterLink,
     DatepickerComponent,
     NumbersOnlyDirective,
+    CustomSelectComponent,
   ],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
@@ -41,8 +44,20 @@ export class BookingComponent implements OnInit {
   bookingDate: Date | null = new Date();
   returnDate: Date | null = new Date();
   readonly today = new Date();
-  pickupTime: 'Morning' | 'Evening' = 'Morning';
-  returnTime: 'Morning' | 'Evening' = 'Morning';
+  pickupTime: 'Morning' | 'Afternoon' | 'Evening' | 'Night' | null = 'Morning';
+  returnTime: 'Morning' | 'Afternoon' | 'Evening' | 'Night' | null = 'Morning';
+
+  timeOptions = [
+    { value: 'Morning', label: 'Morning' },
+    { value: 'Afternoon', label: 'Afternoon' },
+    { value: 'Evening', label: 'Evening' },
+    { value: 'Night', label: 'Night' },
+  ];
+
+  beltOptions = [
+    { value: 'HB', label: 'HB' },
+    { value: 'FB', label: 'FB' },
+  ];
 
   get datesSelected(): boolean {
     return !!(
@@ -88,7 +103,7 @@ export class BookingComponent implements OnInit {
     customerName: '',
     mobileNumber: '',
     villageCity: '',
-    advancePayment: null as number | null,
+    advancePayment: 0 as number,
     remainingPayment: null as number | null,
     note: '',
   };
@@ -131,6 +146,44 @@ export class BookingComponent implements OnInit {
     private customerService: CustomerService,
     private toast: ToastService,
   ) {
+    const nav = this.router.getCurrentNavigation();
+    if (nav?.extras.state) {
+      const state = nav.extras.state as any;
+      if (state.customer) {
+        this.selectedCustomer = state.customer;
+        this.form.customerName = state.customer.name || '';
+        this.form.mobileNumber = state.customer.mobileNumber || '';
+        this.form.villageCity = state.customer.village || '';
+      }
+      if (state.dates) {
+        if (state.dates.deliveryDate)
+          this.bookingDate = new Date(state.dates.deliveryDate);
+        if (state.dates.returnDate)
+          this.returnDate = new Date(state.dates.returnDate);
+        if (state.dates.deliveryTime)
+          this.pickupTime = state.dates.deliveryTime;
+        if (state.dates.returnTime) this.returnTime = state.dates.returnTime;
+      }
+
+      if (state.items && state.items.length > 0) {
+        this.selectedItems = state.items.map((item: any) => ({
+          product: item.product,
+          quantity: item.quantity || 1,
+          hasConflict: false,
+          conflictLoading: false,
+          conflictBookings: [],
+          beltType: null,
+          freshPiece: false,
+          freshPieceCost: null,
+          rentPrice: item.product.rentPrice,
+        }));
+      }
+
+      if (state.searchQuery) {
+        this.searchQuery = state.searchQuery;
+      }
+    }
+
     // Product search pipeline
     this.searchSubject
       .pipe(
@@ -194,7 +247,15 @@ export class BookingComponent implements OnInit {
       });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    if (this.selectedItems.length > 0) {
+      this.selectedItems.forEach((item) => this.checkConflict(item));
+      this.calculateRemainingPayment();
+    }
+    if (this.searchQuery) {
+      this.onSearchInput();
+    }
+  }
 
   onDateChange(): void {
     if (this.datesSelected) {
@@ -403,9 +464,9 @@ export class BookingComponent implements OnInit {
           remainingPayment: this.form.remainingPayment ?? 0,
           totalPayment: this.grandTotal,
           bookingDate: this.toISTDate(this.bookingDate!),
-          pickupTime: this.pickupTime,
+          pickupTime: this.pickupTime ?? undefined,
           returnDate: this.toISTDate(this.returnDate!),
-          returnTime: this.returnTime,
+          returnTime: this.returnTime ?? undefined,
           note: this.form.note || undefined,
         })
         .subscribe({

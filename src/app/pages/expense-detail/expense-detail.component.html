@@ -1,0 +1,235 @@
+<div class="page">
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-state">
+      <span class="material-symbols-outlined spinning">progress_activity</span>
+      <p>Loading expense…</p>
+    </div>
+  }
+
+  @if (!loading && expense) {
+    <!-- Page Header -->
+    <div class="page-header page-header--compact">
+      <div class="page-header__left">
+        <div class="breadcrumb">
+          <a routerLink="/expenses" class="breadcrumb__link">Expenses</a>
+          <span class="material-symbols-outlined breadcrumb__sep">chevron_right</span>
+          <span class="breadcrumb__current">Expense Details</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+          <h2 class="page-title">{{ expense.expenseNo }}</h2>
+          <span class="badge" [ngClass]="categoryClass(expense.category)">
+            <span class="material-symbols-outlined" style="font-size:14px; margin-right:4px">{{ categoryIcon(expense.category) }}</span>
+            {{ categoryLabel(expense.category) }}
+          </span>
+          <span class="badge" [ngClass]="statusClass(expense.status)">
+            {{ statusLabel(expense.status) }}
+          </span>
+        </div>
+      </div>
+      <div class="page-header__right" style="display: flex; gap: 8px; align-items: center">
+        <button type="button" class="btn-ghost" (click)="openStatusModal()" *ngIf="expense.status !== 'returned'">
+          <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">sync</span>
+          Update Status
+        </button>
+      </div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="detail-grid">
+
+      <!-- LEFT: Expense Info + Products -->
+      <div class="detail-col">
+
+        <!-- Expense Info -->
+        <div class="detail-card">
+          <h2 class="detail-card__title">
+            <span class="material-symbols-outlined">info</span>
+            Expense Information
+          </h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-item__label">Expense Number</span>
+              <span class="info-item__value info-item__value--primary">{{ expense.expenseNo }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item__label">Party / Vendor</span>
+              <span class="info-item__value">{{ expense.party.name || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item__label">Category</span>
+              <span class="info-item__value">{{ categoryLabel(expense.category) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item__label">Created Date</span>
+              <span class="info-item__value">{{ formatDate(expense.createdAt) }}</span>
+            </div>
+            <div class="info-item" *ngIf="expense.remarks">
+              <span class="info-item__label">Remarks</span>
+              <span class="info-item__value">{{ expense.remarks }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="detail-card flex-card">
+          <h2 class="detail-card__title">
+            <span class="material-symbols-outlined">checkroom</span>
+            Products ({{ expense.items.length || 0 }})
+          </h2>
+          <div class="product-table-wrap">
+            <table class="product-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Code</th>
+                  <th>Category</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of expense.items; track item.product._id) {
+                  <tr class="product-table__row">
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">
+                          <img *ngIf="item.product.imageUrl" [src]="item.product.imageUrl" [alt]="item.product.name" />
+                          <span *ngIf="!item.product.imageUrl" class="material-symbols-outlined">image</span>
+                        </div>
+                        <span class="product-name">{{ item.product.name || item.product.serialNumber }}</span>
+                      </div>
+                    </td>
+                    <td class="cell-code">{{ item.product.serialNumber }}</td>
+                    <td class="cell-cat">{{ item.product.category }}</td>
+                    <td class="cell-qty">
+                      {{ item.quantity }}
+                      <span *ngIf="item.isReturned" class="badge badge--returned" style="margin-left: 8px; padding: 2px 6px; font-size: 11px;">Returned</span>
+                      <span *ngIf="expense.status === 'partial_return' && !item.isReturned" class="badge badge--partial" style="margin-left: 8px; padding: 2px 6px; font-size: 11px;">Pending</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Financial Summary -->
+      <div class="detail-col">
+        <div class="detail-card financial-card">
+          <h2 class="detail-card__title">
+            <span class="material-symbols-outlined">payments</span>
+            Financial Summary
+          </h2>
+          <div class="financial-row">
+            <span class="financial-row__label">Per Piece Price</span>
+            <span class="financial-row__value">₹{{ expense.perPiecePrice | number }}</span>
+          </div>
+          <div class="financial-row">
+            <span class="financial-row__label">Total Products</span>
+            <span class="financial-row__value">{{ expense.items.length || 0 }}</span>
+          </div>
+          <div class="financial-row">
+            <span class="financial-row__label">Total Quantity</span>
+            <span class="financial-row__value">{{ expense.totalQuantity }}</span>
+          </div>
+          <div class="financial-divider"></div>
+          <div class="financial-row financial-row--total">
+            <span class="financial-row__label">Total Expense</span>
+            <span class="financial-row__value financial-row__value--big">₹{{ expense.totalPrice | number }}</span>
+          </div>
+        </div>
+
+        <!-- Status card -->
+        <div class="detail-card status-card">
+          <h2 class="detail-card__title">
+            <span class="material-symbols-outlined">track_changes</span>
+            Current Status
+          </h2>
+          <div class="status-display">
+            <div class="status-badge-lg" [ngClass]="statusClass(expense.status)">
+              <span class="material-symbols-outlined">
+                @if (expense.status.includes('returned')) { check_circle }
+                @else if (expense.status.includes('progress')) { autorenew }
+                @else { local_shipping }
+              </span>
+              <span>{{ statusLabel(expense.status) }}</span>
+            </div>
+            <button class="btn-update-status" (click)="openStatusModal()" *ngIf="expense.status !== 'returned'">
+              <span class="material-symbols-outlined">edit</span>
+              Change Status
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Status Modal -->
+@if (statusModalOpen) {
+  <div class="modal-backdrop" (click)="closeStatusModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Update Status</h3>
+        <button class="modal__close" (click)="closeStatusModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal__body">
+        <label class="modal-label">Select New Status</label>
+        <div class="status-options">
+          <button
+            *ngFor="let s of getUpdateStatusOptions(expense?.status || '')"
+            class="status-option"
+            [class.status-option--active]="statusModalValue === s.value"
+            (click)="statusModalValue = s.value"
+          >
+            <span class="material-symbols-outlined">
+              @if (s.value.includes('returned')) { check_circle }
+              @else if (s.value.includes('progress')) { autorenew }
+              @else { local_shipping }
+            </span>
+            {{ s.label }}
+          </button>
+        </div>
+
+        @if (statusModalValue === 'returned' && statusModalRenderItems.length > 0) {
+          <div class="product-checklist-wrap" style="margin-top: 16px;">
+            <label class="modal-label" style="margin-bottom: 8px;">Select Returned Products</label>
+            <div class="product-checklist">
+              <label *ngFor="let item of statusModalRenderItems" class="checklist-item">
+                <input 
+                  type="checkbox" 
+                  class="checklist-item__checkbox"
+                  [checked]="statusModalSelectedProductIds.has(item.product._id)" 
+                  (change)="toggleStatusProduct(item.product._id)"
+                >
+                <div class="checklist-item__info">
+                  <div class="checklist-item__img-wrap">
+                    <img *ngIf="item.product.imageUrl" [src]="item.product.imageUrl">
+                    <span *ngIf="!item.product.imageUrl" class="material-symbols-outlined">image</span>
+                  </div>
+                  <div class="checklist-item__text">
+                    <span class="checklist-item__name">{{ item.product.name || item.product.serialNumber }}</span>
+                    <span class="checklist-item__code">{{ item.product.serialNumber }}</span>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="modal__footer">
+        <button class="btn-cancel" (click)="closeStatusModal()" [disabled]="statusUpdating">Cancel</button>
+        <button class="btn-primary" (click)="saveStatus()" [disabled]="statusUpdating || !statusModalValue">
+          <span *ngIf="statusUpdating" class="material-symbols-outlined spinning">progress_activity</span>
+          Save Status
+        </button>
+      </div>
+    </div>
+  </div>
+}

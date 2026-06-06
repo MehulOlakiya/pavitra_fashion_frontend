@@ -19,6 +19,7 @@ import { Customer, CustomerService } from '../../core/customer.service';
 import { WhatsappService, WhatsAppStatus } from '../../core/whatsapp.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { DatepickerComponent } from '../../shared/datepicker/datepicker.component';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 import { NumbersOnlyDirective } from '../../shared/directives/numbers-only.directive';
 
 export interface SelectedItem {
@@ -43,6 +44,7 @@ export interface SelectedItem {
     RouterLink,
     DatepickerComponent,
     NumbersOnlyDirective,
+    CustomSelectComponent,
   ],
   templateUrl: './booking-detail.component.html',
   styleUrl: './booking-detail.component.scss',
@@ -104,9 +106,21 @@ export class BookingDetailComponent implements OnInit {
 
   bookingDate: Date | null = null;
   returnDate: Date | null = null;
-  pickupTime: 'Morning' | 'Evening' = 'Morning';
-  returnTime: 'Morning' | 'Evening' = 'Morning';
+  pickupTime: 'Morning' | 'Afternoon' | 'Evening' | 'Night' | null = 'Morning';
+  returnTime: 'Morning' | 'Afternoon' | 'Evening' | 'Night' | null = 'Morning';
   readonly today = new Date();
+
+  timeOptions = [
+    { value: 'Morning', label: 'Morning' },
+    { value: 'Afternoon', label: 'Afternoon' },
+    { value: 'Evening', label: 'Evening' },
+    { value: 'Night', label: 'Night' },
+  ];
+
+  beltOptions = [
+    { value: 'HB', label: 'HB' },
+    { value: 'FB', label: 'FB' },
+  ];
 
   selectedItems: SelectedItem[] = [];
   get productSelected(): boolean {
@@ -200,7 +214,7 @@ export class BookingDetailComponent implements OnInit {
           b.items && b.items.length > 0
             ? b.items
             : b.productSerialNumber
-              ? [{ serialNumber: b.productSerialNumber, quantity: 1, beltType: b.beltType, freshPiece: b.freshPiece, freshPieceCost: b.freshPieceCost }]
+              ? [{ serialNumber: b.productSerialNumber, quantity: 1, beltType: b.beltType, freshPiece: b.freshPiece, freshPieceCost: b.freshPieceCost, rentPrice: undefined as number | undefined }]
               : [];
 
         if (itemsToFetch.length > 0) {
@@ -502,6 +516,8 @@ export class BookingDetailComponent implements OnInit {
         return 'Rented';
       case 'pending_return':
         return 'Pending Return';
+      case 'partial_return':
+        return 'Partial Return';
       case 'returned':
         return 'Returned';
       case 'cancelled':
@@ -598,9 +614,9 @@ export class BookingDetailComponent implements OnInit {
         remainingPayment: this.form.remainingPayment ?? 0,
         totalPayment: this.grandTotal,
         bookingDate: this.toISTDate(this.bookingDate!),
-        pickupTime: this.pickupTime,
+        pickupTime: this.pickupTime ?? undefined,
         returnDate: this.toISTDate(this.returnDate!),
-        returnTime: this.returnTime,
+        returnTime: this.returnTime ?? undefined,
         note: this.form.note || undefined,
         status: this.form.status,
       };

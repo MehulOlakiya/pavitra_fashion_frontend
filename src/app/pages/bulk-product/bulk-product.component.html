@@ -1,0 +1,247 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="breadcrumb">
+        <a routerLink="/inventory" class="breadcrumb__link">Inventory</a>
+        <span class="material-symbols-outlined breadcrumb__sep">chevron_right</span>
+        <span class="breadcrumb__current">Bulk Product Manager</span>
+      </div>
+      <h2 class="page-title">Bulk Product Manager</h2>
+    </div>
+    <div class="page-header__right">
+      <div class="row-count-badge">
+        <span class="material-symbols-outlined">table_rows</span>
+        {{ rows.length }} row(s) · {{ filledRows.length }} filled
+      </div>
+      <button type="button" class="btn-outline" (click)="addRows(5)">
+        <span class="material-symbols-outlined btn-icon">add</span>
+        Add 5 Rows
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="saving"
+        (click)="saveAll()"
+      >
+        @if (saving) {
+          <span class="material-symbols-outlined btn-icon spinning">progress_activity</span>
+          Saving…
+        } @else {
+          <span class="material-symbols-outlined btn-icon">save</span>
+          Save All
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="bulk-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th class="col-sn">SN Number *</th>
+            <th class="col-name">Name</th>
+            <th class="col-price">Rent Price (₹) *</th>
+            <th class="col-price">Purchase Price (₹)</th>
+            <th class="col-price">Selling Price (₹)</th>
+            <th class="col-photo">Photo</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track $index; let i = $index) {
+            <tr class="bulk-row" [class.bulk-row--error]="row.hasError">
+              <!-- # -->
+              <td class="col-num">
+                <span class="row-num">{{ i + 1 }}</span>
+              </td>
+
+              <!-- SN Number -->
+              <td class="col-sn">
+                <input
+                  type="text"
+                  class="cell-input"
+                  [class.cell-input--error]="row.hasError"
+                  placeholder="e.g. LH-001"
+                  [(ngModel)]="row.serialNumber"
+                  [name]="'sn_' + i"
+                />
+                @if (row.hasError) {
+                  <span class="row-error-tip" [title]="row.errorMsg">
+                    <span class="material-symbols-outlined">error</span>
+                    {{ row.errorMsg }}
+                  </span>
+                }
+              </td>
+
+              <!-- Name -->
+              <td class="col-name">
+                <input
+                  type="text"
+                  class="cell-input"
+                  placeholder="Product name"
+                  [(ngModel)]="row.name"
+                  [name]="'name_' + i"
+                />
+              </td>
+
+              <!-- Rent Price -->
+              <td class="col-price">
+                <input
+                  type="number"
+                  class="cell-input cell-input--num"
+                  placeholder="0"
+                  [(ngModel)]="row.rentPrice"
+                  [name]="'rent_' + i"
+                  min="0"
+                />
+              </td>
+
+              <!-- Purchase Price -->
+              <td class="col-price">
+                <input
+                  type="number"
+                  class="cell-input cell-input--num"
+                  placeholder="0"
+                  [(ngModel)]="row.purchasePrice"
+                  [name]="'purchase_' + i"
+                  min="0"
+                />
+              </td>
+
+              <!-- Selling Price -->
+              <td class="col-price">
+                <input
+                  type="number"
+                  class="cell-input cell-input--num"
+                  placeholder="0"
+                  [(ngModel)]="row.sellingPrice"
+                  [name]="'selling_' + i"
+                  min="0"
+                />
+              </td>
+
+              <!-- Photo -->
+              <td class="col-photo">
+                @if (row.imageUrl) {
+                  <div class="photo-thumb-wrap">
+                    <img [src]="row.imageUrl" alt="product" class="photo-thumb" />
+                    <button
+                      type="button"
+                      class="photo-remove-btn"
+                      title="Remove photo"
+                      (click)="removePhoto(i)"
+                    >
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+                } @else {
+                  <button
+                    type="button"
+                    class="photo-upload-btn"
+                    [class.photo-upload-btn--uploading]="row.uploading"
+                    (click)="openPhotoModal(i)"
+                  >
+                    @if (row.uploading) {
+                      <span class="material-symbols-outlined spinning">progress_activity</span>
+                    } @else {
+                      <span class="material-symbols-outlined">add_photo_alternate</span>
+                    }
+                  </button>
+                }
+              </td>
+
+              <!-- Delete Row -->
+              <td class="col-actions">
+                <button
+                  type="button"
+                  class="btn-delete-row"
+                  title="Remove row"
+                  (click)="removeRow(i)"
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bottom add rows bar -->
+    <div class="table-footer">
+      <button type="button" class="btn-add-rows" (click)="addRows(5)">
+        <span class="material-symbols-outlined">add</span>
+        Add 5 more rows
+      </button>
+      <span class="total-label">Total {{ rows.length }} rows</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Photo Upload Modal ──────────────────────────────── -->
+@if (photoModalOpen) {
+  <div class="modal-backdrop" (click)="closePhotoModal()">
+    <div class="modal photo-modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">
+          <span class="material-symbols-outlined">add_photo_alternate</span>
+          Upload Photo
+        </h3>
+        <button type="button" class="modal-close" (click)="closePhotoModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <!-- Drop zone / file picker -->
+        <label class="drop-zone" for="photo-file-input">
+          @if (photoPreviewUrl) {
+            <img [src]="photoPreviewUrl" alt="preview" class="drop-zone__preview" />
+          } @else {
+            <span class="material-symbols-outlined drop-zone__icon">cloud_upload</span>
+            <p class="drop-zone__text">Click to select a photo</p>
+            <p class="drop-zone__sub">PNG, JPG, WEBP supported</p>
+          }
+        </label>
+        <input
+          id="photo-file-input"
+          type="file"
+          accept="image/*"
+          class="hidden-file-input"
+          (change)="onPhotoFileChange($event)"
+        />
+
+        @if (photoSelectedFile) {
+          <p class="selected-file-name">
+            <span class="material-symbols-outlined">description</span>
+            {{ photoSelectedFile.name }}
+          </p>
+        }
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-modal-cancel" (click)="closePhotoModal()">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="!photoSelectedFile || photoUploading"
+          (click)="uploadPhoto()"
+        >
+          @if (photoUploading) {
+            <span class="material-symbols-outlined spinning btn-icon">progress_activity</span>
+            Uploading…
+          } @else {
+            <span class="material-symbols-outlined btn-icon">upload</span>
+            Upload
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -719,3 +719,61 @@
   display: inline-block;
   animation: spin 0.9s linear infinite;
 }
+
+// ── Tabs Bar ───────────────────────────────────────────────
+.tabs-bar {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(191, 199, 212, 0.2);
+  border-radius: 12px;
+  padding: 6px;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  .material-symbols-outlined { font-size: 18px; }
+
+  &:hover { background: var(--surface-container); color: var(--on-surface); }
+
+  &--active {
+    background: var(--primary);
+    color: var(--on-primary);
+    box-shadow: 0 2px 8px rgba(33, 152, 250, 0.3);
+    &:hover { background: var(--primary); }
+  }
+}
+
+// ── Expense History specific ───────────────────────────────
+.expense-no-cell {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.badge {
+  &--booked { background: rgba(113, 42, 226, 0.1); color: var(--secondary); }
+  &--rented { background: rgba(33, 152, 250, 0.1); color: var(--primary-container, #0284c7); }
+  &--pending { background: rgba(207, 132, 0, 0.1); color: var(--tertiary-container); }
+  &--returned { background: rgba(21, 128, 61, 0.1); color: #15803d; }
+  &--cancelled { background: rgba(186, 26, 26, 0.1); color: var(--error); }
+  &--sent { background: rgba(207, 132, 0, 0.12); color: #d97706; }
+  &--progress { background: rgba(33, 152, 250, 0.1); color: #0284c7; }
+  &--cat { background: rgba(113, 42, 226, 0.1); color: #7c3aed; }
+}

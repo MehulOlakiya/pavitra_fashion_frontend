@@ -43,8 +43,8 @@
           <span class="material-symbols-outlined analytics-card__icon">account_balance_wallet</span>
         </div>
         <div class="analytics-card__body">
-          <p class="analytics-card__label">Collected</p>
-          <h3 class="analytics-card__value">₹{{ collected | number }}</h3>
+          <p class="analytics-card__label">Profit</p>
+          <h3 class="analytics-card__value">₹{{ profit | number }}</h3>
         </div>
       </div>
       <div class="analytics-card analytics-card--icon-left">
@@ -152,8 +152,28 @@
       </div>
     </div>
 
+    <!-- Tab switcher -->
+    <div class="tabs-bar">
+      <button
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab === 'bookings'"
+        (click)="switchTab('bookings')"
+      >
+        <span class="material-symbols-outlined">history</span>
+        Booking History
+      </button>
+      <button
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab === 'expenses'"
+        (click)="switchTab('expenses')"
+      >
+        <span class="material-symbols-outlined">receipt_long</span>
+        Expense History
+      </button>
+    </div>
+
     <!-- Booking History Table -->
-    <div class="table-card">
+    <div class="table-card" *ngIf="activeTab === 'bookings'">
       <div class="table-card__header">
         <h3 class="table-card__title">
           <span class="material-symbols-outlined">history</span>
@@ -293,6 +313,87 @@
           [total]="total"
           [limit]="limit"
           (pageChange)="goToPage($event)"
+        />
+      }
+    </div>
+
+    <!-- Expense History Tab -->
+    <div class="table-card" *ngIf="activeTab === 'expenses'">
+      <div class="table-card__header">
+        <h3 class="table-card__title">
+          <span class="material-symbols-outlined">receipt_long</span>
+          Expense History
+        </h3>
+        <a routerLink="/expenses/new" class="btn-primary">
+          <span class="material-symbols-outlined btn-icon">add</span>
+          New Expense
+        </a>
+      </div>
+
+      <div class="table-scroll">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>Expense No</th>
+              <th>Party</th>
+              <th>Category</th>
+              <th>Qty</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (expensesLoading) {
+              <tr>
+                <td colspan="7" class="cell-state">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined spinning">progress_activity</span>
+                    <p class="empty-state__title">Loading expense history…</p>
+                  </div>
+                </td>
+              </tr>
+            } @else if (expenses.length === 0) {
+              <tr>
+                <td colspan="7" class="cell-state">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                    </div>
+                    <p class="empty-state__title">No expense history</p>
+                    <p class="empty-state__sub">This product has not been part of any expense yet.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+            @for (e of expenses; track e._id) {
+              <tr class="table-row" [routerLink]="['/expenses', e._id]" style="cursor: pointer;">
+                <td><span class="expense-no-cell">{{ e.expenseNo }}</span></td>
+                <td class="cell-text">{{ e.party.name || '—' }}</td>
+                <td>
+                  <span class="badge badge--cat">{{ expenseCategoryLabel(e.category) }}</span>
+                </td>
+                <td class="cell-text">{{ e.totalQuantity }}</td>
+                <td class="cell-amount">₹{{ e.totalPrice | number }}</td>
+                <td>
+                  <span class="badge" [ngClass]="expenseStatusClass(e.status)">
+                    {{ expenseStatusLabel(e.status) }}
+                  </span>
+                </td>
+                <td class="cell-date">{{ formatDate(e.createdAt ?? null) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (expenseTotal > 0) {
+        <app-pagination
+          [currentPage]="expenseCurrentPage"
+          [totalPages]="expenseTotalPages"
+          [total]="expenseTotal"
+          [limit]="expenseLimit"
+          (pageChange)="goToExpensePage($event)"
         />
       }
     </div>

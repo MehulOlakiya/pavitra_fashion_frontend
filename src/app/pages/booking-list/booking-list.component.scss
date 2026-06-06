@@ -224,8 +224,16 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.2s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+
+  &:disabled {
+    background: var(--surface-variant, #e2e8f0);
+    color: var(--outline, #94a3b8);
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.7;
   }
 }
 
@@ -450,6 +458,42 @@
     background: rgba(186, 26, 26, 0.1);
     color: var(--error);
   }
+}
+
+// ── Custom Select Status Styles ────────────────────────────
+app-custom-select.cs-status-booked {
+  --cs-bg: rgba(113, 42, 226, 0.1);
+  --cs-color: var(--secondary);
+  --cs-border: rgba(113, 42, 226, 0.2);
+  --cs-border-hover: rgba(113, 42, 226, 0.4);
+}
+
+app-custom-select.cs-status-rented {
+  --cs-bg: rgba(33, 152, 250, 0.1);
+  --cs-color: var(--primary-container);
+  --cs-border: rgba(33, 152, 250, 0.2);
+  --cs-border-hover: rgba(33, 152, 250, 0.4);
+}
+
+app-custom-select.cs-status-pending_return {
+  --cs-bg: rgba(207, 132, 0, 0.1);
+  --cs-color: var(--tertiary-container);
+  --cs-border: rgba(207, 132, 0, 0.2);
+  --cs-border-hover: rgba(207, 132, 0, 0.4);
+}
+
+app-custom-select.cs-status-returned {
+  --cs-bg: rgba(21, 128, 61, 0.1);
+  --cs-color: #15803d;
+  --cs-border: rgba(21, 128, 61, 0.2);
+  --cs-border-hover: rgba(21, 128, 61, 0.4);
+}
+
+app-custom-select.cs-status-cancelled {
+  --cs-bg: rgba(186, 26, 26, 0.1);
+  --cs-color: var(--error);
+  --cs-border: rgba(186, 26, 26, 0.2);
+  --cs-border-hover: rgba(186, 26, 26, 0.4);
 }
 
 // ── Action Button ──────────────────────────────────────────
@@ -780,7 +824,7 @@
 // ── Settlement UI ──────────────────────────────────────────
 .settlement-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   background: var(--surface-container-lowest);
   padding: 16px;
@@ -1541,5 +1585,75 @@
     border-top: 1px solid rgba(191, 199, 212, 0.2);
     background: var(--surface-container-lowest);
     flex-shrink: 0;
+  }
+}
+
+/* Product Checklist Styles for Return Settlement */
+::ng-deep {
+  .product-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(191,199,212,0.5);
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--background);
+
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 3px; }
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+
+    &:hover { background: #f8fafc; }
+    
+    &__checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    &__info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    &__img-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      img { width: 100%; height: 100%; object-fit: cover; }
+      .material-symbols-outlined { color: #94a3b8; font-size: 20px; }
+    }
+
+    &__text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    &__name { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: var(--on-surface); }
+    &__code { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--on-surface-variant); }
   }
 }

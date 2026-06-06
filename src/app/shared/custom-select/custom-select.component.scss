@@ -20,12 +20,12 @@
   gap: 8px;
   width: 100%;
   padding: 8px 12px 8px 16px;
-  background: var(--surface, #fff);
-  border: 1px solid rgba(191, 199, 212, 0.6);
+  background: var(--cs-bg, var(--surface, #fff));
+  border: 1px solid var(--cs-border, rgba(191, 199, 212, 0.6));
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
-  color: var(--on-surface);
+  color: var(--cs-color, var(--on-surface));
   cursor: pointer;
   outline: none;
   text-align: left;
@@ -35,7 +35,7 @@
   white-space: nowrap;
 
   &:hover:not(:disabled) {
-    border-color: rgba(0, 97, 166, 0.4);
+    border-color: var(--cs-border-hover, rgba(0, 97, 166, 0.4));
   }
 
   &--error {
@@ -54,13 +54,13 @@
     text-overflow: ellipsis;
 
     &--placeholder {
-      color: var(--on-surface-variant, #6c757d);
+      color: var(--cs-placeholder-color, var(--on-surface-variant, #6c757d));
     }
   }
 
   &__chevron {
     font-size: 20px;
-    color: var(--on-surface-variant, #6c757d);
+    color: var(--cs-color, var(--on-surface-variant, #6c757d));
     transition: transform 0.2s ease;
     flex-shrink: 0;
 
@@ -74,7 +74,6 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  right: 0;
   min-width: 100%;
   background: #ffffff;
   border: 1px solid rgba(191, 199, 212, 0.5);
@@ -111,6 +110,7 @@
   color: var(--on-surface);
   cursor: pointer;
   text-align: left;
+  white-space: nowrap;
   transition: background 0.12s;
 
   &:hover {

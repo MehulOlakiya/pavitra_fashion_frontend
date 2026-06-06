@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { TitleCasePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
@@ -24,6 +24,7 @@ import { DateRangePickerComponent } from '../../shared/date-range-picker/date-ra
     TitleCasePipe,
     DecimalPipe,
     FormsModule,
+    RouterLink,
     PaginationComponent,
     CustomSelectComponent,
     ImportProductsComponent,

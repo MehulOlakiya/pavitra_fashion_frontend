@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, HostListener } from '@angular/core';
-import { CommonModule, DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { BookingService, Booking, BookingStatus } from '../../core/booking.service';
 import { CustomerService, CustomerReport } from '../../core/customer.service';
 import { DateRangePickerComponent } from '../../shared/date-range-picker/date-range-picker.component';
+import { CustomSelectComponent } from '../../shared/custom-select/custom-select.component';
 import * as XLSX from 'xlsx';
 
 type ReportTab = 'bookings' | 'customers';
@@ -15,11 +15,8 @@ type ReportTab = 'bookings' | 'customers';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
-    DatePipe,
-    CurrencyPipe,
-    TitleCasePipe,
     DateRangePickerComponent,
+    CustomSelectComponent,
   ],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.scss',

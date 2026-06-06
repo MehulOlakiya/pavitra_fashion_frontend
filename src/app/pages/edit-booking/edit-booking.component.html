@@ -42,14 +42,12 @@
                 <label class="field__label" style="margin-top: 16px; display: block;"
                   >PICKUP TIME</label
                 >
-                <select
-                  class="field__input"
-                  style="margin-top: 8px; width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--outline-variant); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface); background: var(--surface-container-lowest); outline: none;"
+                <app-custom-select
                   [(ngModel)]="pickupTime"
-                >
-                  <option value="Morning">Morning</option>
-                  <option value="Evening">Evening</option>
-                </select>
+                  [options]="timeOptions"
+                  placeholder="Select"
+                  style="margin-top: 8px; width: 100%; display: block;"
+                />
               </div>
               <div class="date-arrow">
                 <span class="material-symbols-outlined">arrow_forward</span>
@@ -68,14 +66,12 @@
                 <label class="field__label" style="margin-top: 16px; display: block;"
                   >RETURN TIME</label
                 >
-                <select
-                  class="field__input"
-                  style="margin-top: 8px; width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--outline-variant); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--on-surface); background: var(--surface-container-lowest); outline: none;"
+                <app-custom-select
                   [(ngModel)]="returnTime"
-                >
-                  <option value="Morning">Morning</option>
-                  <option value="Evening">Evening</option>
-                </select>
+                  [options]="timeOptions"
+                  placeholder="Select"
+                  style="margin-top: 8px; width: 100%; display: block;"
+                />
               </div>
             </div>
           </div>

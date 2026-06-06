@@ -78,6 +78,7 @@ export class DashboardComponent implements OnInit {
   bookingStats: any = null;
   inventoryStats: any = null;
   customerStats: any = null;
+  topWidgetStats: any = null;
 
   // Date states
   chartDateRangeOpen = false;
@@ -345,16 +346,8 @@ export class DashboardComponent implements OnInit {
     this.isLoadingStats = true;
     this.analyticsService.getDashboardStats().subscribe({
       next: (data) => {
+        this.topWidgetStats = data.newWidgetStats;
         this.stats = [
-          {
-            icon: 'checkroom',
-            label: 'Total Cloths',
-            value: data.totalCloths.value.toString(),
-            trendIcon: 'trending_up',
-            trendText: data.totalCloths.trend,
-            color: 'primary',
-            gradient: false,
-          },
           {
             icon: 'shopping_bag',
             label: 'Active Bookings',

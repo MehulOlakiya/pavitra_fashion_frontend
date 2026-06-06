@@ -7,6 +7,7 @@ import {
   Booking,
   BookingStatus,
 } from '../../core/booking.service';
+import { ExpenseService, Expense } from '../../core/expense.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 
@@ -51,10 +52,10 @@ export class ProductInsightsComponent implements OnInit {
       );
   }
 
-  get collected(): number {
-    return this.allBookings
-      .filter((b) => b.status !== 'cancelled')
-      .reduce((sum, b) => sum + (b.advancePayment ?? 0), 0);
+  get profit(): number {
+    const revenue = this.totalRevenue;
+    const cost = this.product?.purchasePrice ?? 0;
+    return revenue - cost;
   }
 
   get rentalCount(): number {
@@ -64,11 +65,23 @@ export class ProductInsightsComponent implements OnInit {
   // Action menu
   openMenuId: string | null = null;
 
+  // Active Tab
+  activeTab: 'bookings' | 'expenses' = 'bookings';
+
+  // Expense History
+  expenses: Expense[] = [];
+  expensesLoading = false;
+  expenseCurrentPage = 1;
+  readonly expenseLimit = 10;
+  expenseTotal = 0;
+  expenseTotalPages = 1;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
     private bookingService: BookingService,
+    private expenseService: ExpenseService,
     private toast: ToastService,
   ) {}
 
@@ -137,6 +150,7 @@ export class ProductInsightsComponent implements OnInit {
       booked: 'Booked',
       rented: 'Rented',
       pending_return: 'Pending Return',
+      partial_return: 'Partial Return',
       returned: 'Returned',
       cancelled: 'Cancelled',
     };
@@ -148,6 +162,7 @@ export class ProductInsightsComponent implements OnInit {
       booked: 'badge--booked',
       rented: 'badge--rented',
       pending_return: 'badge--pending',
+      partial_return: 'badge--partial',
       returned: 'badge--returned',
       cancelled: 'badge--cancelled',
     };
@@ -183,5 +198,63 @@ export class ProductInsightsComponent implements OnInit {
 
   editBooking(id: string): void {
     this.router.navigate(['/bookings/edit', id]);
+  }
+
+  switchTab(tab: 'bookings' | 'expenses'): void {
+    this.activeTab = tab;
+    if (tab === 'expenses' && this.expenses.length === 0 && !this.expensesLoading) {
+      this.loadExpenses();
+    }
+  }
+
+  private loadExpenses(): void {
+    if (!this.product?._id) return;
+    this.expensesLoading = true;
+    this.expenseService
+      .getByProduct(this.product._id, this.expenseCurrentPage, this.expenseLimit)
+      .subscribe({
+        next: (res) => {
+          this.expenses = res.data;
+          this.expenseTotal = res.total;
+          this.expenseTotalPages = res.totalPages;
+          this.expensesLoading = false;
+        },
+        error: () => { this.expensesLoading = false; },
+      });
+  }
+
+  goToExpensePage(page: number): void {
+    this.expenseCurrentPage = page;
+    this.loadExpenses();
+  }
+
+  expenseCategoryLabel(cat: string): string {
+    const map: Record<string, string> = {
+      washing: 'Washing',
+      stitching: 'Stitching',
+      blouse_stitching: 'Blouse Stitching',
+    };
+    return map[cat] ?? cat;
+  }
+
+  expenseStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      sent_for_washing: 'Sent',
+      washing_in_progress: 'In Progress',
+      returned_from_washing: 'Returned',
+      sent_for_stitching: 'Sent',
+      stitching_in_progress: 'In Progress',
+      returned_from_stitching: 'Returned',
+      sent_for_blouse_stitching: 'Sent',
+      blouse_stitching_in_progress: 'In Progress',
+      returned_from_blouse_stitching: 'Returned',
+    };
+    return map[status] ?? status;
+  }
+
+  expenseStatusClass(status: string): string {
+    if (status.includes('returned')) return 'badge--returned';
+    if (status.includes('progress')) return 'badge--progress';
+    return 'badge--sent';
   }
 }

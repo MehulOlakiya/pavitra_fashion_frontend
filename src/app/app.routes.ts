@@ -59,6 +59,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'inventory/available',
+        loadComponent: () =>
+          import('./pages/product-available/product-available.component').then(
+            (m) => m.ProductAvailableComponent,
+          ),
+      },
+      {
         path: 'inventory',
         loadComponent: () =>
           import('./pages/cloth-management/cloth-management.component').then(
@@ -70,6 +77,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/add-product/add-product.component').then(
             (m) => m.AddProductComponent,
+          ),
+      },
+      {
+        path: 'inventory/bulk-add',
+        loadComponent: () =>
+          import('./pages/bulk-product/bulk-product.component').then(
+            (m) => m.BulkProductComponent,
           ),
       },
       {
@@ -141,6 +155,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/whatsapp/whatsapp.component').then(
             (m) => m.WhatsappComponent,
+          ),
+      },
+      {
+        path: 'expenses/new',
+        loadComponent: () =>
+          import('./pages/expense-create/expense-create.component').then(
+            (m) => m.ExpenseCreateComponent,
+          ),
+      },
+      {
+        path: 'expenses/:id',
+        loadComponent: () =>
+          import('./pages/expense-detail/expense-detail.component').then(
+            (m) => m.ExpenseDetailComponent,
+          ),
+      },
+      {
+        path: 'expenses',
+        loadComponent: () =>
+          import('./pages/expense-list/expense-list.component').then(
+            (m) => m.ExpenseListComponent,
           ),
       },
     ],

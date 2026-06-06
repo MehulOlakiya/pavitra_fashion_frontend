@@ -51,25 +51,28 @@
         <div class="field-row">
           <div class="field">
             <label class="field__label">Return Time Notification</label>
-            <div class="time-select-group">
-              <div class="input-with-icon inline-select">
-                <select class="field__input time-select" [(ngModel)]="notifications.returnTime.hour" [disabled]="!isEditing">
-                  <option *ngFor="let h of hoursOptions" [value]="h">{{h}}</option>
-                </select>
-                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+            <div class="time-select-group" style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 80px">
+                <app-custom-select
+                  [(ngModel)]="notifications.returnTime.hour"
+                  [options]="hoursOptions"
+                  [disabled]="!isEditing"
+                />
               </div>
               <span class="time-separator">:</span>
-              <div class="input-with-icon inline-select">
-                <select class="field__input time-select" [(ngModel)]="notifications.returnTime.minute" [disabled]="!isEditing">
-                  <option *ngFor="let m of minutesOptions" [value]="m">{{m}}</option>
-                </select>
-                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              <div style="width: 80px">
+                <app-custom-select
+                  [(ngModel)]="notifications.returnTime.minute"
+                  [options]="minutesOptions"
+                  [disabled]="!isEditing"
+                />
               </div>
-              <div class="input-with-icon inline-select ampm-wrapper">
-                <select class="field__input ampm-select" [(ngModel)]="notifications.returnTime.ampm" [disabled]="!isEditing">
-                  <option *ngFor="let a of ampmOptions" [value]="a">{{a}}</option>
-                </select>
-                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              <div style="width: 80px">
+                <app-custom-select
+                  [(ngModel)]="notifications.returnTime.ampm"
+                  [options]="ampmOptions"
+                  [disabled]="!isEditing"
+                />
               </div>
             </div>
             <p class="field__hint">Alert sent to manager before a rental item is due back.</p>
@@ -77,25 +80,28 @@
           
           <div class="field">
             <label class="field__label">Pickup Time Notification</label>
-            <div class="time-select-group">
-              <div class="input-with-icon inline-select">
-                <select class="field__input time-select" [(ngModel)]="notifications.pickupTime.hour" [disabled]="!isEditing">
-                  <option *ngFor="let h of hoursOptions" [value]="h">{{h}}</option>
-                </select>
-                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+            <div class="time-select-group" style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 80px">
+                <app-custom-select
+                  [(ngModel)]="notifications.pickupTime.hour"
+                  [options]="hoursOptions"
+                  [disabled]="!isEditing"
+                />
               </div>
               <span class="time-separator">:</span>
-              <div class="input-with-icon inline-select">
-                <select class="field__input time-select" [(ngModel)]="notifications.pickupTime.minute" [disabled]="!isEditing">
-                  <option *ngFor="let m of minutesOptions" [value]="m">{{m}}</option>
-                </select>
-                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              <div style="width: 80px">
+                <app-custom-select
+                  [(ngModel)]="notifications.pickupTime.minute"
+                  [options]="minutesOptions"
+                  [disabled]="!isEditing"
+                />
               </div>
-              <div class="input-with-icon inline-select ampm-wrapper">
-                <select class="field__input ampm-select" [(ngModel)]="notifications.pickupTime.ampm" [disabled]="!isEditing">
-                  <option *ngFor="let a of ampmOptions" [value]="a">{{a}}</option>
-                </select>
-                <span class="material-symbols-outlined input-icon-right">expand_more</span>
+              <div style="width: 80px">
+                <app-custom-select
+                  [(ngModel)]="notifications.pickupTime.ampm"
+                  [options]="ampmOptions"
+                  [disabled]="!isEditing"
+                />
               </div>
             </div>
             <p class="field__hint">Daily summary alert for all pickups scheduled today.</p>

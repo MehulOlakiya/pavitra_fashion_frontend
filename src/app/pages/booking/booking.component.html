@@ -31,14 +31,12 @@
             </div>
             <div class="field-compact" style="flex: 1">
               <label>Pickup Time</label>
-              <select
-                class="compact-select"
+              <app-custom-select
                 [(ngModel)]="pickupTime"
+                [options]="timeOptions"
+                placeholder="Select"
                 style="width: 100%"
-              >
-                <option value="Morning">Morning</option>
-                <option value="Evening">Evening</option>
-              </select>
+              />
             </div>
           </div>
 
@@ -55,14 +53,12 @@
             </div>
             <div class="field-compact" style="flex: 1">
               <label>Return Time</label>
-              <select
-                class="compact-select"
+              <app-custom-select
                 [(ngModel)]="returnTime"
+                [options]="timeOptions"
+                placeholder="Select"
                 style="width: 100%"
-              >
-                <option value="Morning">Morning</option>
-                <option value="Evening">Evening</option>
-              </select>
+              />
             </div>
           </div>
 
@@ -366,13 +362,10 @@
                           Belt
                         </label>
                         @if (item.beltType !== null) {
-                          <select
-                            class="compact-select-small"
-                            [(ngModel)]="item.beltType"
-                          >
-                            <option value="HB">HB</option>
-                            <option value="FB">FB</option>
-                          </select>
+                          <div class="belt-chips">
+                            <button type="button" class="belt-chip" [class.belt-chip--active]="item.beltType === 'HB'" (click)="item.beltType = 'HB'">HB</button>
+                            <button type="button" class="belt-chip" [class.belt-chip--active]="item.beltType === 'FB'" (click)="item.beltType = 'FB'">FB</button>
+                          </div>
                         }
                       </div>
                     </td>
@@ -414,8 +407,8 @@
                             @for (cb of item.conflictBookings; track cb._id) {
                               <div class="conflict-booking-item">
                                 <span class="cb-customer"
-                                  ><strong>{{ cb.customer?.name }}</strong> ({{
-                                    cb.customer?.mobileNumber
+                                  ><strong>{{ cb.customer.name }}</strong> ({{
+                                    cb.customer.mobileNumber
                                   }})</span
                                 >
                                 <span class="cb-dates"
