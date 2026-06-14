@@ -9,72 +9,7 @@
     </p>
   </div>
 
-  <!-- ── Top Widget Grid ──────────────────────────────────── -->
-  @if (topWidgetStats) {
-    <div class="top-widget-grid">
-      <!-- Top Row -->
-      <div class="top-widget-card">
-        <div class="top-widget-card__header">
-          <div>
-            <div class="top-widget-card__title">Today's Booking</div>
-            <h3 class="top-widget-card__value">{{ topWidgetStats.todaysBooking }}</h3>
-          </div>
-          <div class="top-widget-card__icon-wrap">
-            <span class="material-symbols-outlined">event_available</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="top-widget-card">
-        <div class="top-widget-card__header">
-          <div>
-            <div class="top-widget-card__title">Today's Rent</div>
-            <h3 class="top-widget-card__value">{{ topWidgetStats.todaysRent.completed }} of {{ topWidgetStats.todaysRent.total }}</h3>
-          </div>
-          <div class="top-widget-card__icon-wrap">
-            <span class="material-symbols-outlined">local_shipping</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="top-widget-card">
-        <div class="top-widget-card__header">
-          <div>
-            <div class="top-widget-card__title">Today's Return</div>
-            <h3 class="top-widget-card__value">{{ topWidgetStats.todaysReturn }}</h3>
-          </div>
-          <div class="top-widget-card__icon-wrap">
-            <span class="material-symbols-outlined">directions_car</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Row -->
-      <div class="top-widget-card" style="justify-content: flex-start;">
-        <div class="top-widget-card__title">Prepare Rent</div>
-        <div class="top-widget-card__subtitle">You have {{ topWidgetStats.prepareRent }} order on</div>
-        <div style="margin-top: auto;">
-          <span class="top-widget-card__pill top-widget-card__pill--green">{{ topWidgetStats.prepareRent }} Order to prepare</span>
-        </div>
-      </div>
-
-      <div class="top-widget-card" style="justify-content: flex-start;">
-        <div class="top-widget-card__title">Pending Rent</div>
-        <div class="top-widget-card__subtitle">Last {{ topWidgetStats.pendingRent }} day's record</div>
-        <div style="margin-top: auto;">
-          <span class="top-widget-card__pill top-widget-card__pill--red">{{ topWidgetStats.pendingRent }} Rents remained to update</span>
-        </div>
-      </div>
-
-      <div class="top-widget-card" style="justify-content: flex-start;">
-        <div class="top-widget-card__title">Pending Return</div>
-        <div class="top-widget-card__subtitle">Last {{ topWidgetStats.pendingReturn }} day's record</div>
-        <div style="margin-top: auto;">
-          <span class="top-widget-card__pill top-widget-card__pill--red">{{ topWidgetStats.pendingReturn }} Returns remained to update</span>
-        </div>
-      </div>
-    </div>
-  }
 
   <!-- ── 5-card bento grid (was 6, removed Total Cloths) ────────────────── -->
   <div class="stats-grid">

@@ -143,6 +143,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 16px;
   background: var(--surface-container-lowest);
   border-radius: 12px;
@@ -243,6 +244,8 @@ input {
 
 .analytics-card__body {
   z-index: 1;
+  flex: 1;
+  min-width: 0;
 }
 
 .analytics-card__label {
@@ -250,6 +253,9 @@ input {
   font-size: 14px;
   color: var(--on-surface-variant);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .analytics-card__value {
@@ -268,6 +274,13 @@ input {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.05em;
+  min-width: 0;
+
+  span:not(.material-symbols-outlined) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 .analytics-card__trend--primary {
   color: var(--primary);
@@ -283,6 +296,12 @@ input {
 }
 .analytics-card__trend--primary-text {
   color: rgba(255, 255, 255, 0.85);
+}
+.analytics-card__trend--returned {
+  color: #15803d;
+}
+.analytics-card__trend--cancelled {
+  color: var(--error);
 }
 
 .analytics-card__trend-icon {
