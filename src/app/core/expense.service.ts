@@ -124,6 +124,10 @@ export class ExpenseService {
     return this.http.get<PaginatedExpenses>(`${this.base}/by-product/${productId}`, { params });
   }
 
+  getTotalByProduct(productId: string): Observable<{ total: number }> {
+    return this.http.get<{ total: number }>(`${this.base}/total-by-product/${productId}`);
+  }
+
   create(payload: CreateExpensePayload): Observable<Expense> {
     return this.http.post<Expense>(this.base, payload);
   }

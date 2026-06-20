@@ -241,6 +241,9 @@ input {
 .analytics-card__bg-circle--cancelled {
   background: rgba(186, 26, 26, 0.05);
 }
+.analytics-card__bg-circle--warning {
+  background: rgba(217, 119, 6, 0.05);
+}
 
 .analytics-card__body {
   z-index: 1;
@@ -345,6 +348,9 @@ input {
 .analytics-card__icon-wrap--cancelled {
   background: rgba(186, 26, 26, 0.1);
 }
+.analytics-card__icon-wrap--warning {
+  background: rgba(217, 119, 6, 0.1);
+}
 
 .analytics-card__icon {
   font-size: 24px;
@@ -374,6 +380,9 @@ input {
   }
   .analytics-card__icon-wrap--cancelled & {
     color: var(--error);
+  }
+  .analytics-card__icon-wrap--warning & {
+    color: #d97706;
   }
 }
 

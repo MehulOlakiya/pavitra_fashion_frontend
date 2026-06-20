@@ -47,6 +47,7 @@
   justify-content: center;
   background: var(--surface);
   padding: 40px 24px;
+  padding-top: 20px;
 }
 
 @media (min-width: 768px) {
@@ -61,14 +62,27 @@
 }
 
 .brand {
-  margin-bottom: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-logo {
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
 
 .brand-name {
   font-family: "Poppins", sans-serif;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--primary);
+  letter-spacing: 0.3px;
+  line-height: 1.2;
 }
 
 .form-header {

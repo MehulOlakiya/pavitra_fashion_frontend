@@ -1,7 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Product, ProductService } from '../../core/product.service';
+import { Product, ProductInsights, ProductService } from '../../core/product.service';
 import {
   BookingService,
   Booking,
@@ -42,25 +42,9 @@ export class ProductInsightsComponent implements OnInit {
     return this.allBookings.length;
   }
 
-  // Analytics
-  get totalRevenue(): number {
-    return this.allBookings
-      .filter((b) => b.status !== 'cancelled')
-      .reduce(
-        (sum, b) => sum + (b.advancePayment ?? 0) + (b.remainingPayment ?? 0),
-        0,
-      );
-  }
-
-  get profit(): number {
-    const revenue = this.totalRevenue;
-    const cost = this.product?.purchasePrice ?? 0;
-    return revenue - cost;
-  }
-
-  get rentalCount(): number {
-    return this.allBookings.filter((b) => b.status !== 'cancelled').length;
-  }
+  // Analytics (server-calculated)
+  insights: ProductInsights = { totalRevenue: 0, rentalCount: 0, profit: 0, totalExpense: 0 };
+  insightsLoading = false;
 
   // Action menu
   openMenuId: string | null = null;
@@ -99,6 +83,7 @@ export class ProductInsightsComponent implements OnInit {
           this.product = product;
           this.loading = false;
           this.loadBookings(product.serialNumber);
+          this.loadInsights(id);
         },
         error: () => {
           this.toast.show(
@@ -123,6 +108,14 @@ export class ProductInsightsComponent implements OnInit {
       error: () => {
         this.bookingsLoading = false;
       },
+    });
+  }
+
+  private loadInsights(productId: string): void {
+    this.insightsLoading = true;
+    this.productService.getInsights(productId).subscribe({
+      next: (data) => { this.insights = data; this.insightsLoading = false; },
+      error: () => { this.insightsLoading = false; },
     });
   }
 

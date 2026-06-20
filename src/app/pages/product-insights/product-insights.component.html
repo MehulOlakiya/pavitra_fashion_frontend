@@ -34,7 +34,7 @@
         </div>
         <div class="analytics-card__body">
           <p class="analytics-card__label">Total Revenue</p>
-          <h3 class="analytics-card__value">₹{{ totalRevenue | number }}</h3>
+          <h3 class="analytics-card__value">₹{{ insights.totalRevenue | number }}</h3>
         </div>
       </div>
       <div class="analytics-card analytics-card--icon-left">
@@ -44,7 +44,7 @@
         </div>
         <div class="analytics-card__body">
           <p class="analytics-card__label">Profit</p>
-          <h3 class="analytics-card__value">₹{{ profit | number }}</h3>
+          <h3 class="analytics-card__value">₹{{ insights.profit | number }}</h3>
         </div>
       </div>
       <div class="analytics-card analytics-card--icon-left">
@@ -54,7 +54,17 @@
         </div>
         <div class="analytics-card__body">
           <p class="analytics-card__label">Rental Count</p>
-          <h3 class="analytics-card__value">{{ rentalCount }}</h3>
+          <h3 class="analytics-card__value">{{ insights.rentalCount }}</h3>
+        </div>
+      </div>
+      <div class="analytics-card analytics-card--icon-left">
+        <div class="analytics-card__bg-circle analytics-card__bg-circle--warning"></div>
+        <div class="analytics-card__icon-wrap analytics-card__icon-wrap--warning">
+          <span class="material-symbols-outlined analytics-card__icon">receipt_long</span>
+        </div>
+        <div class="analytics-card__body">
+          <p class="analytics-card__label">Total Expense</p>
+          <h3 class="analytics-card__value">₹{{ insights.totalExpense | number }}</h3>
         </div>
       </div>
     </div>

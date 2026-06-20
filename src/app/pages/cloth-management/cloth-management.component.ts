@@ -49,8 +49,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
   availabilityLoading = false;
   dateFilteredProducts: Product[] | null = null;
 
-
-
   get categoryOptions(): { value: string; label: string }[] {
     const fmt = (s: string) =>
       s
@@ -90,7 +88,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.loadAnalytics();
 
     this.sub.add(
       this.searchSubject
@@ -114,7 +111,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
     this.importDrawerOpen = false;
     this.currentPage = 1;
     this.load();
-    this.loadAnalytics();
   }
 
   addProduct(): void {
@@ -178,10 +174,11 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
         serialNumber: product.serialNumber,
         status: 'rented',
         limit: 1,
-      })
+      }),
     ]).subscribe({
       next: ([resBooked, resRented]) => {
-        this.deleteHasActiveBookings = resBooked.total > 0 || resRented.total > 0;
+        this.deleteHasActiveBookings =
+          resBooked.total > 0 || resRented.total > 0;
         this.deleteChecking = false;
       },
       error: () => {
@@ -241,16 +238,6 @@ export class ClothManagementComponent implements OnInit, OnDestroy {
             this.loading = false;
           },
         }),
-    );
-  }
-
-  private loadAnalytics(): void {
-    this.sub.add(
-      this.productService.getAnalytics().subscribe({
-        next: (a) => {
-          this.categories = a.categories.slice().sort();
-        },
-      }),
     );
   }
 

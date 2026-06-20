@@ -34,6 +34,13 @@ export interface ProductAnalytics {
   categories: string[];
 }
 
+export interface ProductInsights {
+  totalRevenue: number;
+  rentalCount: number;
+  profit: number;
+  totalExpense: number;
+}
+
 export interface ApiBooking {
   _id: string;
   orderId?: string;
@@ -108,6 +115,10 @@ export class ProductService {
 
   getById(id: string): Observable<Product> {
     return this.http.get<Product>(`${this.base}/${encodeURIComponent(id)}`);
+  }
+
+  getInsights(id: string): Observable<ProductInsights> {
+    return this.http.get<ProductInsights>(`${this.base}/${encodeURIComponent(id)}/insights`);
   }
 
   getInventoryDetail(serialNumber: string): Observable<InventoryDetail> {

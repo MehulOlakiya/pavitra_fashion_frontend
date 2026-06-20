@@ -1006,7 +1006,11 @@
 <!-- Items Modal -->
 @if (itemsModalOpen && selectedBookingForItems) {
   <div class="modal-backdrop" (click)="closeItemModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
+    <div
+      class="modal"
+      (click)="$event.stopPropagation()"
+      style="max-width: 720px; width: 95%"
+    >
       <div class="modal__header">
         <div style="display: flex; align-items: center; gap: 12px">
           <h3 class="modal__title" style="margin: 0">
@@ -1032,100 +1036,120 @@
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="modal__body" style="max-height: 400px; overflow-y: auto">
-        <div style="display: flex; flex-direction: column; gap: 16px">
+      <div class="modal__body" style="max-height: 600px; overflow-y: auto">
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+          "
+        >
           @for (item of modalItems; track $index) {
             <div
               style="
-                display: flex;
-                gap: 16px;
-                align-items: center;
-                padding: 12px;
                 background: var(--surface-container);
-                border-radius: 8px;
+                border-radius: 14px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
               "
             >
-              @if (getProductImage(item.serialNumber)) {
-                <img
-                  [src]="getProductImage(item.serialNumber)"
-                  alt="item"
-                  style="
-                    width: 60px;
-                    height: 60px;
-                    object-fit: cover;
-                    border-radius: 6px;
-                  "
-                />
-              } @else {
-                <div
-                  style="
-                    width: 60px;
-                    height: 60px;
-                    background: var(--surface-variant);
-                    border-radius: 6px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--on-surface-variant);
-                  "
-                >
-                  <span class="material-symbols-outlined">checkroom</span>
-                </div>
-              }
-              <div>
-                <p style="margin: 0; font-weight: 600">
-                  SN: {{ item.serialNumber || "N/A" }}
-                </p>
-                <p
-                  style="
-                    margin: 4px 0 0;
-                    font-size: 14px;
-                    color: var(--on-surface-variant);
-                  "
-                >
-                  Quantity: {{ item.quantity || 1 }}
-                </p>
-              </div>
+              <!-- Image with overlaid status badge -->
+              <div style="position: relative">
+                @if (getProductImage(item.serialNumber)) {
+                  <img
+                    [src]="getProductImage(item.serialNumber)"
+                    alt="item"
+                    style="
+                      width: 100%;
+                      height: 220px;
+                      object-fit: contain;
+                      display: block;
+                    "
+                  />
+                } @else {
+                  <div
+                    style="
+                      width: 100%;
+                      height: 220px;
+                      background: var(--surface-variant);
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      color: var(--on-surface-variant);
+                    "
+                  >
+                    <span
+                      class="material-symbols-outlined"
+                      style="font-size: 64px"
+                      >checkroom</span
+                    >
+                  </div>
+                }
 
-              @if (
-                selectedBookingForItems?.status === "partial_return" ||
-                selectedBookingForItems?.status === "returned" ||
-                selectedBookingForItems?.status === "rented" ||
-                selectedBookingForItems?.status === "pending_return"
-              ) {
-                <div style="margin-left: auto">
+                @if (
+                  selectedBookingForItems?.status === "partial_return" ||
+                  selectedBookingForItems?.status === "returned" ||
+                  selectedBookingForItems?.status === "rented" ||
+                  selectedBookingForItems?.status === "pending_return"
+                ) {
                   @if (
                     item.isReturned ||
                     selectedBookingForItems?.status === "returned"
                   ) {
                     <span
                       style="
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
                         background: #dcfce7;
                         color: #166534;
-                        padding: 4px 8px;
-                        border-radius: 6px;
+                        padding: 4px 12px;
+                        border-radius: 20px;
                         font-size: 12px;
-                        font-weight: 600;
+                        font-weight: 700;
                         border: 1px solid #bbf7d0;
+                        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
                       "
-                      >Returned</span
+                      >✓ Returned</span
                     >
                   } @else {
                     <span
                       style="
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
                         background: #fef9c3;
                         color: #854d0e;
-                        padding: 4px 8px;
-                        border-radius: 6px;
+                        padding: 4px 12px;
+                        border-radius: 20px;
                         font-size: 12px;
-                        font-weight: 600;
+                        font-weight: 700;
                         border: 1px solid #fef08a;
+                        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
                       "
-                      >Pending</span
+                      >⏳ Pending</span
                     >
                   }
-                </div>
-              }
+                }
+              </div>
+
+              <!-- Info below image -->
+              <div style="padding: 10px 14px 12px">
+                <p style="margin: 0; font-weight: 700; font-size: 15px">
+                  SN: {{ item.serialNumber || "N/A" }}
+                </p>
+                <p
+                  style="
+                    margin: 4px 0 0;
+                    font-size: 13px;
+                    color: var(--on-surface-variant);
+                  "
+                >
+                  Qty: {{ item.quantity || 1 }}
+                </p>
+              </div>
             </div>
           }
         </div>
